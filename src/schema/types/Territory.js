@@ -125,7 +125,7 @@ export const queryResolvers = {
               const a = activity[0];
               return {
                 status: 'Recently Worked',
-                date: activity.timestamp,
+                date: a.timestamp,
                 publisher: {
                   id: a.publisherid,
                   congregationid:  a.congregationid,
@@ -138,12 +138,12 @@ export const queryResolvers = {
             }
           }
           
-          // ... otherwise the territory is available.
-          return {
-            status: 'Available',
-            date: activity.timestamp,
-          };
         }
+        
+        // ... otherwise the territory is available.
+        return {
+          status: 'Available',
+        };
       }
     } catch (err) {
       console.error(err);
