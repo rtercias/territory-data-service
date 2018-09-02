@@ -94,12 +94,12 @@ export const queryResolvers = {
               status: 'Available',
             };
           }
-
+          
           // re-order check in/out activity by most recent timestamp
           activity = orderBy(activity, 'timestamp', 'desc');
           // reduce array to the last two records
           activity.length = 2;
-
+          
           // if there is no check IN activity, the territory is still checked out
           if (!some(activity, ['status', 'IN'])) {
             const a = activity[0];
@@ -112,7 +112,7 @@ export const queryResolvers = {
                 username: a.username,
                 firstname: a.firstname,
                 lastname: a.lastname,
-                status: a.status,
+                status: a.publisher_status,
               },
             };
           }
@@ -122,6 +122,7 @@ export const queryResolvers = {
 
             // ... and the most recent timestamp is two months or less, then the territory is recently worked.
             if (differenceInMonths(new Date(), activity[0].timestamp) <= 2) {
+              const a = activity[0];
               return {
                 status: 'Recently Worked',
                 date: activity.timestamp,
@@ -131,7 +132,7 @@ export const queryResolvers = {
                   username: a.username,
                   firstname: a.firstname,
                   lastname: a.lastname,
-                  status: a.status,
+                  status: a.publisher_status,
                 },
               };
             }

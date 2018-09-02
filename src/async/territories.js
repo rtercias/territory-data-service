@@ -17,7 +17,7 @@ class TerritoryAsync {
   async getTerritoryStatus (congId, territoryId, publisherId) {
     return toArray(await conn.query(
       `
-        SELECT ck.*, p.username, p.firstname, p.lastname, p.status
+        SELECT ck.*, p.username, p.firstname, p.lastname, p.status AS publisher_status
         FROM territorycheckouts ck 
         JOIN territories t ON ck.territoryid = t.id 
         JOIN publishers p ON ck.publisherid = p.id
