@@ -25,7 +25,8 @@ import http from 'http';
 import https from 'https';
 import fs from 'fs';
 
-export const conn = mysql.createConnection({
+export const conn = mysql.createPool({
+  connectionLimit: 10,
   ssl: { rejectUnauthorized: false }, // TODO: add SSL certificate file here (see https://github.com/mysqljs/mysql#ssl-options)
   host: process.env.TERRITORY_SERVER,
   user: process.env.TERRITORY_USERID,
@@ -60,13 +61,6 @@ if (cluster.isMaster) {
 
   const app = express();
   conn.query = promisify(conn.query);
-  conn.connect((err) => {
-    if (err) {
-      console.error('Unable to connect to database');
-    } else {
-      console.log('Connected to Territory database');
-    }
-  });
 
   app.use(cors());
   app.use('/graphql', bodyParser.json(), graphqlExpress({ schema, cacheControl: true }));
