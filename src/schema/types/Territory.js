@@ -100,8 +100,8 @@ export const queryResolvers = {
           // reduce array to the last two records
           activity.length = 2;
           
-          // if there is no check IN activity, the territory is still checked out
-          if (!some(activity, ['status', 'IN'])) {
+          // if there is no check IN activity, or the last activity is OUT, then territory is still checked out
+          if (!some(activity, ['status', 'IN']) || activity[0].status === 'OUT') {
             const a = activity[0];
             return {
               status: 'Checked Out',
@@ -115,12 +115,10 @@ export const queryResolvers = {
                 status: a.publisher_status,
               },
             };
-          }
-
-          // if the last two activity is an IN/OUT pair...
-          if (activity[0].status === 'IN' || activity[1].status === 'OUT') {
-
-            // ... and the most recent timestamp is two months or less, then the territory is recently worked.
+            
+          } else if (activity[0].status === 'IN' && activity[1].status === 'OUT') {
+            // if the last activity is IN and second to last activity is OUT
+            // and the most recent timestamp is two months or less, then the territory is recently worked.
             if (differenceInMonths(new Date(), activity[0].timestamp) <= 2) {
               const a = activity[0];
               return {
@@ -135,15 +133,17 @@ export const queryResolvers = {
                   status: a.publisher_status,
                 },
               };
+            } else {
+              // ... otherwise the territory is available.
+              return {
+                status: 'Available',
+              };
             }
           }
           
         }
         
-        // ... otherwise the territory is available.
-        return {
-          status: 'Available',
-        };
+        
       }
     } catch (err) {
       console.error(err);
