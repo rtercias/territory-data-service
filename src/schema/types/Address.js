@@ -1,5 +1,4 @@
 import addressAsync from './../../async/addresses';
-import territoryAsync from './../../async/territories';
 
 export const Address = `
   type Address {
@@ -15,7 +14,8 @@ export const Address = `
     longitude: Float
     latitude: Float
     territory: Territory
-    notes: String
+    notes: String,
+    activityLogs: [ActivityLog]
   }
 `;
 
