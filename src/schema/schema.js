@@ -13,6 +13,7 @@ import { Publisher, queries as publisherQueries, queryResolvers as publisherQuer
 import { Status } from './types/Status';
 import {
   ActivityLog, 
+  ActivityLogInput,
   queries as activityLogQueries,
   mutations as activityLogMutations,
   resolvers as activityLogResolvers,
@@ -84,7 +85,6 @@ const resolvers = {
   },
 
   ActivityLog: {
-    territory: territoryQueryResolvers.territory,
     address: addressResolvers.address,
     publisher: publisherQueryResolvers.publisher,
   }
@@ -101,6 +101,7 @@ export default makeExecutableSchema({
     Address,
     Status,
     ActivityLog,
+    ActivityLogInput
   ],
-  resolvers
+  resolvers,
 });

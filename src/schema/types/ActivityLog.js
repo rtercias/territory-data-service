@@ -1,16 +1,14 @@
 import activityLogAsync from '../../async/activityLog';
 
-export const ActivityLog = `\
+export const ActivityLog = `
   type ActivityLog {
     id: Int!
     checkout_id: Int!
-    territory_id: Int!
-    territory: Territory
     address_id: Int!
     address: Address
     value: String
     timestamp: String
-    tz_offset: String
+    tz_offset: Int
     timezone: String
     publisher_id: Int!
     publisher: Publisher
@@ -18,14 +16,27 @@ export const ActivityLog = `\
   }
 `;
 
+export const ActivityLogInput = `
+  input ActivityLogInput {
+    id: Int!
+    checkout_id: Int!
+    address_id: Int!
+    value: String
+    tz_offset: Int
+    timezone: String
+    publisher_id: Int!
+    notes: String
+  }
+`;
+
 export const queries = `
-  activityLog(id: Int): Address
-  activityLogs(checkout_id: Int!, address_id: Int): [Address]
+  activityLog(id: Int): ActivityLog
+  activityLogs(checkout_id: Int!, address_id: Int): [ActivityLog]
 `;
 
 export const mutations = `
-  addLog(checkout_id: Int!, address_id: Int!, value: String!, publisher_id: Int!, notes: String): ActivityLog
-  updateLog(id: Int!, value: String, notes: String): ActivityLog
+  addLog(activityLog: ActivityLogInput): ActivityLog
+  updateLog(activityLog: ActivityLogInput): ActivityLog
   removeLog(id: Int!): Boolean
 `;
 
@@ -48,13 +59,13 @@ export const resolvers = {
 };
 
 export const mutationResolvers = {
-  addLog: async (root, activityLog) => {
+  addLog: async (root, { activityLog }) => {
     await activityLogAsync.create(activityLog);
   },
-  updateLog: async (root, activityLog) => {
-    await activityLog.update(activityLog);
+  updateLog: async (root, { activityLog }) => {
+    await activityLogAsync.update(activityLog);
   },
-  removeLog: async (root, id) => {
+  removeLog: async (root, { id }) => {
     await activityLogAsync.delete(id);
   },
 };

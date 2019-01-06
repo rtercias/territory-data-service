@@ -1,4 +1,5 @@
 import { conn } from '../../index';
+import { toArray } from 'lodash';
 
 class ActivityLogAsync {
   async create (activityLog) {
@@ -8,12 +9,16 @@ class ActivityLogAsync {
       checkout_id,
       address_id,
       value,
+      tz_offset,
+      timezone,
       publisher_id,
       notes
     ) VALUES (
       ${ activityLog.checkout_id },
       ${ activityLog.address_id },
       '${ activityLog.value }',
+      ${ activityLog.tz_offset },
+      '${ activityLog.timezone }',
       ${ activityLog.publisher_id },
       '${ activityLog.notes || "" }'
     )`);
@@ -37,9 +42,9 @@ class ActivityLogAsync {
     await conn.query(`UPDATE activitylog SET
       checkout_id = ${ activityLog.checkout_id },
       address_id = ${ activityLog.address_id },
-      territory_id = ${ activityLog.territory_id },
       value = '${ activityLog.value }',
-      timestamp = ${ activityLog.timestamp },
+      tz_offset = ${ activityLog.tz_offset },
+      timezone = '${ activityLog.timezone }',
       publisher_id = ${ activityLog.publisher_id },
       notes = '${ activityLog.notes || "" }'
     WHERE id=${activityLog.id}`);

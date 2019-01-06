@@ -28,7 +28,13 @@ export const queries = `
 export const resolvers = {
   address: async (root, args) => {
     try {
-      return await addressAsync.getAddress(args.id);
+      if (args.id) {
+        return await addressAsync.getAddress(args.id);
+
+      } else if (root.address_id) {
+        return await addressAsync.getAddress(root.address_id);
+      }
+
     } catch (err) {
       console.error(err);
     }
