@@ -104,6 +104,7 @@ export const queryResolvers = {
           if (!some(activity, ['status', 'IN']) || activity[0].status === 'OUT') {
             const a = activity[0];
             return {
+              checkout_id: a.id,
               status: 'Checked Out',
               date: a.timestamp,
               publisher: {
@@ -122,6 +123,7 @@ export const queryResolvers = {
             if (differenceInMonths(new Date(), activity[0].timestamp) <= 2) {
               const a = activity[0];
               return {
+                checkout_id: a.id,
                 status: 'Recently Worked',
                 date: a.timestamp,
                 publisher: {

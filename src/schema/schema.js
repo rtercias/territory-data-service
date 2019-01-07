@@ -11,7 +11,14 @@ import {
 } from './types/Territory';
 import { Publisher, queries as publisherQueries, queryResolvers as publisherQueryResolvers } from './types/Publisher';
 import { Status } from './types/Status';
-
+import {
+  ActivityLog, 
+  ActivityLogInput,
+  queries as activityLogQueries,
+  mutations as activityLogMutations,
+  resolvers as activityLogResolvers,
+  mutationResolvers as activityLogMutationResolvers,
+} from './types/ActivityLog';
 
 const RootQuery = `
   type RootQuery {
@@ -21,12 +28,14 @@ const RootQuery = `
     ${congregationQueries}
     ${territoryQueries}
     ${addressQueries}
+    ${activityLogQueries}
   }
 `;
 
 const Mutation = `
   type Mutation {
     ${territoryMutations}
+    ${activityLogMutations}
   }
 `;
 
@@ -44,13 +53,15 @@ const resolvers = {
     publisherQueryResolvers,
     congregationResolvers,
     territoryQueryResolvers,
-    addressResolvers
+    addressResolvers,
+    activityLogResolvers,
   ),
 
-  Mutation: {
-    checkoutTerritory: territoryMutationResolvers.checkoutTerritory,
-    checkinTerritory: territoryMutationResolvers.checkinTerritory
-  },
+  Mutation: merge (
+    {},
+    territoryMutationResolvers,
+    activityLogMutationResolvers,
+  ),
 
   Publisher: {
     congregation: congregationResolvers.congregation,
@@ -67,7 +78,8 @@ const resolvers = {
   },
 
   Address: {
-    territory: territoryQueryResolvers.territory
+    territory: territoryQueryResolvers.territory,
+    activityLogs: activityLogResolvers.activityLogs,
   },
 }
 
@@ -81,6 +93,8 @@ export default makeExecutableSchema({
     Publisher,
     Address,
     Status,
+    ActivityLog,
+    ActivityLogInput
   ],
-  resolvers
+  resolvers,
 });
