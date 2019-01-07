@@ -5,13 +5,11 @@ export const ActivityLog = `
     id: Int!
     checkout_id: Int!
     address_id: Int!
-    address: Address
     value: String
     timestamp: String
     tz_offset: Int
     timezone: String
     publisher_id: Int!
-    publisher: Publisher
     notes: String
   }
 `;
@@ -51,7 +49,9 @@ export const resolvers = {
 
   activityLogs: async (root, args) => {
     try {
-      return await activityLogAsync.read(args.checkout_id, args.address_id);
+      const checkout_id = args.checkout_id;
+      const address_id = args.address_id || root.id;
+      return await activityLogAsync.read(checkout_id, address_id);
     } catch (err) {
       console.error(err);
     }

@@ -83,11 +83,6 @@ const resolvers = {
     territory: territoryQueryResolvers.territory,
     activityLogs: activityLogResolvers.activityLogs,
   },
-
-  ActivityLog: {
-    address: addressResolvers.address,
-    publisher: publisherQueryResolvers.publisher,
-  }
 }
 
 export default makeExecutableSchema({

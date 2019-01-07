@@ -3,8 +3,6 @@ import { toArray } from 'lodash';
 
 class ActivityLogAsync {
   async create (activityLog) {
-    // TODO: only allow up to 3 activity logs per checkout_id and address_id
-
     await conn.query(`INSERT INTO activitylog (
       checkout_id,
       address_id,
