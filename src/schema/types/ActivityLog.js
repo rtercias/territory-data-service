@@ -29,7 +29,7 @@ export const ActivityLogInput = `
 
 export const queries = `
   activityLog(id: Int): ActivityLog
-  activityLogs(checkout_id: Int!, address_id: Int): [ActivityLog]
+  activityLogs(checkout_id: Int, address_id: Int): [ActivityLog]
 `;
 
 export const mutations = `

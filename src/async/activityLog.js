@@ -24,10 +24,12 @@ class ActivityLogAsync {
 
   async read (checkout_id, address_id) {
     let result;
-    if (address_id) {
+    if (checkout_id && address_id) {
       result = toArray(await conn.query(`SELECT * FROM activitylog WHERE checkout_id=${checkout_id} AND address_id=${address_id}`));
-    } else {
+    } else if (checkout_id) {
       result = toArray(await conn.query(`SELECT * FROM activitylog WHERE checkout_id=${checkout_id}`));
+    } else if (address_id) {
+      result = toArray(await conn.query(`SELECT * FROM activitylog WHERE address_id=${address_id}`));
     }
     return result;
   }

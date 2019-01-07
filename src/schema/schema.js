@@ -57,13 +57,11 @@ const resolvers = {
     activityLogResolvers,
   ),
 
-  Mutation: {
-    checkoutTerritory: territoryMutationResolvers.checkoutTerritory,
-    checkinTerritory: territoryMutationResolvers.checkinTerritory,
-    addLog: activityLogMutationResolvers.addLog,
-    updateLog: activityLogMutationResolvers.updateLog,
-    removeLog: activityLogMutationResolvers.removeLog,
-  },
+  Mutation: merge (
+    {},
+    territoryMutationResolvers,
+    activityLogMutationResolvers,
+  ),
 
   Publisher: {
     congregation: congregationResolvers.congregation,
