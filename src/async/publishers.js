@@ -23,7 +23,7 @@ class PublisherAsync {
   async searchPublishers (congId, keyword) {
     const kw = keyword || '';
     const sql = `SELECT id, firstname, lastname, congregationid, username, status FROM publishers
-      WHERE congregationid = ${congId} AND firstname LIKE '%${kw}%' OR lastname LIKE '%${kw}%'`;
+      WHERE congregationid = ${congId} AND (firstname LIKE '%${kw}%' OR lastname LIKE '%${kw}%')`;
     return toArray(await conn.query(sql));
   }
 }
