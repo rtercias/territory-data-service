@@ -36,8 +36,8 @@ export const queryResolvers = {
       if (args.publisherId) {
         return await publisherAsync.getPublisherById(args.publisherId);
 
-      } else if (root.publisher_id) {
-        return await publisherAsync.getPublisherById(root.publisher_id);
+      } else if (root.publisher_id || root.publisherid) {
+        return await publisherAsync.getPublisherById(root.publisher_id || root.publisherid);
 
       } else if (args.firstname && args.lastname) {
         return await publisherAsync.getPublisherByName(args.firstname, args.lastname);

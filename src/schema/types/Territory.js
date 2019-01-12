@@ -41,8 +41,8 @@ export const queryResolvers = {
         result = await terrAsync.getTerritory(args.id);
       }
 
-      if (root && root.territory_id) {
-        result = await terrAsync.getTerritory(root.territory_id);
+      if (root && (root.territory_id || root.territoryid)) {
+        result = await terrAsync.getTerritory(root.territory_id || root.territoryid);
       }
       return result;
     } catch (err) {
@@ -107,18 +107,12 @@ export const queryResolvers = {
               checkout_id: a.id,
               status: 'Checked Out',
               date: a.timestamp,
-              publisher: {
-                id: a.publisherid,
-                congregationid:  a.congregationid,
-                username: a.username,
-                firstname: a.firstname,
-                lastname: a.lastname,
-                status: a.publisher_status,
-              },
+              publisherid: a.publisherid,
+              territoryid: a.territoryid,
             };
             
-          } else if (activity[0].status === 'IN' && activity[1].status === 'OUT') {
-            // if the last activity is IN and second to last activity is OUT
+          } else if (activity[0].status === 'IN') {
+            // if the last activity is IN
             // and the most recent timestamp is two months or less, then the territory is recently worked.
             if (differenceInMonths(new Date(), activity[0].timestamp) <= 2) {
               const a = activity[0];
@@ -126,14 +120,8 @@ export const queryResolvers = {
                 checkout_id: a.id,
                 status: 'Recently Worked',
                 date: a.timestamp,
-                publisher: {
-                  id: a.publisherid,
-                  congregationid:  a.congregationid,
-                  username: a.username,
-                  firstname: a.firstname,
-                  lastname: a.lastname,
-                  status: a.publisher_status,
-                },
+                publisherid: a.publisherid,
+                territoryid: a.territoryid,
               };
             } else {
               // ... otherwise the territory is available.
