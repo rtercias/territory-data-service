@@ -1,5 +1,5 @@
 import terrAsync from './../../async/territories';
-import { isArray, orderBy, some } from 'lodash';
+import { isArray, orderBy, some, assign } from 'lodash';
 import { differenceInMonths } from 'date-fns';
 import { Publisher } from './Publisher';
 
@@ -66,7 +66,7 @@ export const queryResolvers = {
       
       if (root && root.congregationid && root.username) {
         // get alltime territory checkout status for the given user
-        return await terrAsync.getTerritoryStatus(root.congregationid, null, root.username);
+        return await terrAsync.getTerritoriesByUser(root.congregationid, root.username);
       }
 
       if ((args && args.congId) || (root && root.id)) {
@@ -91,7 +91,12 @@ export const queryResolvers = {
   status: async(root, args) => {
     try {
       if (root && root.congregationid && root.id) {
-        let terrStatus = await terrAsync.getTerritoryStatus(root.congregationid, root.id, root.username);
+        let terrStatus;
+        if (root.username) {
+          terrStatus = await terrAsync.getMostRecentCheckout(root.id, root.username);
+        } else {
+          terrStatus = await terrAsync.getTerritoryStatus(root.congregationid, root.id);
+        }
 
         if (terrStatus) {
           // no checkout records found: AVAILABLE

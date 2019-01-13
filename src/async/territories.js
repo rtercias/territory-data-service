@@ -18,14 +18,40 @@ class TerritoryAsync {
     return toArray(await conn.query(
       `
         SELECT ck.*, t.*, p.username, p.firstname, p.lastname, p.status AS publisher_status
-        FROM territorycheckouts ck 
-        JOIN territories t ON ck.territoryid = t.id 
+        FROM territorycheckouts ck
+        JOIN territories t ON ck.territoryid = t.id
         JOIN publishers p ON ck.publisherid = p.id
         WHERE t.congregationid=${congId}
         ${!!territoryId ? ` AND ck.territoryid=${territoryId}` : ''}
         ${!!username ? ` AND p.username='${username}'` : ''}
       `
     ));
+  }
+
+  async getTerritoriesByUser (congId, username) {
+    return toArray(await conn.query(
+      `
+        SELECT t.id, t.group_code, t.congregationid, t.name, t.description, t.type
+        FROM territorycheckouts ck
+        JOIN territories t ON ck.territoryid = t.id
+        JOIN publishers p ON ck.publisherid = p.id
+        WHERE t.congregationid=${congId}
+        ${!!username ? ` AND p.username='${username}'` : ''}
+        GROUP BY t.id, t.group_code, t.congregationid, t.name, t.description, t.type
+      `
+    ));
+  }
+
+  async getMostRecentCheckout(territoryId, username) {
+    return await conn.query(
+      `
+        SELECT ck.* FROM territorycheckouts ck
+        JOIN publishers p ON ck.publisherid = p.id
+        WHERE ck.territoryid=${territoryId} AND p.username='${username}'
+        ORDER BY ck.timestamp DESC
+        LIMIT 1
+      `
+    );
   }
 
   async getTerritoriesByCity (congId, city) {
