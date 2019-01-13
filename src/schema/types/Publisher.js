@@ -11,7 +11,7 @@ export const Publisher = `
     username: String
     congregation: Congregation
     status: String
-    checkedOutTerritories: [Territory]
+    territories: [Territory]
     role: String
     role_description: String
   }
@@ -19,7 +19,6 @@ export const Publisher = `
 
 export const queries = `
   publishers(congId: Int, keyword: String): [Publisher]
-  checkedOutTerritories(publisherId: Int): [Territory]
 `;
 
 export const queryResolvers = {
@@ -57,16 +56,6 @@ export const queryResolvers = {
       
       const result = await publisherAsync.searchPublishers(id, args.keyword);
       return result;
-    } catch (err) {
-      console.error(err);
-    }
-  },
-
-  checkedOutTerritories: async (root, args) => {
-    try {
-      if (root.id) {
-        return await terrAsync.getCheckedOutTerritories(root.id);
-      }
     } catch (err) {
       console.error(err);
     }

@@ -63,6 +63,11 @@ export const queryResolvers = {
       if (args && args.congId && args.group_code) {
         return await terrAsync.getTerritoriesByGroupCode(args.congId, args.group_code);
       }
+      
+      if (root && root.congregationid && root.username) {
+        // get alltime territory checkout status for the given user
+        return await terrAsync.getTerritoryStatus(root.congregationid, null, root.username);
+      }
 
       if ((args && args.congId) || (root && root.id)) {
         return await terrAsync.getTerritories(args.congId || root.id);
@@ -86,23 +91,24 @@ export const queryResolvers = {
   status: async(root, args) => {
     try {
       if (root && root.congregationid && root.id) {
-        let activity = await terrAsync.getTerritoryStatus(root.congregationid, root.id);
-        if (activity) {
+        let terrStatus = await terrAsync.getTerritoryStatus(root.congregationid, root.id, root.username);
+
+        if (terrStatus) {
           // no checkout records found: AVAILABLE
-          if (!isArray(activity) || activity.length == 0) {
+          if (!isArray(terrStatus) || terrStatus.length == 0) {
             return {
               status: 'Available',
             };
           }
           
-          // re-order check in/out activity by most recent timestamp
-          activity = orderBy(activity, 'timestamp', 'desc');
+          // re-order check in/out terrStatus by most recent timestamp
+          terrStatus = orderBy(terrStatus, 'timestamp', 'desc');
           // reduce array to the last two records
-          activity.length = 2;
+          terrStatus.length = 2;
           
-          // if there is no check IN activity, or the last activity is OUT, then territory is still checked out
-          if (!some(activity, ['status', 'IN']) || activity[0].status === 'OUT') {
-            const a = activity[0];
+          // if there is no check IN terrStatus, or the last terrStatus is OUT, then territory is still checked out
+          if (!some(terrStatus, ['status', 'IN']) || terrStatus[0].status === 'OUT') {
+            const a = terrStatus[0];
             return {
               checkout_id: a.id,
               status: 'Checked Out',
@@ -111,11 +117,11 @@ export const queryResolvers = {
               territoryid: a.territoryid,
             };
             
-          } else if (activity[0].status === 'IN') {
-            // if the last activity is IN
+          } else if (terrStatus[0].status === 'IN') {
+            // if the last terrStatus is IN
             // and the most recent timestamp is two months or less, then the territory is recently worked.
-            if (differenceInMonths(new Date(), activity[0].timestamp) <= 2) {
-              const a = activity[0];
+            if (differenceInMonths(new Date(), terrStatus[0].timestamp) <= 2) {
+              const a = terrStatus[0];
               return {
                 checkout_id: a.id,
                 status: 'Recently Worked',

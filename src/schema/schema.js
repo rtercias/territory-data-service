@@ -65,6 +65,7 @@ const resolvers = {
 
   Publisher: {
     congregation: congregationResolvers.congregation,
+    territories: territoryQueryResolvers.territories,
   },
 
   Congregation: {

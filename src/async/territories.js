@@ -14,16 +14,16 @@ class TerritoryAsync {
     return toArray(await conn.query(`SELECT * FROM territories WHERE congregationid=${congId} name LIKE '%${keyword}%' OR description LIKE '%${keyword}%'`));
   }
 
-  async getTerritoryStatus (congId, territoryId, publisherId) {
+  async getTerritoryStatus (congId, territoryId, username) {
     return toArray(await conn.query(
       `
-        SELECT ck.*, p.username, p.firstname, p.lastname, p.status AS publisher_status
+        SELECT ck.*, t.*, p.username, p.firstname, p.lastname, p.status AS publisher_status
         FROM territorycheckouts ck 
         JOIN territories t ON ck.territoryid = t.id 
         JOIN publishers p ON ck.publisherid = p.id
         WHERE t.congregationid=${congId}
         ${!!territoryId ? ` AND ck.territoryid=${territoryId}` : ''}
-        ${!!publisherId ? ` AND ck.publisherid=${publisherId}` : ''}
+        ${!!username ? ` AND p.username='${username}'` : ''}
       `
     ));
   }
