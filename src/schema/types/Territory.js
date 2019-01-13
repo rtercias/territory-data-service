@@ -90,13 +90,27 @@ export const queryResolvers = {
 
   status: async(root, args) => {
     try {
-      if (root && root.congregationid && root.id) {
-        let terrStatus;
-        if (root.username) {
-          terrStatus = await terrAsync.getMostRecentCheckout(root.id, root.username);
+      if (root.username) {
+        if (root.in === null) {
+          return {
+            date: root.out, 
+            status: 'Checked Out',
+          };
+
+        } else if (differenceInMonths(new Date(), root.in) <= 2) {
+          return {
+            date: root.in,
+            status: 'Recently Worked',
+          };
         } else {
-          terrStatus = await terrAsync.getTerritoryStatus(root.congregationid, root.id);
+          return {
+            status: 'Available',
+          }
         }
+      } else if (root && root.congregationid && root.id) {
+        let terrStatus;
+        terrStatus = await terrAsync.getTerritoryStatus(root.congregationid, root.id);
+        
 
         if (terrStatus) {
           // no checkout records found: AVAILABLE
@@ -141,10 +155,7 @@ export const queryResolvers = {
               };
             }
           }
-          
         }
-        
-        
       }
     } catch (err) {
       console.error(err);

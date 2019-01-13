@@ -1,5 +1,6 @@
 import { toArray } from 'lodash';
 import { conn } from './../../index';
+import isBefore from 'date-fns/is_before';
 
 class TerritoryAsync {
   async getTerritory (id) {
@@ -31,23 +32,23 @@ class TerritoryAsync {
   async getTerritoriesByUser (congId, username) {
     return toArray(await conn.query(
       `
-        SELECT t.id, t.group_code, t.congregationid, t.name, t.description, t.type
-        FROM territorycheckouts ck
-        JOIN territories t ON ck.territoryid = t.id
-        JOIN publishers p ON ck.publisherid = p.id
-        WHERE t.congregationid=${congId}
-        ${!!username ? ` AND p.username='${username}'` : ''}
-        GROUP BY t.id, t.group_code, t.congregationid, t.name, t.description, t.type
+        SELECT ck.*, t.*
+        FROM territorycheckouts_pivot ck
+        JOIN territories t ON ck.territory_id = t.id
+        WHERE ck.congregationid=${congId}
+        AND ck.username='${username}'
+        AND ck.in IS NULL
       `
     ));
   }
 
-  async getMostRecentCheckout(territoryId, username) {
+  async getMostRecentCheckin(territoryId, username) {
     return await conn.query(
       `
         SELECT ck.* FROM territorycheckouts ck
         JOIN publishers p ON ck.publisherid = p.id
         WHERE ck.territoryid=${territoryId} AND p.username='${username}'
+        AND ck.status = 'IN'
         ORDER BY ck.timestamp DESC
         LIMIT 1
       `
