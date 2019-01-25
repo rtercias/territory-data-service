@@ -26,6 +26,7 @@ export const queries = `
   territories(congId: Int, keyword: String, city: String, group_code: String): [Territory]
   territoriesByCity(congId: Int): [Territory]
   status(territoryId: Int): Status
+  city: String
 `;
 
 export const mutations = `
@@ -65,7 +66,6 @@ export const queryResolvers = {
       }
       
       if (root && root.congregationid && root.username) {
-        // get alltime territory checkout status for the given user
         return await terrAsync.getTerritoriesByUser(root.congregationid, root.username);
       }
 
@@ -157,6 +157,21 @@ export const queryResolvers = {
           }
         }
       }
+    } catch (err) {
+      console.error(err);
+    }
+  },
+
+  city: async(root) => {
+    try {
+      if (root.id) {
+        const result = await terrAsync.getTerritoriesByCity(root.congregationid, null, root.id);
+        if (result.length) {
+          return result[0].city;
+        }
+      }
+
+      return null;
     } catch (err) {
       console.error(err);
     }

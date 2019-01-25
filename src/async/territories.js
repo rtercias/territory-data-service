@@ -1,6 +1,5 @@
 import { toArray } from 'lodash';
 import { conn } from './../../index';
-import isBefore from 'date-fns/is_before';
 
 class TerritoryAsync {
   async getTerritory (id) {
@@ -55,14 +54,10 @@ class TerritoryAsync {
     );
   }
 
-  async getTerritoriesByCity (congId, city) {
-    let result;
-    if (city) {
-      result = toArray(await conn.query(`SELECT * FROM territories_by_city WHERE congregationid=${congId} AND city='${city}'`));
-    } else {
-      result = toArray(await conn.query(`SELECT * FROM territories_by_city WHERE congregationid=${congId}`));
-    }
-    return result;
+  async getTerritoriesByCity (congId, city, territoryId) {
+    const andCity = city ? ` city LIKE '%${city}%'` : '';
+    const andTerritoryId = territoryId ? ` AND id=${territoryId}` : '';
+    return toArray(await conn.query(`SELECT * FROM territories_by_city WHERE congregationid=${congId}${andCity}${andTerritoryId}`));
   }
 
   async getTerritoriesByGroupCode (congId, groupCode) {

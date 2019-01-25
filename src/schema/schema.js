@@ -76,6 +76,7 @@ const resolvers = {
   Territory: {
     addresses: addressResolvers.addresses,
     status: territoryQueryResolvers.status,
+    city: territoryQueryResolvers.city,
   },
 
   Address: {
