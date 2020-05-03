@@ -41,7 +41,7 @@ class TerritoryAsync {
     ));
   }
 
-  async getMostRecentCheckin(territoryId, username) {
+  async getMostRecentCheckin (territoryId, username) {
     return await conn.query(
       `
         SELECT ck.* FROM territorycheckouts ck

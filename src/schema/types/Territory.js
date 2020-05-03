@@ -1,7 +1,6 @@
 import terrAsync from './../../async/territories';
-import { isArray, orderBy, some, assign } from 'lodash';
+import { isArray, orderBy, some } from 'lodash';
 import { differenceInMonths } from 'date-fns';
-import { Publisher } from './Publisher';
 
 const aliases = `,
   congregationid as congregationId
@@ -90,7 +89,7 @@ export const queryResolvers = {
 
   status: async(root, args) => {
     try {
-      if (root.username) {
+      if (root && root.username) {
         if (root.in === null) {
           return {
             date: root.out, 
@@ -164,7 +163,10 @@ export const queryResolvers = {
 
   city: async(root) => {
     try {
-      if (root.id) {
+      if (root && root.city) {
+        return root.city;
+
+      } else if (root.id) {
         const result = await terrAsync.getTerritoriesByCity(root.congregationid, null, root.id);
         if (result.length) {
           return result[0].city;
