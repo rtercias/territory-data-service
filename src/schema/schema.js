@@ -19,6 +19,11 @@ import {
   resolvers as activityLogResolvers,
   mutationResolvers as activityLogMutationResolvers,
 } from './types/ActivityLog';
+import {
+  AssignmentRecord,
+  queries as assignmentRecordQueries,
+  resolvers as assignmentRecordResolvers,
+} from './types/AssignmentRecord';
 
 const RootQuery = `
   type RootQuery {
@@ -29,6 +34,7 @@ const RootQuery = `
     ${territoryQueries}
     ${addressQueries}
     ${activityLogQueries}
+    ${assignmentRecordQueries}
   }
 `;
 
@@ -38,7 +44,6 @@ const Mutation = `
     ${activityLogMutations}
   }
 `;
-
 
 const SchemaDefinition = `
   schema {
@@ -55,6 +60,7 @@ const resolvers = {
     territoryQueryResolvers,
     addressResolvers,
     activityLogResolvers,
+    assignmentRecordResolvers,
   ),
 
   Mutation: merge (
@@ -101,7 +107,8 @@ export default makeExecutableSchema({
     Address,
     Status,
     ActivityLog,
-    ActivityLogInput
+    ActivityLogInput,
+    AssignmentRecord,
   ],
   resolvers,
 });
