@@ -19,7 +19,5 @@ env:
   CERTIFICATE_FILE:
     secure:
 
-before_script:
-  - npm i rimraf babel-cli babel-plugin-transform-runtime -g
 script:
   - npm run build

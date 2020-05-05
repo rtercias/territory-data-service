@@ -7,7 +7,7 @@
     "node": ">=10.9"
   },
   "scripts": {
-    "build": "./node_modules/.bin/rimraf dist/ && babel ./ --out-dir dist/ --ignore ./node_modules,./.babelrc,./package.json,./npm-debug.log --copy-files",
+    "build": "./node_modules/.bin/rimraf dist/ && ./node_modules/.bin/babel ./ --out-dir dist/ --ignore ./node_modules,./.babelrc,./package.json,./npm-debug.log --copy-files",
     "start": "nodemon --watch src/ --exec  \"npm run build && nodemon dist/index.js\"",
     "serve": "npm run build && node dist/index.js"
   },
