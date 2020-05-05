@@ -20,6 +20,6 @@ env:
     secure:
 
 before_script:
-  - npm i rimraf -g
+  - npm i rimraf babel -g
 script:
   - npm run build
