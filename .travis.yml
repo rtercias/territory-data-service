@@ -19,5 +19,7 @@ env:
   CERTIFICATE_FILE:
     secure:
 
+before_script:
+  - npm i rimraf
 script:
   - npm run build
