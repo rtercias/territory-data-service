@@ -3,7 +3,7 @@ module.exports = function (api) {
 
   const presets = [
     [
-      require.resolve("@babel/preset-env"),
+      require.resolve("@babel/preset-env", __dirname),
       {
         "targets": {
           "node": "10"
