@@ -6,7 +6,7 @@ module.exports = function (api) {
       "@babel/preset-env",
       {
         "targets": {
-          "node": "6.10"
+          "node": "10"
         }
       }
     ]
