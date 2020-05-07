@@ -19,6 +19,6 @@ env:
   CERTIFICATE_FILE:
     secure:
 install:
-  - npm install -g babel-cli @babel/core @babel/preset-env @babel/plugin-transform-runtime rimraf
+  - npm install -g babel-cli rimraf
 script:
   - npm run build
