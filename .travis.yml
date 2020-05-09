@@ -19,6 +19,6 @@ env:
   CERTIFICATE_FILE:
     secure:
 before_script:
-  - npm install -g @babel/cli@7.8.4 @babel/core@7.9.6 @babel/polyfill@7.8.7 @babel/preset-env@7.9.6 
+  - npm install -g @babel/cli@7.8.4 @babel/core@7.9.6 @babel/preset-env@7.9.6 
 script:
   - npm run build
