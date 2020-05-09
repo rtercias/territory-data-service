@@ -1,6 +1,9 @@
 language: node_js
 node_js:
   - 10.9
+cache:
+  directories:
+    - node_modules
 env:
   TERRITORY_SERVER:
     secure: UjVLObTdbfFE55a8C2+4rnePQfg3tYqPWEPxYkvBajhaU1gB+y2GKfROzzj43toLSFJLEkPFoMsj362iwP/8qUwloBeyZF7P6ZON4k62XskU12y86qLHiaUoeN4VifQOKZNpkD7Fx9CY5Gz2YNiRcGnoEGb7T+OTagt62tcqpSXXCW3gnMh9pUtsa7dsFRUEnwX9o0LL75UzrnHdhdz223y1gKpSr5idrMbjmSQgRHNeJWMEll1vq4G+BtW+6gZ8nczpkzocdyQA3yxfWiK8Bt/BFhCVFPAzgwoRnYycywRxBug6Fv2AN5tnz3Zakh4UkdSxucsef+fFXqYePBWg6VbG/Jss48h1hOq3S2H56ym5uhJtvgt26QFkrzlJKsBR3lgNX681G+BRvmX2qwCjB2ofXVrF14NcnOpxpuPoSpGAQCCK8etzVWrXFwUnRgqJMZQR7noiIROZ1+gMAClFEZWFL3xLArl5NxXzk91fp7TdsIpj6zugcS/mHjXm0WQoCq4cX6nHymiri6rfMEbtimyRX3srLvpKd4EQk2dI65jWG/YkHZO57oQrPg+QsZYCj89dub8eooc9qNkz6GB7FKmbX96NOJAv/goijziRfBpTcGAetfN70/CASC+syk7SOefM+82F3yfzX6aYCnZ8p8QdkxgnnrL18Ozc2/8g/50=
@@ -15,5 +18,7 @@ env:
     secure:
   CERTIFICATE_FILE:
     secure:
+install:
+  - npm install -g rimraf
 script:
   - npm run build
