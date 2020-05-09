@@ -1,5 +1,5 @@
 module.exports = function (api) {
-  // api.cache(true);
+  api.cache(false);
 
   // console.log('cwd', process.cwd());
   // console.log('__dirname', __dirname);
