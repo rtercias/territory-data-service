@@ -7,7 +7,7 @@
     "node": ">=12.16"
   },
   "scripts": {
-    "build": "rm -rf dist/ && npx babel ./ --out-dir dist/ --ignore ./node_modules,./.babel.config.js,./package.json,./npm-debug.log --copy-files",
+    "build": "rm -rf dist/ && npx --no-install babel ./ --out-dir dist/ --ignore ./node_modules,./.babel.config.js,./package.json,./npm-debug.log --copy-files",
     "start": "nodemon --watch src/ --exec  \"npm run build && nodemon dist/index.js\"",
     "serve": "npm run build && node dist/index.js"
   },
