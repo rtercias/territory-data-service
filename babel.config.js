@@ -1,11 +1,9 @@
 module.exports = function (api) {
   api.cache(true);
 
-  console.log('__dirname', __dirname);
-
   const presets = [
     [
-      "@babel/preset-env",
+      require.resolve("@babel/preset-env", __dirname + '/node_modules'),
       {
         "targets": {
           "node": "10"
