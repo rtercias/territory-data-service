@@ -34,10 +34,11 @@ export const conn = mysql.createPool({
   database: 'territory'
 });
 
-const NODE_ENV = process.env.NODE_ENV || 'development';
+const ENV = process.env.ENV || 'development';
 const PORT = process.env.TERRITORY_PORT || 4000;
 const PORT_SSL = process.env.TERRITORY_PORT_TLS || 4443;
 
+console.log('ENV', ENV);
 
 if (cluster.isMaster) {
   const numWorkers = os.cpus().length;
@@ -66,7 +67,7 @@ if (cluster.isMaster) {
   app.use('/graphql', bodyParser.json(), graphqlExpress({ schema, cacheControl: true }));
   app.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql' }));
 
-  if (NODE_ENV === 'production') {
+  if (ENV === 'production') {
     const PRIVATE_KEY_FILE = process.env.PRIVATE_KEY_FILE || '';
     const CERT_FILE = process.env.CERTIFICATE_FILE || '';
     const PRIVATE_KEY = fs.readFileSync(PRIVATE_KEY_FILE, 'utf8');
