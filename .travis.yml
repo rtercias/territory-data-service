@@ -14,5 +14,6 @@ env:
 
 install:
   - npm install -g npx
+  - npm install
 script:
   - npm run build
