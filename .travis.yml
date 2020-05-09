@@ -18,7 +18,5 @@ env:
     secure:
   CERTIFICATE_FILE:
     secure:
-install:
-  - npm install -g @babel/preset-env@7.9.6 @babel/core @babel/cli
 script:
   - npm run build
