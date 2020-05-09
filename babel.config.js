@@ -1,8 +1,5 @@
 module.exports = function (api) {
-  api.cache(false);
-
-  // console.log('cwd', process.cwd());
-  // console.log('__dirname', __dirname);
+  api.cache(true);
 
   const presets = [
     [
