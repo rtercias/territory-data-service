@@ -6,6 +6,9 @@
   "engine": {
     "node": ">=10.9"
   },
+  "browserslist": [
+    "maintained node versions"
+  ],
   "scripts": {
     "build": "rimraf dist/ && babel ./ --out-dir dist/ --ignore ./node_modules,./.babel.config.js,./package.json,./npm-debug.log --copy-files",
     "start": "nodemon --watch src/ --exec  \"npm run build && nodemon dist/index.js\"",
