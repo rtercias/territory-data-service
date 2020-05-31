@@ -29,7 +29,7 @@ class AddressAsync {
   }
 
   async create (address) {
-    await conn.query(`INSERT INTO addresses (
+    const results = await conn.query(`INSERT INTO addresses (
       congregationid,
       territory_id,
       sort,
@@ -45,40 +45,48 @@ class AddressAsync {
       create_user,
       create_date
     ) VALUES (
-      ${ get(address, 'congregationId') },
-      ${ get(address, 'territory_id') },
-      ${ get(address, 'sort') },
-      '${ get(address, 'addr1') }',
-      '${ get(address, 'addr2') }',
-      '${ get(address, 'city') }',
+      ${ get(address, 'congregationId', '') },
+      ${ get(address, 'territory_id', '') },
+      ${ get(address, 'sort', '') },
+      '${ get(address, 'addr1', '') }',
+      '${ get(address, 'addr2', '') }',
+      '${ get(address, 'city', '') }',
       '${ get(address, 'state_province', '') }',
-      '${ get(address, 'postal_code') }',
-      '${ get(address, 'phone') }',
+      '${ get(address, 'postal_code', '') }',
+      '${ get(address, 'phone', '') }',
       ${ get(address, 'longitude', 'NULL') },
       ${ get(address, 'latitude', 'NULL') },
-      '${ get(address, 'notes') }',
-      '${ get(address, 'create_user') }',
+      '${ get(address, 'notes', '') }',
+      '${ get(address, 'create_user', '') }',
       NOW()
     )`);
+
+    return results.insertId;
   }
 
   async update (address) {
-    await conn.query(`UPDATE address SET
-      congregationid = ${ get(address, 'congregationId') },
-      territory_id = ${ get(address, 'territory_id') },
-      sort = ${ get(address, 'sort') },
-      addr1 = '${ get(address, 'addr1') }',
-      addr2 = '${ get(address, 'addr2') }',
-      city = '${ get(address, 'city') }',
-      state_province = '${ get(address, 'state_province') }',
-      postal_code = '${ get(address, 'postal_code') }',
-      phone = '${ get(address, 'phone') }',
-      latitude = ${ get(address, 'latitude', 'NULL') },
-      longitude = ${ get(address, 'longitude', 'NULL') },
-      notes = '${ get(address, 'notes') }',
-      update_user = '${ get(address, 'update_user') }',
-      update_date = NOW(),
-    WHERE id = ${get(address, 'id')}`);
+    if (!(address && address.id)) {
+      throw new Error('Address id is required');
+    }
+
+    const sql = `UPDATE addresses SET
+      ${ address.congregationId ? `congregationid = ${address.congregationId},` : '' }
+      ${ address.territory_id ? `territory_id = ${address.territory_id},` : '' }
+      ${ address.sort ? `sort = ${address.sort},` : '' }
+      ${ address.addr1 ? `addr1 = '${address.addr1}',` : '' }
+      ${ address.addr2 ? `addr2 = '${address.addr2}',` : '' }
+      ${ address.city ? `city = '${address.city}',` : '' }
+      ${ address.state_province ? `state_province = '${address.state_province}',` : '' }
+      ${ address.postal_code ? `postal_code = '${address.postal_code}',` : '' }
+      ${ address.phone ? `phone = '${address.phone}',` : '' }
+      ${ address.latitude ? `latitude = ${address.latitude},` : '' }
+      ${ address.longitude ? `longitude = ${address.longitude},` : '' }
+      ${ address.notes ? `notes = '${address.notes}',` : '' }
+      ${ address.update_user ? `update_user = '${address.update_user}',` : '' }
+      update_date = NOW()
+    WHERE id = ${address.id}`;
+
+    await conn.query(sql);
   }
 
   async delete (id) {

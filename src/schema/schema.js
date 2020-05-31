@@ -96,8 +96,8 @@ const resolvers = {
     congregation: congregationResolvers.congregation,
     territory: territoryQueryResolvers.territory,
     activityLogs: activityLogResolvers.activityLogs,
-    create_user: (root) => publisherQueryResolvers.user(root, { username: root.create_username }),
-    update_user: (root) => publisherQueryResolvers.user(root, { username: root.update_username }),
+    creator: publisherQueryResolvers.creator,
+    updater: publisherQueryResolvers.updater,
   },
 
   Status: {

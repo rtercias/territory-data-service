@@ -21,6 +21,8 @@ export const queries = `
   user(username: String): Publisher
   publisher(firstname: String, lastname: String): Publisher
   publishers(congId: Int, keyword: String): [Publisher]
+  creator: Publisher
+  updater: Publisher
 `;
 
 export const queryResolvers = {
@@ -62,4 +64,24 @@ export const queryResolvers = {
       console.error(err);
     }
   },
+
+  creator: async (root) => {
+    try {
+      if (root.create_username) {
+        return await publisherAsync.getUser(root.create_username);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  },
+
+  updater: async (root) => {
+    try {
+      if (root.update_username) {
+        return await publisherAsync.getUser(root.update_username);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
 };

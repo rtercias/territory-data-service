@@ -1,4 +1,5 @@
 import addressAsync from './../../async/addresses';
+import { query } from 'express';
 
 export const Address = `
   type Address {
@@ -18,19 +19,20 @@ export const Address = `
     notes: String
     activityLogs: [ActivityLog]
     sort: Int
-    create_username: String
-    create_user: Publisher
+    create_user: String
+    creator: Publisher
     create_date: String
-    update_username: String
-    update_user: Publisher
+    update_user: String
+    updater: Publisher
     update_date: String
   }
 `;
 
 export const AddressInput = `
   input AddressInput {
-    congregationId: Int!
-    territory_id: Int!
+    id: Int
+    congregationId: Int
+    territory_id: Int
     addr1: String
     addr2: String
     city: String
@@ -106,10 +108,12 @@ export const queryResolvers = {
 
 export const mutationResolvers = {
   addAddress: async (root, { address }) => {
-    await addressAsync.create(address);
+    const id = await addressAsync.create(address);
+    return queryResolvers.address(root, { id });
   },
   updateAddress: async (root, { address }) => {
     await addressAsync.update(address);
+    return queryResolvers.address(root, address);
   },
   removeAddress: async (root, { id }) => {
     await addressAsync.delete(id);
