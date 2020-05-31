@@ -18,6 +18,8 @@ export const Publisher = `
 `;
 
 export const queries = `
+  user(username: String): Publisher
+  publisher(firstname: String, lastname: String): Publisher
   publishers(congId: Int, keyword: String): [Publisher]
 `;
 

@@ -14,6 +14,12 @@ module.exports = function (api) {
   const plugins = [];
 
   return {
+    "ignore": [
+      './node_modules',
+      './.babel.config.js',
+      './package.json',
+      './npm-debug.log'
+    ],
     presets,
     plugins
   };

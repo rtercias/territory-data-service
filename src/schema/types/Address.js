@@ -4,18 +4,45 @@ export const Address = `
   type Address {
     id: Int!
     congregationId: Int!
-    territory_id: Int
+    congregation: Congregation
+    territory_id: Int!
     addr1: String
     addr2: String
-    city(name: String): String
+    city: String
     state_province: String
     postal_code: String
     phone: String
     longitude: Float
     latitude: Float
     territory: Territory
-    notes: String,
+    notes: String
     activityLogs: [ActivityLog]
+    sort: Int
+    create_username: String
+    create_user: Publisher
+    create_date: String
+    update_username: String
+    update_user: Publisher
+    update_date: String
+  }
+`;
+
+export const AddressInput = `
+  input AddressInput {
+    congregationId: Int!
+    territory_id: Int!
+    addr1: String
+    addr2: String
+    city: String
+    state_province: String
+    postal_code: String
+    phone: String
+    longitude: Float
+    latitude: Float
+    notes: String
+    sort: Int
+    create_user: String
+    update_user: String
   }
 `;
 
@@ -25,7 +52,13 @@ export const queries = `
   dnc(congId: Int, keyword: String): [Address]
 `;
 
-export const resolvers = {
+export const mutations = `
+  addAddress(address: AddressInput!): Address
+  updateAddress(address: AddressInput): Address
+  removeAddress(id: Int!): Boolean
+`;
+
+export const queryResolvers = {
   address: async (root, args) => {
     try {
       if (args.id) {
@@ -68,6 +101,18 @@ export const resolvers = {
     } catch (err) {
       console.error(err);
     }
+  },
+};
+
+export const mutationResolvers = {
+  addAddress: async (root, { address }) => {
+    await addressAsync.create(address);
+  },
+  updateAddress: async (root, { address }) => {
+    await addressAsync.update(address);
+  },
+  removeAddress: async (root, { id }) => {
+    await addressAsync.delete(id);
   },
 };
 
