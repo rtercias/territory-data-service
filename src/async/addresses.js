@@ -57,7 +57,7 @@ class AddressAsync {
       ${ get(address, 'longitude', 'NULL') },
       ${ get(address, 'latitude', 'NULL') },
       '${ get(address, 'notes', '') }',
-      '${ get(address, 'create_user', '') }',
+      ${ get(address, 'create_user', '') },
       NOW()
     )`);
 
@@ -82,7 +82,7 @@ class AddressAsync {
       ${ address.latitude ? `latitude = ${address.latitude},` : '' }
       ${ address.longitude ? `longitude = ${address.longitude},` : '' }
       ${ address.notes ? `notes = '${address.notes}',` : '' }
-      ${ address.update_user ? `update_user = '${address.update_user}',` : '' }
+      ${ address.update_user ? `update_user = ${address.update_user},` : '' }
       update_date = NOW()
     WHERE id = ${address.id}`;
 

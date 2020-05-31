@@ -67,8 +67,8 @@ export const queryResolvers = {
 
   creator: async (root) => {
     try {
-      if (root.create_username) {
-        return await publisherAsync.getUser(root.create_username);
+      if (root.create_user) {
+        return await publisherAsync.getPublisherById(root.create_user);
       }
     } catch (err) {
       console.error(err);
@@ -77,8 +77,8 @@ export const queryResolvers = {
 
   updater: async (root) => {
     try {
-      if (root.update_username) {
-        return await publisherAsync.getUser(root.update_username);
+      if (root.update_user) {
+        return await publisherAsync.getPublisherById(root.update_user);
       }
     } catch (err) {
       console.error(err);
