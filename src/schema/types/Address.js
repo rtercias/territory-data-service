@@ -1,7 +1,5 @@
 import addressAsync from './../../async/addresses';
-import activityLogAsync from '../../async/activityLog';
-import { query } from 'express';
-import { capitalize } from 'lodash';
+import { Notes } from './../../utils/Notes';
 
 export const Address = `
   type Address {
@@ -59,7 +57,9 @@ export const queries = `
 export const mutations = `
   addAddress(address: AddressInput!): Address
   updateAddress(address: AddressInput!): Address
-  removeAddress(addressId: Int!, userid: Int!, notes: String!): Boolean
+  removeAddress(addressId: Int!, userid: Int!, note: String!): Boolean
+  addNote(addressId: Int!, userid: Int!, note: String!): Boolean
+  removeNote(addressId: Int!, userid: Int!, note: String!): Boolean
 `;
 
 export const queryResolvers = {
@@ -111,22 +111,44 @@ export const queryResolvers = {
 export const mutationResolvers = {
   addAddress: async (root, { address }) => {
     const id = await addressAsync.create(address);
-    const createdAddress = await addressAsync.getAddress(id);
-    return createdAddress;
+    return await addressAsync.getAddress(id);
   },
   updateAddress: async (root, { address }) => {
     await addressAsync.update(address);
-    const updatedAddress = await addressAsync.getAddress(address.id);
-    return updatedAddress;
+    return await addressAsync.getAddress(address.id);
   },
   removeAddress: async (root, args) => {
     try {
-      await addressAsync.softDelete(args.addressId, args.userid, args.notes);
+      const notes = await Notes.add(args.addressId, args.note);
+      await addressAsync.softDelete(args.addressId, args.userid, notes);
       return true;
 
-    } catch (e) {
-      throw new Error(e);
+    } catch (err) {
+      throw new Error(err);
       return false;
     }
+  },
+  addNote: async (root, args) => {
+    try {
+      const address = await addressAsync.getAddress(args.addressId);
+      const notes = await Notes.add(args.addressId, args.note, address);
+      await addressAsync.update({ ...address, notes });
+      return true;
+    } catch (err) {
+      throw new Error(err);
+      return false;
+    }
+  },
+  removeNote: async (root, args) => {
+    try {
+      const address = await addressAsync.getAddress(args.addressId);
+      const notes = await Notes.remove(args.addressId, args.note, address);
+      await addressAsync.update({ ...address, notes });
+      return true;
+    } catch (err) {
+      throw new Error(err);
+      return false;
+    }
+
   },
 };
