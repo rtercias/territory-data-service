@@ -15,7 +15,6 @@ export const Notes = {
     const { notes } = address || await addressAsync.getAddress(addressId);
     const notesArray = String(notes || '').split(',');
     const filteredNotes = notesArray.filter(n => String(n).toLowerCase().trim() !== String(note).toLowerCase().trim());
-    console.log('filteredNotes', filteredNotes);
     return filteredNotes.join(',');
   }
 }
