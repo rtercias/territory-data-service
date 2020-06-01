@@ -89,8 +89,8 @@ class AddressAsync {
     await conn.query(sql);
   }
 
-  async delete (id) {
-    await conn.query(`UPDATE address SET territory_id = 0 WHERE id=${id}`);
+  async softDelete (id, userid, notes) {
+    await conn.query(`UPDATE addresses SET territory_id = 0, update_user = ${userid}, notes = '${notes || ''}' WHERE id=${id}`);
   }
 }
 

@@ -59,8 +59,7 @@ export const queries = `
 export const mutations = `
   addAddress(address: AddressInput!): Address
   updateAddress(address: AddressInput!): Address
-  nfAddress(id: Int!, userid: Int!): Boolean
-  dncAddress(id: Int!, userid: Int!): Boolean
+  removeAddress(addressId: Int!, userid: Int!, notes: String!): Boolean
 `;
 
 export const queryResolvers = {
@@ -113,37 +112,21 @@ export const mutationResolvers = {
   addAddress: async (root, { address }) => {
     const id = await addressAsync.create(address);
     const createdAddress = await addressAsync.getAddress(id);
-    const log = newActivity('ADDED', { ...createdAddress, userid: createdAddress.create_user });
-    await activityLogAsync.create(log);
     return createdAddress;
   },
   updateAddress: async (root, { address }) => {
     await addressAsync.update(address);
     const updatedAddress = await addressAsync.getAddress(address.id);
-    const log = newActivity('SAVED', { ...updatedAddress, userid: updatedAddress.update_user });
-    await activityLogAsync.create(log);
     return updatedAddress;
   },
-  nfAddress: async (root, args) => {
-    await addressAsync.delete(args.id);
-    const log = newActivity('NF', args);
-    await activityLogAsync.create(log);
-  },
-  dncAddress: async (root, args) => {
-    await addressAsync.delete(args.id);
-    const log = newActivity('DNC', args);
-    await activityLogAsync.create(log);
+  removeAddress: async (root, args) => {
+    try {
+      await addressAsync.softDelete(args.addressId, args.userid, args.notes);
+      return true;
+
+    } catch (e) {
+      throw new Error(e);
+      return false;
+    }
   },
 };
-
-function newActivity(value, args) {
-  return {
-    checkout_id: 0,
-    address_id: args.id,
-    value: value,
-    tz_offset: new Date().getTimezoneOffset(),
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    publisher_id: args.userid,
-  };
-}
-
