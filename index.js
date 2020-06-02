@@ -68,6 +68,7 @@ if (cluster.isMaster) {
   app.use('/graphql', bodyParser.json(), graphqlExpress({ schema, cacheControl: true }));
   app.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql' }));
 
+  console.log('ENV', ENV);
   if (ENV === 'production') {
     // const PRIVATE_KEY_FILE = process.env.PRIVATE_KEY_FILE || '';
     // const CERT_FILE = process.env.CERTIFICATE_FILE || '';
