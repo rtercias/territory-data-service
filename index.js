@@ -34,7 +34,7 @@ export const conn = mysql.createPool({
   database: 'territory'
 });
 
-const ENV = process.env.ENV || 'development';
+const ENV = 'development'; // process.env.ENV || 'development';
 const PORT = process.env.TERRITORY_PORT || 4000;
 const PORT_SSL = process.env.TERRITORY_PORT_TLS || 4443;
 
