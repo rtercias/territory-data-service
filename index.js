@@ -38,28 +38,28 @@ const ENV = process.env.ENV || 'development';
 const PORT = process.env.TERRITORY_PORT || 4000;
 const PORT_SSL = process.env.TERRITORY_PORT_TLS || 4443;
 
-if (cluster.isMaster) {
-  const numWorkers = os.cpus().length;
-  console.log(`Master cluster setting up ${numWorkers} workers...`);
+// if (cluster.isMaster) {
+//   const numWorkers = os.cpus().length;
+//   console.log(`Master cluster setting up ${numWorkers} workers...`);
 
-  for (let i = 0; i < numWorkers; i++) {
-    cluster.fork();
-  }
+//   for (let i = 0; i < numWorkers; i++) {
+//     cluster.fork();
+//   }
 
-  cluster.on('online', (worker) => {
-    console.log(`Worker ${worker.process.pid} is online`);
-  });
+//   cluster.on('online', (worker) => {
+//     console.log(`Worker ${worker.process.pid} is online`);
+//   });
 
-  cluster.on('exit', (worker, code, signal) => {
-    console.log(`Worker ${worker.process.pid} died with code: ${code}, and signal: ${signal}`);
-    console.log('Starting a new worker');
-    cluster.fork();
-  });
+//   cluster.on('exit', (worker, code, signal) => {
+//     console.log(`Worker ${worker.process.pid} died with code: ${code}, and signal: ${signal}`);
+//     console.log('Starting a new worker');
+//     cluster.fork();
+//   });
 
   console.log(`Database server: ${process.env.TERRITORY_SERVER}`);
   console.log(`Listening on port ${PORT}`);
   
-} else { 
+// } else { 
 
   const app = express();
   conn.query = promisify(conn.query);
@@ -90,4 +90,4 @@ if (cluster.isMaster) {
       // noop
     });
   }
-}
+// }
