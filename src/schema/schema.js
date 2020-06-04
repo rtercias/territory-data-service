@@ -88,6 +88,7 @@ const resolvers = {
 
   Territory: {
     addresses: addressQueryResolvers.addresses,
+    inactiveAddresses: addressQueryResolvers.inactiveAddresses,
     status: territoryQueryResolvers.status,
     city: territoryQueryResolvers.city,
   },

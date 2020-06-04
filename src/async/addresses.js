@@ -10,28 +10,38 @@ class AddressAsync {
     `;
   }
 
-  async getAddress (id) {
-    return (await conn.query(`SELECT *, ${this.aliases} FROM addresses WHERE id=${id}`))[0];
+  async getAddress (id, status = 'Active') {
+    const statusCondition = status === '*' ? '' : ` AND status='${status}'`;
+    const sql = `SELECT *, ${this.aliases} FROM addresses WHERE id=${id}${statusCondition}`;
+    return (await conn.query(sql))[0];
   }
 
-  async getAddressesByTerritory (terrId) {
-    return toArray(await conn.query(`SELECT *, ${this.aliases} FROM addresses WHERE territory_id=${terrId}`));
+  async getAddressesByTerritory (terrId, status = 'Active') {
+    const statusCondition = 
+      status === '*' ? '' :
+      status === '!Active' ? ` AND NOT status = 'Active'` :
+      ` AND status = '${status}'` ;
+    return toArray(await conn.query(`SELECT *, ${this.aliases} FROM addresses WHERE territory_id=${terrId}${statusCondition}`));
   }
 
-  async searchAddresses (congId, keyword) {
+  async searchAddresses (congId, keyword, status = 'Active') {
+    const statusCondition = status === '*' ? '' :
+      status === '!Active' ? ` AND NOT status = 'Active'` :
+      ` AND status = '${status}'`;
     return toArray(await conn.query(`SELECT *, ${this.aliases} FROM addresses 
-      WHERE congregationid=${congId} AND addr1 LIKE '%${keyword}%' OR addr2 LIKE '%${keyword}%'`));
+      WHERE congregationid=${congId}${statusCondition} AND (addr1 LIKE '%${keyword}%' OR addr2 LIKE '%${keyword}%')`));
   }
 
   async getDNC (congId) {
     return toArray(await conn.query(`SELECT *, ${this.aliases} FROM addresses
-      WHERE congregationid=${congId} AND notes LIKE '%DO NOT CALL%'`));
+      WHERE congregationid=${congId} AND status='DNC'`));
   }
 
   async create (address) {
     const results = await conn.query(`INSERT INTO addresses (
       congregationid,
       territory_id,
+      status,
       sort,
       addr1,
       addr2,
@@ -47,6 +57,7 @@ class AddressAsync {
     ) VALUES (
       ${ get(address, 'congregationId', '') },
       ${ get(address, 'territory_id', '') },
+      '${ get(address, 'status', '') }',
       ${ get(address, 'sort', '') },
       '${ get(address, 'addr1', '') }',
       '${ get(address, 'addr2', '') }',
@@ -72,6 +83,7 @@ class AddressAsync {
     const sql = `UPDATE addresses SET
       ${ address.congregationId ? `congregationid = ${address.congregationId},` : '' }
       ${ address.territory_id ? `territory_id = ${address.territory_id},` : '' }
+      ${ address.status ? `status = '${address.status}',` : '' }
       ${ address.sort ? `sort = ${address.sort},` : '' }
       ${ address.addr1 ? `addr1 = '${address.addr1}',` : '' }
       ${ address.addr2 ? `addr2 = '${address.addr2}',` : '' }
@@ -89,8 +101,16 @@ class AddressAsync {
     await conn.query(sql);
   }
 
-  async softDelete (id, userid, notes) {
-    await conn.query(`UPDATE addresses SET territory_id = 0, update_user = ${userid}, notes = '${notes || ''}' WHERE id=${id}`);
+  async changeStatus (id, status, userid, notes) {
+    if (!id) throw new Error('id is required');
+    if (!status) throw new Error('status is required');
+    if (!userid) throw new Error('userid is required');
+
+    await conn.query(`UPDATE addresses SET
+      status = '${status}',
+      update_user = ${userid}
+      ${ notes ? `, notes = '${notes}'` : '' }
+    WHERE id=${id}`);
   }
 }
 
