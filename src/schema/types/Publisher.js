@@ -84,23 +84,4 @@ export const queryResolvers = {
       console.error(err);
     }
   },
-  creator: async (root) => {
-    try {
-      if (root.create_user) {
-        return await publisherAsync.getPublisherById(root.create_user);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  },
-
-  updater: async (root) => {
-    try {
-      if (root.update_user) {
-        return await publisherAsync.getPublisherById(root.update_user);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  }
 };
