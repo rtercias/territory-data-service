@@ -38,8 +38,6 @@ const ENV = process.env.ENV || 'development';
 const PORT = process.env.TERRITORY_PORT || 4000;
 const PORT_SSL = process.env.TERRITORY_PORT_TLS || 4443;
 
-console.log('ENV', ENV);
-
 if (cluster.isMaster) {
   const numWorkers = os.cpus().length;
   console.log(`Master cluster setting up ${numWorkers} workers...`);
