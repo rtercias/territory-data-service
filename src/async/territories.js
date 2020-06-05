@@ -1,5 +1,5 @@
 import { toArray } from 'lodash';
-import { conn } from './../../index';
+import { conn } from '../index';
 
 class TerritoryAsync {
   async getTerritory (id) {

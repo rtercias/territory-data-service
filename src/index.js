@@ -20,7 +20,7 @@ import bodyParser from 'body-parser';
 import mysql from 'mysql';
 import { promisify } from 'util';
 import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
-import schema from './src/schema/schema';
+import schema from './schema/schema';
 import http from 'http';
 import https from 'https';
 import fs from 'fs';
@@ -37,8 +37,6 @@ export const conn = mysql.createPool({
 const ENV = process.env.ENV || 'development';
 const PORT = process.env.TERRITORY_PORT || 4000;
 const PORT_SSL = process.env.TERRITORY_PORT_TLS || 4443;
-
-console.log('ENV', ENV);
 
 if (cluster.isMaster) {
   const numWorkers = os.cpus().length;

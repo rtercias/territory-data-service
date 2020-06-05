@@ -1,5 +1,5 @@
 import { toArray } from 'lodash';
-import { conn } from './../../index';
+import { conn } from '../index';
 
 class PublisherAsync {
   async getPublisherById (id) {

@@ -1,6 +1,13 @@
 import { makeExecutableSchema } from 'graphql-tools';
 import { merge } from 'lodash';
-import { Address, queries as addressQueries, resolvers as addressResolvers } from './types/Address';
+import {
+  Address,
+  AddressInput,
+  queries as addressQueries,
+  mutations as addressMutations,
+  queryResolvers as addressQueryResolvers,
+  mutationResolvers as addressMutationResolvers,
+} from './types/Address';
 import { Congregation, queries as congregationQueries, resolvers as congregationResolvers } from './types/Congregation';
 import { 
   Territory, 
@@ -27,8 +34,6 @@ import {
 
 const RootQuery = `
   type RootQuery {
-    user(username: String): Publisher
-    publisher(firstname: String, lastname: String): Publisher
     ${publisherQueries}
     ${congregationQueries}
     ${territoryQueries}
@@ -41,6 +46,7 @@ const RootQuery = `
 const Mutation = `
   type Mutation {
     ${territoryMutations}
+    ${addressMutations}
     ${activityLogMutations}
   }
 `;
@@ -58,7 +64,7 @@ const resolvers = {
     publisherQueryResolvers,
     congregationResolvers,
     territoryQueryResolvers,
-    addressResolvers,
+    addressQueryResolvers,
     activityLogResolvers,
     assignmentRecordResolvers,
   ),
@@ -67,6 +73,7 @@ const resolvers = {
     {},
     territoryMutationResolvers,
     activityLogMutationResolvers,
+    addressMutationResolvers,
   ),
 
   Publisher: {
@@ -80,14 +87,18 @@ const resolvers = {
   },
 
   Territory: {
-    addresses: addressResolvers.addresses,
+    addresses: addressQueryResolvers.addresses,
+    inactiveAddresses: addressQueryResolvers.inactiveAddresses,
     status: territoryQueryResolvers.status,
     city: territoryQueryResolvers.city,
   },
 
   Address: {
+    congregation: congregationResolvers.congregation,
     territory: territoryQueryResolvers.territory,
     activityLogs: activityLogResolvers.activityLogs,
+    creator: publisherQueryResolvers.creator,
+    updater: publisherQueryResolvers.updater,
   },
 
   Status: {
@@ -105,6 +116,7 @@ export default makeExecutableSchema({
     Territory,
     Publisher,
     Address,
+    AddressInput,
     Status,
     ActivityLog,
     ActivityLogInput,

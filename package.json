@@ -7,8 +7,8 @@
     "node": ">=12.16"
   },
   "scripts": {
-    "build": "rm -rf dist/ && npx babel ./ --out-dir dist/ --ignore ./node_modules,./.babel.config.js,./package.json,./npm-debug.log --copy-files",
-    "start": "nodemon --watch src/ --exec  \"npm run build && nodemon dist/index.js\"",
+    "build": "rm -rf dist/ && npx babel src --out-dir dist --ignore node_modules,.babel.config.js,package.json,npm-debug.log --copy-files",
+    "start": "nodemon --watch src/ --exec  \"npm run build && node dist/index.js\"",
     "serve": "npm run build && node dist/index.js"
   },
   "repository": {
@@ -36,9 +36,9 @@
     "util": "^0.11.1"
   },
   "devDependencies": {
-    "@babel/cli": "^7.8.4",
-    "@babel/core": "^7.9.6",
-    "@babel/preset-env": "^7.9.6",
+    "@babel/cli": "^7.10.1",
+    "@babel/core": "^7.10.2",
+    "@babel/preset-env": "^7.10.2",
     "babel-eslint": "^9.0.0",
     "babel-plugin-module-resolver": "^3.2.0",
     "chokidar": "^3.4.0",

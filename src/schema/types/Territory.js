@@ -15,6 +15,7 @@ export const Territory = `
     description: String
     type: String
     addresses: [Address]
+    inactiveAddresses: [Address]
     city: String
     status: Status
   }

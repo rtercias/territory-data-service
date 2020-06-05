@@ -1,5 +1,5 @@
 import { toArray } from 'lodash';
-import { conn } from './../../../index';
+import { conn } from '../../index';
 import congAsync from '../../async/congregations';
 
 export const Congregation = `
