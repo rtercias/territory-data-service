@@ -1,5 +1,5 @@
 import { toArray, get } from 'lodash';
-import { conn } from './../../index';
+import { conn } from '../index';
 
 class AddressAsync {
   constructor() {
@@ -43,6 +43,10 @@ class AddressAsync {
   }
 
   async create (address) {
+    if (!address.congregationId) {
+      throw new Error('congregation id is required');
+    }
+
     const results = await conn.query(`INSERT INTO addresses (
       congregationid,
       territory_id,
@@ -62,7 +66,7 @@ class AddressAsync {
     ) VALUES (
       ${ get(address, 'congregationId', '') },
       ${ get(address, 'territory_id', '') },
-      '${ get(address, 'status', '') }',
+      '${ get(address, 'status', 'Active') }',
       ${ get(address, 'sort', '') },
       '${ get(address, 'addr1', '') }',
       '${ get(address, 'addr2', '') }',

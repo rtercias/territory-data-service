@@ -46,6 +46,7 @@ const RootQuery = `
 const Mutation = `
   type Mutation {
     ${territoryMutations}
+    ${addressMutations}
     ${activityLogMutations}
   }
 `;
@@ -86,7 +87,7 @@ const resolvers = {
   },
 
   Territory: {
-    addresses: addressResolvers.addresses,
+    addresses: addressQueryResolvers.addresses,
     inactiveAddresses: addressQueryResolvers.inactiveAddresses,
     status: territoryQueryResolvers.status,
     city: territoryQueryResolvers.city,

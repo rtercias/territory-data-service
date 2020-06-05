@@ -1,4 +1,4 @@
-import { conn } from '../../index';
+import { conn } from '../index';
 import { toArray } from 'lodash';
 
 class ActivityLogAsync {

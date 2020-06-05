@@ -20,7 +20,7 @@ import bodyParser from 'body-parser';
 import mysql from 'mysql';
 import { promisify } from 'util';
 import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
-import schema from './src/schema/schema';
+import schema from './schema/schema';
 import http from 'http';
 import https from 'https';
 import fs from 'fs';

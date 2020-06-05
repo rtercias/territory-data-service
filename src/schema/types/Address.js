@@ -1,11 +1,12 @@
 import addressAsync from './../../async/addresses';
+import { Notes } from './../../utils/Notes';
 
 export const Address = `
   type Address {
     id: Int!
     congregationId: Int!
     congregation: Congregation
-    territory_id: Int!
+    territory_id: Int
     status: String!
     addr1: String
     addr2: String
@@ -139,7 +140,7 @@ export const mutationResolvers = {
   },
   updateAddress: async (root, { address }) => {
     await addressAsync.update(address);
-    return await addressAsync.getAddress(address.id);
+    return await addressAsync.getAddress(address.id, '*');
   },
   changeAddressStatus: async (root, args) => {
     try {
@@ -153,7 +154,7 @@ export const mutationResolvers = {
   },
   addNote: async (root, args) => {
     try {
-      const address = await addressAsync.getAddress(args.addressId);
+      const address = await addressAsync.getAddress(args.addressId, '*');
       const notes = await Notes.add(args.addressId, args.note, address);
       await addressAsync.update({ ...address, notes });
       return true;
@@ -163,7 +164,7 @@ export const mutationResolvers = {
   },
   removeNote: async (root, args) => {
     try {
-      const address = await addressAsync.getAddress(args.addressId);
+      const address = await addressAsync.getAddress(args.addressId, '*');
       const notes = await Notes.remove(args.addressId, args.note, address);
       await addressAsync.update({ ...address, notes });
       return true;
