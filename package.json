@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/rtercias/territory-data-service#readme",
   "dependencies": {
-    "apollo-server-express": "^1.4.0",
+    "apollo-server-express": "^2.14.2",
     "apollo-tracing": "^0.9.1",
     "cluster": "^0.7.7",
     "cors": "^2.8.5",
