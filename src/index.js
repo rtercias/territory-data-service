@@ -40,6 +40,7 @@ const PORT_SSL = process.env.TERRITORY_PORT_TLS || 4443;
 
 if (cluster.isMaster) {
   const numWorkers = os.cpus().length;
+  let numListeners = 0;
   console.log(`Master cluster setting up ${numWorkers} workers...`);
 
   for (let i = 0; i < numWorkers; i++) {
@@ -56,8 +57,15 @@ if (cluster.isMaster) {
     cluster.fork();
   });
 
-} else { 
+  cluster.on('listening', (worker, address) => {
+    numListeners++;
+    if (numWorkers <= numListeners) {
+      console.log(`GraphQL listening on http://localhost:${address.port}/graphql`);
+      console.log(`Graphiql listening on http://localhost:${address.port}/graphiql`);
+    }
+  });
 
+} else { 
   const app = express();
   conn.query = promisify(conn.query);
 
@@ -83,7 +91,7 @@ if (cluster.isMaster) {
     });
   } else {
     app.listen(PORT, () => {
-      console.log(`Listening on port ${PORT}`);
+      cluster.worker.send('ready to listen');
     });
   }
 }
