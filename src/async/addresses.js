@@ -1,5 +1,5 @@
 import { toArray, get } from 'lodash';
-import { conn } from '../index';
+import { conn } from '../server';
 
 class AddressAsync {
   constructor() {
