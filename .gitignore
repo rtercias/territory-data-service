@@ -1,4 +1,10 @@
 node_modules/
 dist/
 test/
+.cache/
+.firebase/
 local-setup*.sh
+.env.yaml
+functions.config.json
+.runtimeconfig.json
+ui-debug.log
