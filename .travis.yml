@@ -1,17 +1,17 @@
 language: node_js
 node_js:
-  - 10
+- 10
 cache:
   directories:
   - "$HOME/.npm"
 script:
-  - yarn build
+- yarn build
 deploy:
   provider: firebase
   project: territory-data-service
   only: functions
   edge: true
   token:
-    secure: iDsLjinSGLJmQtdLLSzJ4aZ+JYbhWSlakObi3puDwoFvzdNo1UwIj06xqA7NtTyBaMrpoH3WiW+Z6QpU7Yo1QcYJCXZ+5dxuFr9BvS4sbLYUCAFvrtvAwrNvAJmNte6VgqqtqAqnoF2WsktzdmIJ1KtihMoLKavgIeSLEDSECxaZnq8LcMwD1FfQ7079piEJmp/ks6EXXQfshwUmm750xoQ8dtA3WFLXAAqXzjupCc1yf+rdjqWaZdBNr9vU7C7vzZqI9pzf50DcL4BZ/Bw8CxJsEogK031+/4kWjeuNAKKwEb8fp9vdYXSxMHd+1oQy6fKak2jIg60xZfkLhZJ933+VOlVqp3IzYRlyN6XOdMeDWE36dnAqyQ/UcafC/Bj2PI1J+IeiovH1FRLWbabd+m8j6u1ow+5Xv13bWAcF2zSOfQvAGLR9xWpsyC1Pd1+cZv7HtUol6jnnYNOs0hdAMdp74VadQB/trf7SXhpZJcWmb0/ro/wS4Cgx+pMaRWAJXbi7Styzl61p7rH1LQ/gXgKfo4Jj+uWJYahjLazI+b0X7q/QMq+fGqzyImSOQwmDWvVmBd+PA4rKlKcVNLTjU0PCU0Rm2Y9fd0kNUICW/+0R1TNHkSBCjGyuGfgCl15DqFvfHNtScN2XNC/CG/T4Gz4tyS1nNtF4LM2YvCbnMdw=
+    secure: PI8oQne6BwtEGdrwfXJOZpmQ7ejeTx42IRlCgVLeXLIzeusKWOgq6/53TlYRwwM/kev616libo1jA3CN2Uidkbexs+ym7Kz+CMM3amSoCd1C325Lt7NKgQrzV0CLIRE7xXmhkWycWvtZjO/XZh/ahTJDA3TYPzl/LodDk22S/O3JOkrPFh5nYNT8dqKrXPFHCC8s2V2KgPgdwKZ5SFK+FwelZ4r2+ThyE2x4DpVEyqsFarzqhCkZ9+hJf6gxtOKpplEFRAcDavNetxDAZ+vul+PgOpNnRSHeMEK0heCEYjZ8JRT6TaKNie7blJGW3EoLAuIfKMaDwjvaKjVSPQ/WMfJF+2Gc3mPhomP6codMePVc2tt7dIzJSIneU2VeV4IUxiGXwPfLJDIVFVJT0mv0r1DIu6yYHv9SS2lIl/SoRNRT669DOl8ZtcE/8/y5H2qw4B4bHiHvL0nCxrU38aqVsFA2/kZcNtmDbl0zYSO8ryuW7GItc0cTcb5DQvQKu9HuFhXv1BlBNftNChZogUkcM9t/rYWVluntgJw7I2GVZ1l4aYdGLUgzk0P+xmgKtCIV+wFKjyC8qZyYf3WybTN0fCoOb6XUbpr1sCBdiA51pEKs8qnHBXrB68/rpXnbvEm3CL0MTqP+PqfPVUH3WKUGBAT/AwxZTO7qEEhnZCQoPM0=
   on:
     branch: master
