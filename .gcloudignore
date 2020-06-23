@@ -17,3 +17,4 @@ node_modules
 #!include:.gitignore
 functions.config.json
 .runtimeconfig.json
+ui-debug.log
