@@ -12,18 +12,19 @@
  * OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import express from 'express';
-import mysql from 'mysql';
-import { ApolloServer } from 'apollo-server-express';
-import { promisify } from 'util';
-import { resolvers, typeDefs } from './schema/schema';
+const express = require('express');
+const { config } = require('firebase-functions');
+const mysql = require('mysql');
+const { ApolloServer } = require('apollo-server-express');
+const { promisify } = require('util');
+const { resolvers, typeDefs } = require('./schema/schema');
 
 export const conn = mysql.createPool({
   connectionLimit: 10,
   ssl: { rejectUnauthorized: false }, // TODO: add SSL certificate file here (see https://github.com/mysqljs/mysql#ssl-options)
-  host: process.env.TERRITORY_SERVER,
-  user: process.env.TERRITORY_USERID,
-  password: process.env.TERRITORY_PASSWORD,
+  host: config().api.territory_server,
+  user: config().api.territory_userid,
+  password: config().api.territory_password,
   database: 'territory'
 });
 
