@@ -90,22 +90,22 @@ class AddressAsync {
     }
 
     const sql = `UPDATE addresses SET
-      ${ address.congregationId ? `congregationid = ${address.congregationId},` : '' }
-      ${ address.territory_id ? `territory_id = ${address.territory_id},` : '' }
-      ${ address.status ? `status = '${address.status}',` : '' }
-      ${ address.sort ? `sort = ${address.sort},` : '' }
-      ${ address.addr1 ? `addr1 = '${address.addr1}',` : '' }
-      ${ address.addr2 ? `addr2 = '${address.addr2}',` : '' }
-      ${ address.city ? `city = '${address.city}',` : '' }
-      ${ address.state_province ? `state_province = '${address.state_province}',` : '' }
-      ${ address.postal_code ? `postal_code = '${address.postal_code}',` : '' }
-      ${ address.phone ? `phone = '${address.phone}',` : '' }
-      ${ address.latitude ? `latitude = ${address.latitude},` : '' }
-      ${ address.longitude ? `longitude = ${address.longitude},` : '' }
-      ${ address.notes ? `notes = '${address.notes}',` : '' }
-      ${ address.update_user ? `update_user = ${address.update_user},` : '' }
-      update_date = NOW()
-    WHERE id = ${address.id}`;
+      congregationid = ${get(address, 'congregationId', '')},
+      territory_id = ${get(address, 'territory_id', '')},
+      status = '${get(address, 'status', '')}',
+      sort = ${get(address, 'sort', '')},
+      addr1 = '${get(address, 'addr1', '')}',
+      addr2 = '${get(address, 'addr2', '')}',
+      city = '${get(address, 'city', '')}',
+      state_province = '${get(address, 'state_province', '')}',
+      postal_code = '${get(address, 'postal_code', '')}',
+      phone = '${get(address, 'phone', '')}',
+      longitude = ${get(address, 'longitude', 'NULL')},
+      latitude = ${get(address, 'latitude', 'NULL')},
+      update_user = ${get(address, 'update_user', '')},
+      update_date = NOW(),
+      notes = '${get(address, 'notes', '')}'
+    WHERE id = ${get(address, 'id', '')}`;
 
     await conn.query(sql);
   }
@@ -116,7 +116,7 @@ class AddressAsync {
     if (!userid) throw new Error('userid is required');
 
     const sql = `UPDATE addresses SET 
-      status = '${status}', update_user = ${userid} ${ notes ? `, notes = '${notes}'` : '' }
+      status = '${status}', update_user = ${userid}, notes = '${notes}'
       WHERE id=${id}`;
 
     await conn.query(sql);
