@@ -1,0 +1,9 @@
+{
+  "api": {
+    "territory_password": "mA2#a6TaHAM+",
+    "territory_port_tls": "4443",
+    "territory_userid": "terradm@terrdb1",
+    "territory_server": "terrdb1.mysql.database.azure.com",
+    "territory_port": "4000"
+  }
+}

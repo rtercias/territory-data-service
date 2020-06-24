@@ -1,5 +1,5 @@
 import { toArray } from 'lodash';
-import { conn } from '../server';
+import { conn } from '../index';
 
 class CongregationAsync {
   async getCongregationById (id) {

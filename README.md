@@ -7,20 +7,31 @@ These instructions will get you a copy of the project up and running on your loc
 `git clone` this repository into your local machine
 
 ### Prerequisites
-1. Node 10+
-2. Firebase account
-3. Firebase Functions
+1. Node 8.6+
+2. npm 5.6+
+3. VPN connection to versacomputer.com
+4. process.env variables on the server
 
 ### Installing
 
-1. `yarn install`
+1. `npm i`
+2. `npm start`
 
+Sample query:
+```
+{
+  territories (congId: 1) {
+    name
+    type
+  }
+}
+```
 
-## Build
-1. `yarn watch` (run in separate tab)
-2. `yarn emulator` (run in separate tab)
-3. `yarn build`
-4. `yarn serve`
+## Deployment
+(Requires npm 5.6+ and node 8.6+)
+npm install -f
+npm run build
+node dist/index.js
 
 ## Built With
 
@@ -33,4 +44,4 @@ These instructions will get you a copy of the project up and running on your loc
 
 ## License
 
-This project is licensed under the MIT License
+This project is licensed under the MIT License - see the [index.js](index.js) file for details

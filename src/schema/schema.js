@@ -1,4 +1,3 @@
-import { gql } from 'apollo-server-express';
 import { makeExecutableSchema } from 'graphql-tools';
 import { merge } from 'lodash';
 import {
@@ -33,7 +32,7 @@ import {
   resolvers as assignmentRecordResolvers,
 } from './types/AssignmentRecord';
 
-const RootQuery = gql`
+const RootQuery = `
   type RootQuery {
     ${publisherQueries}
     ${congregationQueries}
@@ -44,7 +43,7 @@ const RootQuery = gql`
   }
 `;
 
-const Mutation = gql`
+const Mutation = `
   type Mutation {
     ${territoryMutations}
     ${addressMutations}
@@ -52,14 +51,14 @@ const Mutation = gql`
   }
 `;
 
-const SchemaDefinition = gql`
+const SchemaDefinition = `
   schema {
     query: RootQuery
     mutation: Mutation
   }
 `;
 
-export const resolvers = {
+const resolvers = {
   RootQuery: merge (
     {}, 
     publisherQueryResolvers,
@@ -108,17 +107,20 @@ export const resolvers = {
   }
 }
 
-export const typeDefs = [
-  SchemaDefinition,
-  RootQuery,
-  Mutation,
-  Congregation,
-  Territory,
-  Publisher,
-  Address,
-  AddressInput,
-  Status,
-  ActivityLog,
-  ActivityLogInput,
-  AssignmentRecord,
-];
+export default makeExecutableSchema({
+  typeDefs: [
+    SchemaDefinition,
+    RootQuery,
+    Mutation,
+    Congregation,
+    Territory,
+    Publisher,
+    Address,
+    AddressInput,
+    Status,
+    ActivityLog,
+    ActivityLogInput,
+    AssignmentRecord,
+  ],
+  resolvers,
+});
