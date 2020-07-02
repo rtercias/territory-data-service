@@ -1,12 +1,9 @@
+import { gql } from 'apollo-server-express';
 import terrAsync from './../../async/territories';
 import { isArray, orderBy, some } from 'lodash';
 import { differenceInMonths } from 'date-fns';
 
-const aliases = `,
-  congregationid as congregationId
-`;
-
-export const Territory = `
+export const Territory = gql`
   type Territory {
     group_code: String!
     id: Int!
@@ -19,19 +16,6 @@ export const Territory = `
     city: String
     status: Status
   }
-`;
-
-export const queries = `
-  territory(id: Int): Territory
-  territories(congId: Int, keyword: String, city: String, group_code: String): [Territory]
-  territoriesByCity(congId: Int): [Territory]
-  status(territoryId: Int): Status
-  city: String
-`;
-
-export const mutations = `
-  checkoutTerritory(territoryId: Int!, publisherId: Int!, user: String): Territory
-  checkinTerritory(territoryId: Int!, publisherId: Int!, user: String): Territory
 `;
 
 export const queryResolvers = {

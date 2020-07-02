@@ -1,6 +1,7 @@
+import { gql } from 'apollo-server-express';
 import activityLogAsync from '../../async/activityLog';
 
-export const ActivityLog = `
+export const ActivityLog = gql`
   type ActivityLog {
     id: Int!
     checkout_id: Int!
@@ -14,7 +15,7 @@ export const ActivityLog = `
   }
 `;
 
-export const ActivityLogInput = `
+export const ActivityLogInput = gql`
   input ActivityLogInput {
     id: Int!
     checkout_id: Int!
@@ -25,17 +26,6 @@ export const ActivityLogInput = `
     publisher_id: Int!
     notes: String
   }
-`;
-
-export const queries = `
-  activityLog(id: Int): ActivityLog
-  activityLogs(checkout_id: Int, address_id: Int): [ActivityLog]
-`;
-
-export const mutations = `
-  addLog(activityLog: ActivityLogInput): ActivityLog
-  updateLog(activityLog: ActivityLogInput): ActivityLog
-  removeLog(id: Int!): Boolean
 `;
 
 export const resolvers = {

@@ -1,4 +1,6 @@
-export const Status = `
+import { gql } from 'apollo-server-express';
+
+export const Status = gql`
   type Status {
     checkout_id: Int
     status: String

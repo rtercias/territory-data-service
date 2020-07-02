@@ -1,8 +1,9 @@
+import { gql } from 'apollo-server-express';
 import { toArray } from 'lodash';
 import { conn } from '../../server';
 import congAsync from '../../async/congregations';
 
-export const Congregation = `
+export const Congregation = gql`
   type Congregation {
     id: Int
     name: String
@@ -10,11 +11,6 @@ export const Congregation = `
     territories: [Territory]
     publishers: [Publisher]
   }
-`;
-
-export const queries = `
-  congregation(id: Int!): Congregation
-  congregations(keyword: String): [Congregation]
 `;
 
 export const resolvers = {

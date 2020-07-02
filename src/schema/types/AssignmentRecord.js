@@ -1,6 +1,7 @@
+import { gql } from 'apollo-server-express';
 import reportsAsync from '../../async/reports';
 
-export const AssignmentRecord = `
+export const AssignmentRecord = gql`
   type AssignmentRecord {
     territory_id: Int!
     territory_name: String!
@@ -12,10 +13,6 @@ export const AssignmentRecord = `
     congregationid: Int!
     username: String
   }
-`;
-
-export const queries = `
-  getAssignmentRecords(congId: Int): [AssignmentRecord]
 `;
 
 export const resolvers = {

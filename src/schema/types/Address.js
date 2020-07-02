@@ -1,7 +1,8 @@
+import { gql } from 'apollo-server-express';
 import addressAsync from './../../async/addresses';
 import { Notes } from './../../utils/Notes';
 
-export const Address = `
+export const Address = gql`
   type Address {
     id: Int!
     congregationId: Int!
@@ -29,7 +30,7 @@ export const Address = `
   }
 `;
 
-export const AddressInput = `
+export const AddressInput = gql`
   input AddressInput {
     id: Int
     congregationId: Int
@@ -48,21 +49,6 @@ export const AddressInput = `
     create_user: Int
     update_user: Int
   }
-`;
-
-export const queries = `
-  address(id: Int, status: String): Address
-  addresses(congId: Int, terrId: Int, keyword: String): [Address]
-  inactiveAddresses(congId: Int, terrId: Int, keyword: String): [Address]
-  dnc(congId: Int, keyword: String): [Address]
-`;
-
-export const mutations = `
-  addAddress(address: AddressInput!): Address
-  updateAddress(address: AddressInput!): Address
-  changeAddressStatus(addressId: Int!, status: String!, userid: Int!, note: String): Boolean
-  addNote(addressId: Int!, userid: Int!, note: String!): Boolean
-  removeNote(addressId: Int!, userid: Int!, note: String!): Boolean
 `;
 
 export const queryResolvers = {

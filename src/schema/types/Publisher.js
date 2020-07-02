@@ -1,8 +1,9 @@
+import { gql } from 'apollo-server-express';
 import publisherAsync from './../../async/publishers';
 import congAsync from './../../async/congregations';
 import terrAsync from './../../async/territories';
 
-export const Publisher = `
+export const Publisher = gql`
   type Publisher {
     id: Int!
     congregationid: Int!
@@ -15,14 +16,6 @@ export const Publisher = `
     role: String
     role_description: String
   }
-`;
-
-export const queries = `
-  user(username: String): Publisher
-  publisher(firstname: String, lastname: String): Publisher
-  publishers(congId: Int, keyword: String): [Publisher]
-  creator: Publisher
-  updater: Publisher
 `;
 
 export const queryResolvers = {
