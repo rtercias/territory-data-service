@@ -13,7 +13,6 @@
  */
 
 const express = require('express');
-const cors = require('cors')({ origin: true });
 const { config } = require('firebase-functions');
 const mysql = require('mysql');
 const { ApolloServer } = require('apollo-server-express');
@@ -31,19 +30,11 @@ export const conn = mysql.createPool({
 
 export function gqlServer() {
   const app = express();
-  app.use(cors);
   const apolloServer = new ApolloServer({
     typeDefs,
     resolvers,
     introspection: true,
     playground: true,
-  });
-
-  app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Headers', 'Authorization, Origin, Referer, User-Agent, X-Requested-With, Content-Type, Accept');
-    next();
   });
 
   conn.query = promisify(conn.query);
