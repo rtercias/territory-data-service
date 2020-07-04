@@ -13,6 +13,7 @@
  */
 
 const express = require('express');
+const cors = require('cors')({ origin: true });
 const { config } = require('firebase-functions');
 const mysql = require('mysql');
 const { ApolloServer } = require('apollo-server-express');
@@ -30,6 +31,7 @@ export const conn = mysql.createPool({
 
 export function gqlServer() {
   const app = express();
+  app.use(cors);
   const apolloServer = new ApolloServer({
     typeDefs,
     resolvers,
@@ -41,3 +43,6 @@ export function gqlServer() {
   apolloServer.applyMiddleware({ app, path: '/', cors: true });
   return app;
 }
+
+// To listen from a local server
+// app.listen(5000, '192.168.1.205'); // or 'localhost'
