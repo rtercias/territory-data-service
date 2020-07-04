@@ -39,5 +39,8 @@ export function gqlServer() {
 
   conn.query = promisify(conn.query);
   apolloServer.applyMiddleware({ app, path: '/', cors: true });
+  
+  // To listen from a local server
+  // app.listen(5000, '192.168.1.205'); // or 'localhost'
   return app;
 }
