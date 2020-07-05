@@ -12,12 +12,21 @@ const api = https.onRequest((req, res) => {
   cors(req, res, () => {
     const allowedOrigins = ['http://localhost:8080', 'http://192.168.1.205:8080', 'https://foreignfield.com'];
     const origin = req.headers.origin;
+
+    res.set('Access-Control-Allow-Credentials', 'true');
+
     if (allowedOrigins.indexOf(origin) > -1){
-      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.set('Access-Control-Allow-Origin', origin);
     }
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Headers', 'Authorization, Origin, Referer, User-Agent, X-Requested-With, Content-Type, Accept');
-    server();
+
+    if (req.method === 'OPTIONS') {
+      res.set('Access-Control-Allow-Methods', 'GET, POST');
+      res.set('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+      res.set('Access-Control-Max-Age', '3600');
+      res.status(204).send('');
+    } else {
+      server();
+    }
   });
 });
 export { api };
