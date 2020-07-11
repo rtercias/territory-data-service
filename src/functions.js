@@ -25,7 +25,7 @@ const api = https.onRequest((req, res) => {
       res.set('Access-Control-Max-Age', '3600');
       res.status(204).send('');
     } else {
-      res.send(server());
+      res.send(server(req, res));
     }
   });
 });
