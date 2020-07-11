@@ -37,21 +37,24 @@ export function gqlServer() {
     playground: true,
   });
 
-  app.use((req, res, next) => {
-    const allowedOrigins = ['http://localhost:8080', 'http://192.168.1.205:8080', 'https://foreignfield.com'];
-    const origin = req.headers.origin;
-
-    if (allowedOrigins.indexOf(origin) > -1){
-      res.set('Access-Control-Allow-Origin', origin);
-    }
-
-    res.set('Access-Control-Allow-Credentials', 'true');
-    res.set('Access-Control-Allow-Headers', 'Authorization, Origin, X-Requested-With, Content-Type, Accept');
-    next();
-  });
-
   conn.query = promisify(conn.query);
-  apolloServer.applyMiddleware({ app, path: '/', cors: true });
+  apolloServer.applyMiddleware({ app, path: '/', cors: {
+    credentials: true,
+    origin: (origin, callback) => {
+      const whitelist = [
+        'http://localhost:8080',
+        'http://192.168.1.205:8080',
+        'https://foreignfield.com',
+      ];
+
+      if (whitelist.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+  }});
+
   return app;
 }
 
