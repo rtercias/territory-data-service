@@ -13,7 +13,6 @@
  */
 
 const express = require('express');
-const cors = require('cors')({ origin: true });
 const { config } = require('firebase-functions');
 const mysql = require('mysql');
 const { ApolloServer } = require('apollo-server-express');
@@ -31,7 +30,6 @@ export const conn = mysql.createPool({
 
 export function gqlServer() {
   const app = express();
-  app.options('*', cors());
 
   const apolloServer = new ApolloServer({
     typeDefs,
