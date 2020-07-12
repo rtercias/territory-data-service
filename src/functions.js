@@ -1,5 +1,6 @@
 const { https } = require('firebase-functions');
 const { gqlServer } = require('./server');
+const { app } = require('./sample');
 const cors = require('cors')({
   origin: true
 });
@@ -10,14 +11,8 @@ const server = gqlServer();
 // https://us-east1-territory-data-service.cloudfunctions.net/api/
 const api = https.onRequest(server);
 
-const sample = https.onRequest((req, res) => {
-  if (req.method === 'OPTIONS') {
-    res.set('Access-Control-Allow-Methods', 'GET, POST');
-    res.set('Access-Control-Allow-Headers', 'Authorization, Content-Type');
-    res.set('Access-Control-Max-Age', '3600');
-    res.status(204).send('');
-  } else {
-    res.send('Passed');
-  }
-});
+// This HTTPS endpoint can only be accessed by your Firebase Users.
+// Requests need to be authorized by providing an `Authorization` HTTP header
+// with value `Bearer <Firebase ID Token>`.
+const sample = https.onRequest(app);
 export { api, sample };
