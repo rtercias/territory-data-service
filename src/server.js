@@ -39,24 +39,7 @@ export function gqlServer() {
   });
 
   conn.query = promisify(conn.query);
-  apolloServer.applyMiddleware({ app, path: '/', cors: {
-    credentials: true,
-    allowedHeaders: ['Authorization'],
-    origin: (origin, callback) => {
-      const whitelist = [
-        'http://localhost:8080',
-        'http://192.168.1.205:8080',
-        'https://foreignfield.com',
-      ];
-
-      if (whitelist.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-  }});
-
+  apolloServer.applyMiddleware({ app, path: '/', cors: true });
   return app;
 }
 
