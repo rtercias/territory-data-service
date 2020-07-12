@@ -20,7 +20,7 @@ const admin = require('firebase-admin');
 admin.initializeApp();
 const express = require('express');
 const cookieParser = require('cookie-parser')();
-const cors = require('cors')({origin: true});
+const cors = require('cors');
 export const app = express();
 
 // Express middleware that validates Firebase ID Tokens passed in the Authorization HTTP header.
@@ -68,7 +68,21 @@ const validateFirebaseIdToken = async (req, res, next) => {
   }
 };
 
-app.use(cors);
+app.use(cors({
+  origin: (origin, callback) => {
+    const whitelist = [
+      'http://localhost:8080',
+      'http://192.168.1.205:8080',
+      'https://foreignfield.com',
+    ];
+
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+}));
 app.use(cookieParser);
 app.use(validateFirebaseIdToken);
 app.get('/hello', (req, res) => {
