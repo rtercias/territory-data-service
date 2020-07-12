@@ -68,21 +68,7 @@ const validateFirebaseIdToken = async (req, res, next) => {
   }
 };
 
-app.use(cors({
-  origin: (origin, callback) => {
-    const whitelist = [
-      'http://localhost:8080',
-      'http://192.168.1.205:8080',
-      'https://foreignfield.com',
-    ];
-
-    if (whitelist.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-}));
+app.use(cors({ origin: 'http://localhost:8080' }));
 app.use(cookieParser);
 app.use(validateFirebaseIdToken);
 app.get('/hello', (req, res) => {
