@@ -1,4 +1,5 @@
 const admin = require('firebase-admin');
+admin.initializeApp();
 
 export const validateFirebaseIdToken = async (req, res, next) => {
   console.log('Check if request is authorized with Firebase ID token', req.method);
