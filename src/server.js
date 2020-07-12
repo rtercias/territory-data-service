@@ -14,6 +14,7 @@
 
 const express = require('express');
 const { config } = require('firebase-functions');
+const cors = require('cors')({origin: true});
 const cookieParser = require('cookie-parser')();
 const mysql = require('mysql');
 const { ApolloServer } = require('apollo-server-express');
@@ -33,6 +34,7 @@ export const conn = mysql.createPool({
 export function gqlServer() {
   const app = express();
 
+  app.use(cors);
   app.use(cookieParser);
   app.use(validateFirebaseIdToken);
 
