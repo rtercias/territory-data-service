@@ -41,6 +41,7 @@ export function gqlServer() {
   conn.query = promisify(conn.query);
   apolloServer.applyMiddleware({ app, path: '/', cors: {
     credentials: true,
+    allowedHeaders: ['Authorization'],
     origin: (origin, callback) => {
       const whitelist = [
         'http://localhost:8080',

@@ -11,8 +11,13 @@ const server = gqlServer();
 const api = https.onRequest(server);
 
 const sample = https.onRequest((req, res) => {
-  cors(req, res, () => {
-    res.send('Passed.');
-  });
+  if (req.method === 'OPTIONS') {
+    res.set('Access-Control-Allow-Methods', 'GET, POST');
+    res.set('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+    res.set('Access-Control-Max-Age', '3600');
+    res.status(204).send('');
+  } else {
+    res.send('Passed');
+  }
 });
 export { api, sample };
