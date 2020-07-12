@@ -18,6 +18,7 @@ const mysql = require('mysql');
 const { ApolloServer } = require('apollo-server-express');
 const { promisify } = require('util');
 const { resolvers, typeDefs } = require('./schema/schema');
+const { validateFirebaseIdToken } = require('./utils/Firebase');
 
 export const conn = mysql.createPool({
   connectionLimit: 10,
@@ -30,6 +31,8 @@ export const conn = mysql.createPool({
 
 export function gqlServer() {
   const app = express();
+
+  app.use(validateFirebaseIdToken);
 
   const apolloServer = new ApolloServer({
     typeDefs,
