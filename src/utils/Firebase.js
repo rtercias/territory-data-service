@@ -1,5 +1,5 @@
 export const validateFirebaseIdToken = async (req, res, next) => {
-  console.log('Check if request is authorized with Firebase ID token');
+  console.log('Check if request is authorized with Firebase ID token', req.method);
 
   if ((!req.headers.authorization || !req.headers.authorization.startsWith('Bearer ')) &&
       !(req.cookies && req.cookies.__session)) {
