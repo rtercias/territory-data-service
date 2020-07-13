@@ -2,8 +2,6 @@ const admin = require('firebase-admin');
 admin.initializeApp();
 
 export const validateFirebaseIdToken = async (req, res, next) => {
-  console.log('Check if request is authorized with Firebase ID token');
-
   if ((!req.headers.authorization || !req.headers.authorization.startsWith('Bearer ')) &&
       !(req.cookies && req.cookies.__session)) {
     console.error('No Firebase ID token was passed as a Bearer token in the Authorization header.',
@@ -16,11 +14,9 @@ export const validateFirebaseIdToken = async (req, res, next) => {
 
   let idToken;
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
-    console.log('Found "Authorization" header');
     // Read the ID Token from the Authorization header.
     idToken = req.headers.authorization.split('Bearer ')[1];
   } else if(req.cookies) {
-    console.log('Found "__session" cookie');
     // Read the ID Token from cookie.
     idToken = req.cookies.__session;
   } else {
@@ -31,7 +27,6 @@ export const validateFirebaseIdToken = async (req, res, next) => {
 
   try {
     const decodedIdToken = await admin.auth().verifyIdToken(idToken);
-    console.log('ID Token correctly decoded', decodedIdToken);
     req.user = decodedIdToken;
     next();
     return;
