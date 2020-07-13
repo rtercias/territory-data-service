@@ -36,7 +36,10 @@ export function gqlServer() {
 
   app.use(cors);
   app.use(cookieParser);
-  app.use(validateFirebaseIdToken);
+
+  if (process.env.NODE_ENV !== 'development') {
+    app.use(validateFirebaseIdToken);
+  }
 
   const apolloServer = new ApolloServer({
     typeDefs,
@@ -47,8 +50,9 @@ export function gqlServer() {
 
   conn.query = promisify(conn.query);
   apolloServer.applyMiddleware({ app, path: '/', cors: true });
+
+  // To listen from a local server
+  // app.listen(5000, '192.168.1.205'); // or 'localhost'
+
   return app;
 }
-
-// To listen from a local server
-// app.listen(5000, '192.168.1.205'); // or 'localhost'

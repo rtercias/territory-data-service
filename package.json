@@ -8,6 +8,7 @@
   },
   "scripts": {
     "lint": "xo",
+    "config": "firebase functions:config:get > .runtimeconfig.json",
     "watch": "parcel src/functions.js --target node",
     "build": "parcel build src/functions.js --target node --detailed-report",
     "serve": "yarn firebase serve --only functions",

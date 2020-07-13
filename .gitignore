@@ -7,4 +7,6 @@ local-setup*.sh
 .env.yaml
 functions.config.json
 .runtimeconfig.json
+.runtimeconfig*.json
 ui-debug.log
+firebase-debug.log
