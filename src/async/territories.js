@@ -1,5 +1,9 @@
-import { toArray } from 'lodash';
+const { config } = require('firebase-functions');
+import toArray from 'lodash/toArray';
+import orderBy from 'lodash/orderBy';
 import { conn } from '../server';
+import axios from 'axios';
+import addressAsync from './addresses';
 
 class TerritoryAsync {
   async getTerritory (id) {
@@ -70,6 +74,89 @@ class TerritoryAsync {
     } else {
       await conn.query(`INSERT INTO territorycheckouts (territoryid, publisherid, status) VALUES (${territoryId}, ${publisherId}, '${status}')`);    
     }
+  }
+
+  async optimize(territoryId, start, end) {
+    try {
+      const addresses = await addressAsync.getAddressesByTerritory(territoryId);
+
+      if (!addresses.length) {
+        throw new Error('No addresses found');
+      }
+
+      if (addresses.length === 1) {
+        return addresses;
+      }
+
+      const data = this.createOptimizationData(addresses, start, end);
+      
+      const options = {
+        headers: {
+          'Authorization': config().api.open_route_token,
+          'Content-Type': 'application/json',
+          'Content-Length': data.jobs.length,
+        },
+      };
+
+      const response = await axios.post('https://api.openrouteservice.org/optimization', data, options);
+      const steps = response && response.data && response.data.routes[0].steps;
+      return this.reorderAddresses(steps, addresses);
+
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  createOptimizationData(addresses, start, end) {
+    const geoCodedAddresses = addresses.filter(a => !!a.longitude && !!a.latitude);
+
+    const jobs = geoCodedAddresses.map(a => {
+      return {
+        id: a.id,
+        service: 300,
+        amount: [1],
+        location: [a.longitude, a.latitude],
+        skills: [1],
+      };
+    });
+
+    const first = jobs[0];
+
+    const vehicles = [
+      {
+        id: 1,
+        profile: 'driving-car',
+        start: start || first.location,
+        end,
+        capacity: [4],
+        skills: [1],
+      },
+    ];
+
+    return { jobs, vehicles };
+  }
+
+  reorderAddresses(steps, addresses) {
+    const jobSteps = steps.filter(s => s.type === 'job');
+
+    if (!jobSteps || jobSteps.length === 0) {
+      throw new Error('Optimization API returned no data');
+    }
+
+    let nextIndex = jobSteps.length;
+
+    for (const addr of addresses) {
+      const index = jobSteps.findIndex(s => s.job === addr.id);
+      
+      if (index === -1) {
+        addr.sort = nextIndex;
+        nextIndex++;
+      } else {
+        addr.sort = index;
+      }
+    }
+
+    return orderBy(addresses, 'sort');
   }
 }
 

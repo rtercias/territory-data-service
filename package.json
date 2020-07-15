@@ -11,7 +11,7 @@
     "config": "firebase functions:config:get > .runtimeconfig.json",
     "watch": "parcel src/functions.js --target node",
     "build": "parcel build src/functions.js --target node --detailed-report",
-    "serve": "yarn firebase serve --only functions",
+    "serve": "yarn build && yarn firebase serve --only functions",
     "emulator": "yarn firebase emulators:start --only functions",
     "shell": "yarn firebase functions:shell",
     "start": "yarn run shell",
@@ -34,6 +34,7 @@
   },
   "dependencies": {
     "apollo-server-express": "^2.14.2",
+    "axios": "^0.19.2",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
     "date-fns": "^2.14.0",

@@ -163,6 +163,10 @@ export const queryResolvers = {
       console.error(err);
     }
   },
+
+  optimize: async (root, { territoryId }) => {
+    return await terrAsync.optimize(territoryId);
+  },
 };
 
 export const mutationResolvers = {
