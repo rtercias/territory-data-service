@@ -164,8 +164,8 @@ export const queryResolvers = {
     }
   },
 
-  optimize: async (root, { territoryId }) => {
-    return await terrAsync.optimize(territoryId);
+  optimize: async (root, { territoryId, start, end }) => {
+    return await terrAsync.optimize(territoryId, start, end);
   },
 };
 

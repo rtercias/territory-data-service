@@ -46,7 +46,7 @@ const RootQuery = gql`
     activityLog(id: Int): ActivityLog
     activityLogs(checkout_id: Int, address_id: Int): [ActivityLog]
     getAssignmentRecords(congId: Int): [AssignmentRecord]
-    optimize(territoryId: Int!): [Address]
+    optimize(territoryId: Int!, start: Float, end: Float): [Address]
   }
 `;
 
