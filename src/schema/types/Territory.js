@@ -174,4 +174,7 @@ export const mutationResolvers = {
     terrAsync.saveTerritoryActivity('IN', territoryId, publisherId, user);
     await terrAsync.getTerritory(territoryId);
   },
+  optimize: async (root, { territoryId }) => {
+    return await terrAsync.optimize(territoryId);
+  },
 };
