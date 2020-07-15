@@ -46,6 +46,7 @@ const RootQuery = gql`
     activityLog(id: Int): ActivityLog
     activityLogs(checkout_id: Int, address_id: Int): [ActivityLog]
     getAssignmentRecords(congId: Int): [AssignmentRecord]
+    optimize(territoryId: Int!): [Address]
   }
 `;
 
@@ -53,7 +54,6 @@ const Mutation = gql`
   type Mutation {
     checkoutTerritory(territoryId: Int!, publisherId: Int!, user: String): Territory
     checkinTerritory(territoryId: Int!, publisherId: Int!, user: String): Territory
-    optimize(territoryId: Int!): [Address]
     addAddress(address: AddressInput!): Address
     updateAddress(address: AddressInput!): Address
     changeAddressStatus(addressId: Int!, status: String!, userid: Int!, note: String): Boolean

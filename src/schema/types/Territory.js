@@ -163,6 +163,10 @@ export const queryResolvers = {
       console.error(err);
     }
   },
+
+  optimize: async (root, { territoryId }) => {
+    return await terrAsync.optimize(territoryId);
+  },
 };
 
 export const mutationResolvers = {
@@ -173,8 +177,5 @@ export const mutationResolvers = {
   checkinTerritory: async (root, { territoryId, publisherId, user }) => {
     terrAsync.saveTerritoryActivity('IN', territoryId, publisherId, user);
     await terrAsync.getTerritory(territoryId);
-  },
-  optimize: async (root, { territoryId }) => {
-    return await terrAsync.optimize(territoryId);
   },
 };
