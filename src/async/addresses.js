@@ -28,6 +28,10 @@ class AddressAsync {
   }
 
   async searchAddresses (congId, keyword, status = 'Active') {
+    if (!congId || !keyword) {
+      return [];
+    }
+
     const statusCondition = status === '*' ? '' :
       status === '!Active' ? ` AND NOT status = 'Active'` :
       ` AND status = '${status}'`;

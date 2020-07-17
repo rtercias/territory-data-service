@@ -30,14 +30,14 @@ export const queryResolvers = {
   publisher: async (root, args) => {
     try {
       if (args.publisherId) {
-        return await publisherAsync.getPublisherById(args.publisherId);
-
-      } else if (root.publisher_id || root.publisherid) {
-        return await publisherAsync.getPublisherById(root.publisher_id || root.publisherid);
+        return await publisherAsync.getPublisherById(args.publisherId, args.congId);
 
       } else if (args.firstname && args.lastname) {
-        return await publisherAsync.getPublisherByName(args.firstname, args.lastname);
+        return await publisherAsync.getPublisherByName(args.firstname, args.lastname, args.congId);
         
+      } else if (root && (root.publisher_id || root.publisherid)) {
+        return await publisherAsync.getPublisherById(root.publisher_id || root.publisherid, root.congId);
+
       }
     } catch (err) {
       console.error(err);

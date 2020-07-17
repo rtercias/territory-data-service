@@ -1,4 +1,6 @@
 import { gql } from 'apollo-server-express';
+import { pusher } from '../../server';
+const { config } = require('firebase-functions');
 import activityLogAsync from '../../async/activityLog';
 
 export const ActivityLog = gql`
@@ -50,7 +52,10 @@ export const resolvers = {
 
 export const mutationResolvers = {
   addLog: async (root, { activityLog }) => {
-    await activityLogAsync.create(activityLog);
+    const id = await activityLogAsync.create(activityLog);
+    const newLog = await activityLogAsync.readOne(id);
+    pusher.trigger('foreign-field', 'add-log', newLog);
+    return newLog;
   },
   updateLog: async (root, { activityLog }) => {
     await activityLogAsync.update(activityLog);

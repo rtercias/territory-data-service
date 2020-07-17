@@ -3,7 +3,7 @@ import { toArray } from 'lodash';
 
 class ActivityLogAsync {
   async create (activityLog) {
-    await conn.query(`INSERT INTO activitylog (
+    const result = await conn.query(`INSERT INTO activitylog (
       checkout_id,
       address_id,
       value,
@@ -20,6 +20,8 @@ class ActivityLogAsync {
       ${ activityLog.publisher_id },
       '${ activityLog.notes || "" }'
     )`);
+
+    return result.insertId;
   }
 
   async read (checkout_id, address_id) {
@@ -35,7 +37,12 @@ class ActivityLogAsync {
   }
 
   async readOne (id) {
-    return await conn.query(`SELECT * FROM activitylog WHERE id=${id}`);
+    const sql = `SELECT * FROM activitylog WHERE id=${id}`;
+    const result = await conn.query(sql);
+    if (result && result.length) {
+      return result[0];
+    }
+    return null;
   }
 
   async update (activityLog) {
