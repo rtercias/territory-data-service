@@ -2,10 +2,6 @@ import { toArray } from 'lodash';
 import { conn } from '../server';
 
 class PublisherAsync {
-  async getPublisherById (id) {
-    return (await conn.query(`SELECT id, firstname, lastname, congregationid, username, status FROM publishers WHERE id=${id}`))[0];
-  }
-
   async getUser (username) {
     return (await conn.query(`SELECT * FROM users WHERE username='${username}'`))[0];
   }
@@ -15,9 +11,12 @@ class PublisherAsync {
       WHERE firstname='${firstName}' AND lastname='${lastName}'`))[0];
   }
 
-  async getPublisherById (publisherId) {
+  async getPublisherById (publisherId, congId) {
+    if (!publisherId || !congId) {
+      return null;
+    }
     return (await conn.query(`SELECT id, firstname, lastname, congregationid, username, status FROM publishers
-      WHERE id=${publisherId}`))[0];
+      WHERE id=${publisherId} AND congregationid=${congId}`))[0];
   }
 
   async searchPublishers (congId, keyword) {

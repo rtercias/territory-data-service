@@ -28,7 +28,7 @@ import {
 const RootQuery = gql`
   type RootQuery {
     user(username: String): Publisher
-    publisher(firstname: String, lastname: String): Publisher
+    publisher(firstname: String, lastname: String, publisherId: Int, congId: Int): Publisher
     publishers(congId: Int, keyword: String): [Publisher]
     creator: Publisher
     updater: Publisher
@@ -118,7 +118,7 @@ export const resolvers = {
   Status: {
     publisher: publisherQueryResolvers.publisher,
     territory: territoryQueryResolvers.territory,
-  }
+  },
 }
 
 export const typeDefs = [

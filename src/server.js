@@ -19,6 +19,7 @@ const cookieParser = require('cookie-parser')();
 const mysql = require('mysql');
 const { ApolloServer } = require('apollo-server-express');
 const { promisify } = require('util');
+const Pusher = require('pusher');
 const { resolvers, typeDefs } = require('./schema/schema');
 const { validateFirebaseIdToken } = require('./utils/Firebase');
 
@@ -29,6 +30,14 @@ export const conn = mysql.createPool({
   user: config().api.territory_userid,
   password: config().api.territory_password,
   database: 'territory'
+});
+
+export const pusher = new Pusher({
+  appId: config().api.pusher_app_id,
+  key: config().api.pusher_key,
+  secret: config().api.pusher_secret,
+  cluster: config().api.pusher_cluster,
+  encrypted: true,
 });
 
 export function gqlServer() {
