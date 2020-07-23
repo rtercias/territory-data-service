@@ -11,10 +11,10 @@
     "config": "firebase functions:config:get > .runtimeconfig.json",
     "watch": "parcel src/functions.js --target node",
     "build": "parcel build src/functions.js --target node --detailed-report",
-    "serve": "yarn build && yarn firebase serve --only functions",
+    "serve": "export NODE_ENV=development && yarn build && yarn firebase serve --only functions",
     "emulator": "yarn firebase emulators:start --only functions",
     "shell": "yarn firebase functions:shell",
-    "start": "yarn run shell",
+    "start": "yarn serve",
     "predeploy": "yarn build",
     "deploy": "yarn firebase deploy --only functions",
     "logs": "yarn firebase functions:log"

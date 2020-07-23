@@ -6,17 +6,19 @@ class PublisherAsync {
     return (await conn.query(`SELECT * FROM users WHERE username='${username}'`))[0];
   }
 
-  async getPublisherByName (firstName, lastName) {
+  async getPublisherByName (firstName, lastName, congId) {
     return (await conn.query(`SELECT id, firstname, lastname, congregationid, username, status FROM publishers
-      WHERE firstname='${firstName}' AND lastname='${lastName}'`))[0];
+      WHERE firstname='${firstName}' AND lastname='${lastName}' AND congregationid=${congId}`))[0];
   }
 
   async getPublisherById (publisherId, congId) {
-    if (!publisherId || !congId) {
+    if (!publisherId) {
       return null;
     }
+
+    const congIdFilter = congId ? ` AND congregationid=${congId}` : '';
     return (await conn.query(`SELECT id, firstname, lastname, congregationid, username, status FROM publishers
-      WHERE id=${publisherId} AND congregationid=${congId}`))[0];
+      WHERE id=${publisherId}${congIdFilter}`))[0];
   }
 
   async searchPublishers (congId, keyword) {
