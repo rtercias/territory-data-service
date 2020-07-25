@@ -56,6 +56,7 @@ const Mutation = gql`
     checkinTerritory(territoryId: Int!, publisherId: Int!, user: String): Territory
     addAddress(address: AddressInput!): Address
     updateAddress(address: AddressInput!): Address
+    updateSort(addressIds: [Int]!): Boolean
     changeAddressStatus(addressId: Int!, status: String!, userid: Int!, note: String): Boolean
     addNote(addressId: Int!, userid: Int!, note: String!): Boolean
     removeNote(addressId: Int!, userid: Int!, note: String!): Boolean

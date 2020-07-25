@@ -78,7 +78,7 @@ class TerritoryAsync {
 
   async optimize(territoryId, start, end) {
     try {
-      const addresses = await addressAsync.getAddressesByTerritory(territoryId);
+      const addresses = orderBy(await addressAsync.getAddressesByTerritory(territoryId), 'sort');
 
       if (!addresses.length) {
         throw new Error('No addresses found');

@@ -157,6 +157,19 @@ export const mutationResolvers = {
     } catch (err) {
       throw new Error(err);
     }
-
   },
+  updateSort: async (root, args) => {
+    let success = false;
+    try {
+      const { addressIds } = args;
+      for (const [index, value]  of addressIds.entries()) {
+        await addressAsync.updateSort(value, index + 1);
+      }
+      success = true;
+    } catch (err) {
+      throw new Error(err);
+    }
+
+    return success;
+  }
 };
