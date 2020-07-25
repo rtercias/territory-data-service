@@ -125,6 +125,16 @@ class AddressAsync {
 
     await conn.query(sql);
   }
+
+  async updateSort (id, sort) {
+    if (!id) throw new Error('id is required');
+    if (!sort) throw new Error('sort is required');
+
+    const sql = `UPDATE addresses SET 
+      sort = ${sort} WHERE id=${id}`;
+
+    await conn.query(sql);
+  }
 }
 
 
