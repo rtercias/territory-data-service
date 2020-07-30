@@ -44,7 +44,7 @@
     "firebase-tools": "8.4.2",
     "graphql": "^14.3.0",
     "graphql-tools": "^6.0.10",
-    "lodash": "4.17",
+    "lodash": "^4.17.19",
     "mysql": "^2.18.1",
     "os": "^0.1.1",
     "promise-mysql": "^3.3.2",

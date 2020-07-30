@@ -2,6 +2,7 @@ import { gql } from 'apollo-server-express';
 import terrAsync from './../../async/territories';
 import { isArray, orderBy, some } from 'lodash';
 import { differenceInMonths } from 'date-fns';
+import { ActivityLog } from './ActivityLog';
 
 export const Territory = gql`
   type Territory {
@@ -14,7 +15,8 @@ export const Territory = gql`
     addresses: [Address]
     inactiveAddresses: [Address]
     city: String
-    status: Status
+    status: Status,
+    lastActivity: ActivityLog,
   }
 `;
 
@@ -166,6 +168,15 @@ export const queryResolvers = {
 
   optimize: async (root, { territoryId, start, end }) => {
     return await terrAsync.optimize(territoryId, start, end);
+  },
+
+  lastActivity: async (root, args) => {
+    try {
+      const territoryId = (root && root.id) || (args && args.territoryId);
+      return await terrAsync.lastActivity(territoryId);
+    } catch (err) {
+      console.error(err);
+    }
   },
 };
 

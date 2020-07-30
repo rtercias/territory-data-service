@@ -4,6 +4,7 @@ import orderBy from 'lodash/orderBy';
 import { conn } from '../server';
 import axios from 'axios';
 import addressAsync from './addresses';
+import { result } from 'lodash';
 
 class TerritoryAsync {
   async getTerritory (id) {
@@ -157,6 +158,14 @@ class TerritoryAsync {
     }
 
     return orderBy(addresses, 'sort');
+  }
+
+  async lastActivity (territoryId) {
+    if (!territoryId) throw new Error('territory id is required');
+
+    const sql = `SELECT * FROM territory_last_activity WHERE territory_id=${territoryId}`;
+    const result = toArray(await conn.query(sql));
+    return result.length && result[0];
   }
 }
 

@@ -1,6 +1,7 @@
 import { gql } from 'apollo-server-express';
 import addressAsync from './../../async/addresses';
 import { Notes } from './../../utils/Notes';
+import { ActivityLog } from './ActivityLog';
 
 export const Address = gql`
   type Address {
@@ -26,7 +27,8 @@ export const Address = gql`
     create_date: String
     update_user: Int
     updater: Publisher
-    update_date: String
+    update_date: String,
+    lastActivity: ActivityLog,
   }
 `;
 
@@ -112,6 +114,15 @@ export const queryResolvers = {
       const congId = (root ? root.congregationid : null) || args.congId;
       result = await addressAsync.getDNC(congId, args.keyword);
       return result;
+    } catch (err) {
+      console.error(err);
+    }
+  },
+
+  lastActivity: async (root, args) => {
+    try {
+      const addressId = (root && root.id) || (args && args.addressId);
+      return await addressAsync.lastActivity(addressId);
     } catch (err) {
       console.error(err);
     }
