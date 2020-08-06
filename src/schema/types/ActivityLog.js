@@ -5,14 +5,14 @@ import activityLogAsync from '../../async/activityLog';
 
 export const ActivityLog = gql`
   type ActivityLog {
-    id: Int!
-    checkout_id: Int!
-    address_id: Int!
+    id: Int
+    checkout_id: Int
+    address_id: Int
     value: String
     timestamp: String
     tz_offset: Int
     timezone: String
-    publisher_id: Int!
+    publisher_id: Int
     notes: String
   }
 `;

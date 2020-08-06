@@ -135,6 +135,14 @@ class AddressAsync {
 
     await conn.query(sql);
   }
+
+  async lastActivity (addressId) {
+    if (!addressId) throw new Error('address id is required');
+
+    const sql = `SELECT * FROM address_last_activity WHERE address_id=${addressId}`;
+    const result = toArray(await conn.query(sql));
+    return result.length && result[0];
+  }
 }
 
 

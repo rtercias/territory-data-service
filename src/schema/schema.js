@@ -46,7 +46,8 @@ const RootQuery = gql`
     activityLog(id: Int): ActivityLog
     activityLogs(checkout_id: Int, address_id: Int): [ActivityLog]
     getAssignmentRecords(congId: Int): [AssignmentRecord]
-    optimize(territoryId: Int!, start: Float, end: Float): [Address]
+    optimize(territoryId: Int!, start: Float, end: Float): [Address],
+    lastActivity(territoryId: Int, addressId: Int): ActivityLog,
   }
 `;
 
@@ -106,6 +107,7 @@ export const resolvers = {
     inactiveAddresses: addressQueryResolvers.inactiveAddresses,
     status: territoryQueryResolvers.status,
     city: territoryQueryResolvers.city,
+    lastActivity: territoryQueryResolvers.lastActivity,
   },
 
   Address: {
@@ -114,6 +116,7 @@ export const resolvers = {
     activityLogs: activityLogResolvers.activityLogs,
     creator: publisherQueryResolvers.creator,
     updater: publisherQueryResolvers.updater,
+    lastActivity: addressQueryResolvers.lastActivity,
   },
 
   Status: {
