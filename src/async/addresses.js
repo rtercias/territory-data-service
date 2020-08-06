@@ -16,6 +16,23 @@ class AddressAsync {
     return (await conn.query(sql))[0];
   }
 
+  async getAddresses (congId, status = 'Active') {
+    if (!congId) {
+      throw new Error('Congregation id is required');
+    }
+
+    const statusCondition = 
+      status === '*' ? '' :
+      status === '!Active' ? ` AND NOT status = 'Active'` :
+      ` AND status = '${status}'`;
+
+    const sql = `SELECT *, ${this.aliases} FROM addresses
+      WHERE territory_id > 0 AND congregationid=${congId}${statusCondition}
+      ORDER by territory_id, sort`;
+
+    return toArray(await conn.query(sql));
+  }
+
   async getAddressesByTerritory (terrId, status = 'Active') {
     const statusCondition = 
       status === '*' ? '' :

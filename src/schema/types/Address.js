@@ -79,6 +79,10 @@ export const queryResolvers = {
       if (((root && root.congregationid) || args.congId) && args.keyword) {
         const congId = (root ? root.congregationid : null) || args.congId;
         result = await addressAsync.searchAddresses(congId, args.keyword, 'Active');
+
+      } else if ((root && root.congregationid) || args.congId) {
+        const congId = (root ? root.congregationid : null) || args.congId;
+        result = await addressAsync.getAddresses(congId, 'Active');
       }
 
       return result;
