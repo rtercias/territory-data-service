@@ -48,6 +48,7 @@ const RootQuery = gql`
     getAssignmentRecords(congId: Int): [AssignmentRecord]
     optimize(territoryId: Int!, start: Float, end: Float): [Address],
     lastActivity(territoryId: Int, addressId: Int): ActivityLog,
+    nearestAddresses(congId: Int, coordinates: [Float], radius: Int, unit: String, skip: Int, take: Int): [Address],
   }
 `;
 
