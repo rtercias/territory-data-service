@@ -27,8 +27,9 @@ export const Address = gql`
     create_date: String
     update_user: Int
     updater: Publisher
-    update_date: String,
-    lastActivity: ActivityLog,
+    update_date: String
+    lastActivity: ActivityLog
+    distance: Float
   }
 `;
 
@@ -123,6 +124,15 @@ export const queryResolvers = {
     try {
       const addressId = (root && root.id) || (args && args.addressId);
       return await addressAsync.lastActivity(addressId);
+    } catch (err) {
+      console.error(err);
+    }
+  },
+
+  nearestAddresses: async (root, args) => {
+    try {
+      const { congId, coordinates, radius, unit, skip, take } = args;
+      return await addressAsync.getNearestAddresses(congId, coordinates, radius, unit, skip, take);
     } catch (err) {
       console.error(err);
     }
