@@ -143,6 +143,25 @@ class AddressAsync {
     const result = toArray(await conn.query(sql));
     return result.length && result[0];
   }
+
+  async getNearestAddresses (congId, coordinates, radius = 1, unit = 'mi', skip = 0, take = 15) {
+    if (!congId) throw new Error('cong id is required');
+    if (!coordinates) throw new Error('lat/lng coordinates is required');
+    if (!['mi', 'km'].includes(unit)) throw new Error('unknown unit type. Expected "mi" or "km"');
+
+    const lat = coordinates[0];
+    const lng = coordinates[1];
+    const factor = unit === 'mi' ? 3959 : unit === 'km' ? 6371 : 0;
+
+    const sql = `SELECT *, ${this.aliases},
+        ( ${factor} * acos( cos( radians(${lat}) ) * cos( radians( latitude ) )* cos( radians( longitude )
+        - radians(${lng}) ) + sin( radians(${lat}) ) * sin( radians( latitude ) ) ) ) AS distance 
+      FROM addresses 
+      WHERE congregationid=${congId} AND status='Active' and territory_id != 0
+      HAVING distance < ${radius} ORDER BY distance, territory_id LIMIT ${skip} , ${take}`;
+
+    return await conn.query(sql);
+  }
 }
 
 
