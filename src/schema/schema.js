@@ -49,6 +49,7 @@ const RootQuery = gql`
     optimize(territoryId: Int!, start: Float, end: Float): [Address],
     lastActivity(territoryId: Int, addressId: Int): ActivityLog,
     nearestAddresses(congId: Int, coordinates: [Float], radius: Int, unit: String, skip: Int, take: Int): [Address],
+    groups: [String]
   }
 `;
 
@@ -100,7 +101,8 @@ export const resolvers = {
 
   Congregation: {
     territories: territoryQueryResolvers.territories,
-    publishers: publisherQueryResolvers.publishers
+    publishers: publisherQueryResolvers.publishers,
+    groups: congregationResolvers.groups,
   },
 
   Territory: {
