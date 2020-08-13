@@ -2,6 +2,7 @@ import { gql } from 'apollo-server-express';
 import { toArray } from 'lodash';
 import { conn } from '../../server';
 import congAsync from '../../async/congregations';
+import groupAsync from '../../async/groups';
 
 export const Congregation = gql`
   type Congregation {
@@ -10,6 +11,7 @@ export const Congregation = gql`
     description: String
     territories: [Territory]
     publishers: [Publisher]
+    groups: [String]
   }
 `;
 
@@ -33,5 +35,18 @@ export const resolvers = {
     } catch (err) {
       console.error(err);
     }
-  }
+  },
+  groups: async (root, args) => {
+    try {
+      if (root && root.groups) {
+        return root.groups;
+
+      } else if (root.id) {
+        const groups = await groupAsync.getGroups(root.id) || [];
+        return groups.map(g => g.code);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  },
 };
