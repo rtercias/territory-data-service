@@ -1,5 +1,6 @@
 import { gql } from 'apollo-server-express';
 import { merge } from 'lodash';
+
 import {
   Address,
   AddressInput,
@@ -24,6 +25,10 @@ import {
   AssignmentRecord,
   resolvers as assignmentRecordResolvers,
 } from './types/AssignmentRecord';
+import {
+  AddressChangeLog,
+  resolvers as changeLogResolvers,
+} from './types/AddressChangeLog';
 
 const RootQuery = gql`
   type RootQuery {
@@ -49,7 +54,8 @@ const RootQuery = gql`
     optimize(territoryId: Int!, start: Float, end: Float): [Address],
     lastActivity(territoryId: Int, addressId: Int): ActivityLog,
     nearestAddresses(congId: Int, coordinates: [Float], radius: Int, unit: String, skip: Int, take: Int): [Address],
-    groups: [String]
+    groups: [String],
+    addressChangeLogs(recordId: Int, minDate: String): [AddressChangeLog],
   }
 `;
 
@@ -85,6 +91,7 @@ export const resolvers = {
     addressQueryResolvers,
     activityLogResolvers,
     assignmentRecordResolvers,
+    changeLogResolvers,
   ),
 
   Mutation: merge (
@@ -141,4 +148,5 @@ export const typeDefs = [
   ActivityLog,
   ActivityLogInput,
   AssignmentRecord,
+  AddressChangeLog,
 ];
