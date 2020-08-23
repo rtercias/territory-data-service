@@ -1,5 +1,6 @@
 import { toArray, get } from 'lodash';
 import { conn } from '../server';
+import changeLogAsync from './changeLog';
 
 class AddressAsync {
   constructor() {
@@ -111,6 +112,7 @@ class AddressAsync {
       notes = '${get(address, 'notes', '')}'
     WHERE id = ${get(address, 'id', '')}`;
 
+    await changeLogAsync.addAddressChangeLog(address);
     await conn.query(sql);
   }
 
@@ -123,6 +125,7 @@ class AddressAsync {
       status = '${status}', update_user = ${userid}, notes = '${notes}'
       WHERE id=${id}`;
 
+    await changeLogAsync.addAddressChangeLog({ id, update_user: userid, status, notes });
     await conn.query(sql);
   }
 
@@ -133,6 +136,7 @@ class AddressAsync {
     const sql = `UPDATE addresses SET 
       sort = ${sort} WHERE id=${id}`;
 
+    await changeLogAsync.addAddressChangeLog({ id, update_user: userid, sort });
     await conn.query(sql);
   }
 
