@@ -1,4 +1,4 @@
-import { toArray, get } from 'lodash';
+import { toArray, get, omitBy, isEmpty } from 'lodash';
 import { conn } from '../server';
 
 class AddressAsync {
@@ -111,6 +111,7 @@ class AddressAsync {
       notes = '${get(address, 'notes', '')}'
     WHERE id = ${get(address, 'id', '')}`;
 
+    await this.addChangeLog(address);
     await conn.query(sql);
   }
 
@@ -123,6 +124,7 @@ class AddressAsync {
       status = '${status}', update_user = ${userid}, notes = '${notes}'
       WHERE id=${id}`;
 
+    await this.addChangeLog({ id, update_user: userid, status, notes });
     await conn.query(sql);
   }
 
@@ -133,6 +135,7 @@ class AddressAsync {
     const sql = `UPDATE addresses SET 
       sort = ${sort} WHERE id=${id}`;
 
+    await this.addChangeLog({ id, update_user: userid, sort });
     await conn.query(sql);
   }
 
@@ -161,6 +164,26 @@ class AddressAsync {
       HAVING distance < ${radius} ORDER BY distance, territory_id LIMIT ${skip} , ${take}`;
 
     return await conn.query(sql);
+  }
+
+  async addChangeLog (updatedAddress) {
+    if (!updatedAddress) throw new Error('updatedAddress is required');
+
+    // get existing address first
+    const { id, update_user: userid } = updatedAddress;
+    const oldAddress = await this.getAddress(id, '*');
+    const rawChanges = omitBy(updatedAddress, (value, key) => oldAddress[key] == value);
+    const changes = {};
+    for (const key in rawChanges) {
+      changes[key] = { new: rawChanges[key], old: oldAddress[key] };
+    }
+
+    if (isEmpty(changes)) return null;
+
+    const sql = `INSERT INTO changelog (publisher_id, table_name, record_id, changes) VALUES (?, ?, ?, ?)`;
+    const values = [userid, 'addresses', id, JSON.stringify(changes)];
+    const result = await conn.query(sql, values);
+    result.insertId;
   }
 }
 
