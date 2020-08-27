@@ -13,9 +13,9 @@ export const AddressChangeLog = gql`
 `;
 
 export const resolvers = {
-  addressChangeLogs: async (root, {recordId, minDate }) => {
+  addressChangeLogs: async (root, { congId, recordId, minDate }) => {
     try {
-      return await changeLogAsync.read('addresses', recordId, minDate);
+      return await changeLogAsync.getAddressChangeLog(congId, recordId, minDate);
     } catch (err) {
       console.error(err);
     }

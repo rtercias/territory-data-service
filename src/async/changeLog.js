@@ -25,13 +25,20 @@ class ChangeLogAsync {
     result.insertId;
   }
 
-  async read (tableName, recordId, minDate) {
-    if (!tableName) throw new Error('table name is required');
-    if (!recordId) throw new Error('record id is required');
+  async getAddressChangeLog (congId, recordId, minDate) {
+    if (!congId && !recordId) throw new Error('One of congId or recordId is required');
     if (!minDate) minDate = addMonths(new Date(), -2);
+
+    let idClause = '';
+    if (!recordId) {
+      idClause = congId ? `congregationid=${congId}` : '';
+    } else {
+      idClause = recordId ? `record_id=${recordId}` : '';
+    }
+
     const result = await conn.query(`
-      SELECT * FROM changelog
-      WHERE table_name='${tableName}' AND record_id=${recordId} AND date >= '${format(minDate, 'yyyy-MM-dd pp')}'
+      SELECT * FROM address_changelog
+      WHERE ${idClause} AND date >= '${format(minDate, 'yyyy-MM-dd pp')}'
     `);
 
     return result;

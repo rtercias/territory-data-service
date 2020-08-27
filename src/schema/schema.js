@@ -55,7 +55,7 @@ const RootQuery = gql`
     lastActivity(territoryId: Int, addressId: Int): ActivityLog,
     nearestAddresses(congId: Int, coordinates: [Float], radius: Int, unit: String, skip: Int, take: Int): [Address],
     groups: [String],
-    addressChangeLogs(recordId: Int, minDate: String): [AddressChangeLog],
+    addressChangeLogs(congId: Int, recordId: Int, minDate: String): [AddressChangeLog],
   }
 `;
 
