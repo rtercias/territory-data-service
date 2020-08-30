@@ -1,5 +1,5 @@
 import { conn } from '../server';
-import addMonths from 'date-fns/addMonths';
+import addWeeks from 'date-fns/addWeeks';
 import format from 'date-fns/format';
 import { omitBy, isEmpty } from 'lodash';
 import addressAsync from './addresses';
@@ -27,7 +27,7 @@ class ChangeLogAsync {
 
   async getAddressChangeLog (congId, recordId, minDate) {
     if (!congId && !recordId) throw new Error('One of congId or recordId is required');
-    if (!minDate) minDate = addMonths(new Date(), -2);
+    if (!minDate) minDate = addWeeks(new Date(), -1);
 
     let idClause = '';
     if (!recordId) {

@@ -133,6 +133,11 @@ export const resolvers = {
     publisher: publisherQueryResolvers.publisher,
     territory: territoryQueryResolvers.territory,
   },
+
+  AddressChangeLog: {
+    publisher: publisherQueryResolvers.publisher,
+    address: addressQueryResolvers.address,
+  },
 }
 
 export const typeDefs = [
