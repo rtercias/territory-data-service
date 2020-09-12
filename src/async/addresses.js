@@ -129,9 +129,10 @@ class AddressAsync {
     await conn.query(sql);
   }
 
-  async updateSort (id, sort) {
+  async updateSort (id, sort, userid) {
     if (!id) throw new Error('id is required');
     if (!sort) throw new Error('sort is required');
+    if (!userid) throw new Error('userid is required');
 
     const sql = `UPDATE addresses SET 
       sort = ${sort} WHERE id=${id}`;
