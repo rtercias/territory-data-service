@@ -4,10 +4,11 @@ import changeLogAsync from '../../async/changeLog';
 export const AddressChangeLog = gql`
   type AddressChangeLog {
     id: Int
-    publisher_id: Int
+    publisher: Publisher
     date: String
     table_name: String
     record_id: Int
+    address: Address
     changes: String
   }
 `;
