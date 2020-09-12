@@ -184,9 +184,9 @@ export const mutationResolvers = {
   updateSort: async (root, args) => {
     let success = false;
     try {
-      const { addressIds } = args;
+      const { addressIds, userid } = args;
       for (const [index, value]  of addressIds.entries()) {
-        await addressAsync.updateSort(value, index + 1);
+        await addressAsync.updateSort(value, index + 1, userid);
       }
       success = true;
     } catch (err) {
