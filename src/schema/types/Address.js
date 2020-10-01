@@ -164,8 +164,9 @@ export const mutationResolvers = {
   addNote: async (root, args) => {
     try {
       const address = await addressAsync.getAddress(args.addressId, '*');
+      const update_user = args.userid;
       const notes = await Notes.add(args.addressId, args.note, address);
-      await addressAsync.update({ ...address, notes });
+      await addressAsync.update({ ...address, notes, update_user });
       return true;
     } catch (err) {
       throw new Error(err);
@@ -174,8 +175,9 @@ export const mutationResolvers = {
   removeNote: async (root, args) => {
     try {
       const address = await addressAsync.getAddress(args.addressId, '*');
+      const update_user = args.userid;
       const notes = await Notes.remove(args.addressId, args.note, address);
-      await addressAsync.update({ ...address, notes });
+      await addressAsync.update({ ...address, notes, update_user });
       return true;
     } catch (err) {
       throw new Error(err);
