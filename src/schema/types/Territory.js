@@ -3,6 +3,7 @@ import terrAsync from './../../async/territories';
 import { isArray, orderBy, some } from 'lodash';
 import { differenceInMonths } from 'date-fns';
 import { ActivityLog } from './ActivityLog';
+import { Phone } from './Phone';
 
 export const Territory = gql`
   type Territory {
@@ -15,8 +16,9 @@ export const Territory = gql`
     addresses: [Address]
     inactiveAddresses: [Address]
     city: String
-    status: Status,
-    lastActivity: ActivityLog,
+    status: Status
+    lastActivity: ActivityLog
+    phones: [Phone]
   }
 `;
 

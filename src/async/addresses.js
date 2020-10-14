@@ -23,7 +23,7 @@ class AddressAsync {
       status === '!Active' ? ` AND NOT status = 'Active'` :
       ` AND status = '${status}'`;
 
-    const sql = `SELECT *, ${this.aliases} FROM addresses WHERE territory_id=${terrId}${statusCondition}`;
+    const sql = `SELECT *, ${this.aliases} FROM addresses WHERE type='Regular' AND territory_id=${terrId}${statusCondition}`;
 
     return toArray(await conn.query(sql));
   }
@@ -38,12 +38,12 @@ class AddressAsync {
       ` AND status = '${status}'`;
 
     const sql = `SELECT *, ${this.aliases} FROM addresses 
-    WHERE congregationid=${congId}${statusCondition} AND (addr1 LIKE '%${keyword}%' OR addr2 LIKE '%${keyword}%')`;
+    WHERE type='Regular' AND congregationid=${congId}${statusCondition} AND (addr1 LIKE '%${keyword}%' OR addr2 LIKE '%${keyword}%')`;
     return toArray(await conn.query(sql));
   }
 
   async getDNC (congId) {
-    const sql = `SELECT *, ${this.aliases} FROM addresses WHERE congregationid=${congId} AND status='DNC'`;
+    const sql = `SELECT *, ${this.aliases} FROM addresses WHERE type='Regular' AND congregationid=${congId} AND status='DNC'`;
     return toArray(await conn.query(sql));
   }
 
@@ -55,6 +55,7 @@ class AddressAsync {
     const results = await conn.query(`INSERT INTO addresses (
       congregationid,
       territory_id,
+      type,
       status,
       sort,
       addr1,
@@ -71,6 +72,7 @@ class AddressAsync {
     ) VALUES (
       ${ get(address, 'congregationId', '') },
       ${ get(address, 'territory_id', '') },
+      'Regular',
       '${ get(address, 'status', 'Active') }',
       ${ get(address, 'sort', '') },
       '${ get(address, 'addr1', '') }',
