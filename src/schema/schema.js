@@ -29,6 +29,12 @@ import {
   AddressChangeLog,
   resolvers as changeLogResolvers,
 } from './types/AddressChangeLog';
+import {
+  Phone,
+  PhoneInput,
+  queryResolvers as phoneQueryResolvers,
+  mutationResolvers as phoneMutationResolvers,
+} from './types/Phone';
 
 const RootQuery = gql`
   type RootQuery {
@@ -56,6 +62,8 @@ const RootQuery = gql`
     nearestAddresses(congId: Int, coordinates: [Float], radius: Int, unit: String, skip: Int, take: Int): [Address],
     groups: [String],
     addressChangeLogs(congId: Int, recordId: Int, minDate: String): [AddressChangeLog],
+    phone(id: Int, status: String): Phone,
+    phones(congId: Int, parentId: Int, terrId: Int, keyword: String): [Phone],
   }
 `;
 
@@ -72,6 +80,12 @@ const Mutation = gql`
     addLog(activityLog: ActivityLogInput): ActivityLog
     updateLog(activityLog: ActivityLogInput): ActivityLog
     removeLog(id: Int!): Boolean
+    addPhone(phone: PhoneInput!): Phone
+    updatePhone(phone: PhoneInput!): Phone
+    updatePhoneSort(phoneIds: [Int]!, userid: Int): Boolean
+    changePhoneStatus(phoneId: Int!, status: String!, userid: Int!, note: String): Boolean
+    addPhoneTag(phoneId: Int!, userid: Int!, note: String!): Boolean
+    removePhoneTag(phoneId: Int!, userid: Int!, note: String!): Boolean
   }
 `;
 
@@ -92,6 +106,7 @@ export const resolvers = {
     activityLogResolvers,
     assignmentRecordResolvers,
     changeLogResolvers,
+    phoneQueryResolvers,
   ),
 
   Mutation: merge (
@@ -99,6 +114,7 @@ export const resolvers = {
     territoryMutationResolvers,
     activityLogMutationResolvers,
     addressMutationResolvers,
+    phoneMutationResolvers,
   ),
 
   Publisher: {
@@ -118,6 +134,7 @@ export const resolvers = {
     status: territoryQueryResolvers.status,
     city: territoryQueryResolvers.city,
     lastActivity: territoryQueryResolvers.lastActivity,
+    phones: phoneQueryResolvers.phones,
   },
 
   Address: {
@@ -127,6 +144,7 @@ export const resolvers = {
     creator: publisherQueryResolvers.creator,
     updater: publisherQueryResolvers.updater,
     lastActivity: addressQueryResolvers.lastActivity,
+    phones: phoneQueryResolvers.phones,
   },
 
   Status: {
@@ -154,4 +172,6 @@ export const typeDefs = [
   ActivityLogInput,
   AssignmentRecord,
   AddressChangeLog,
+  Phone,
+  PhoneInput,
 ];

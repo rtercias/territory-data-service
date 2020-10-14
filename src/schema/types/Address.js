@@ -2,6 +2,7 @@ import { gql } from 'apollo-server-express';
 import addressAsync from './../../async/addresses';
 import { Notes } from './../../utils/Notes';
 import { ActivityLog } from './ActivityLog';
+import { Phone } from './Phone';
 
 export const Address = gql`
   type Address {
@@ -30,6 +31,7 @@ export const Address = gql`
     update_date: String
     lastActivity: ActivityLog
     distance: Float
+    phones: [Phone]
   }
 `;
 

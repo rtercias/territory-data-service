@@ -3,7 +3,7 @@ import addressAsync from './../async/addresses';
 export const Notes = {
   async add(addressId, note, address) {
     const { notes } = address || await addressAsync.getAddress(addressId, '*');
-    const notesArray = String(notes || '').split(',');
+    const notesArray = notes ? String(notes).split(',') : [];
     const existingNote = notesArray.find(n => String(n).toLowerCase() === String(note).toLowerCase());
 
     if (existingNote) return existingNote;
