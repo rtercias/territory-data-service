@@ -1,6 +1,7 @@
 import { conn } from '../server';
 import addWeeks from 'date-fns/addWeeks';
 import format from 'date-fns/format';
+import isValid from 'date-fns/isValid';
 import { omitBy, isEmpty } from 'lodash';
 import addressAsync from './addresses';
 
@@ -30,6 +31,10 @@ class ChangeLogAsync {
 
     if (!minDate) {
       minDate = format(addWeeks(new Date(), -1), 'yyyy-MM-dd pp');
+    }
+
+    if (!isValid(new Date(minDate))) {
+      throw new Error(`${minDate} is not a valid date`);
     }
 
     let idClause = '';
