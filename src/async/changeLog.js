@@ -26,7 +26,7 @@ class ChangeLogAsync {
     result.insertId;
   }
 
-  async getAddressChangeLog (congId, recordId, minDate) {
+  async getAddressChangeLog (congId, recordId, minDate, publisherId) {
     if (!congId && !recordId) throw new Error('One of congId or recordId is required');
 
     if (!minDate) {
@@ -44,9 +44,15 @@ class ChangeLogAsync {
       idClause = recordId ? `record_id=${recordId}` : '';
     }
 
+    const pubClause = publisherId ? ` AND publisher_id=${publisherId}` : '';
+
+    // Apply minDate filter only when there is no recordId or publisherId passed.
+    // This allows users to query for all records for a given address or publisher.
+    const dateClause = recordId || publisherId ? '' : ` AND date >= '${minDate}'`;
+
     const result = await conn.query(`
       SELECT * FROM address_changelog
-      WHERE ${idClause} AND date >= '${minDate}'
+      WHERE ${idClause}${pubClause}${dateClause}
     `);
 
     return result;
