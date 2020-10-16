@@ -27,7 +27,10 @@ class ChangeLogAsync {
 
   async getAddressChangeLog (congId, recordId, minDate) {
     if (!congId && !recordId) throw new Error('One of congId or recordId is required');
-    if (!minDate) minDate = addWeeks(new Date(), -1);
+
+    if (!minDate) {
+      minDate = format(addWeeks(new Date(), -1), 'yyyy-MM-dd pp');
+    }
 
     let idClause = '';
     if (!recordId) {
@@ -38,7 +41,7 @@ class ChangeLogAsync {
 
     const result = await conn.query(`
       SELECT * FROM address_changelog
-      WHERE ${idClause} AND date >= '${format(minDate, 'yyyy-MM-dd pp')}'
+      WHERE ${idClause} AND date >= '${minDate}'
     `);
 
     return result;
