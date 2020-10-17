@@ -63,15 +63,15 @@ export const queryResolvers = {
   phones: async (root, args) => {
     try {
       let result;
-      if ((args && args.parentId) || (root && root.id)) {
-        const parentId = args.parentId || root.id;
+      if ((args && args.parent_id) || (root && root.id)) {
+        const parentId = args.parent_id || root.id;
         const terrId = args.terrId;
-        result = await phonesAsync.getPhones(parentId, terrId, 'Active');
+        result = await phoneAsync.getPhones(parentId, terrId, 'Active');
       }
 
       if (((root && root.congregationid) || args.congId) && args.keyword) {
         const congId = (root ? root.congregationid : null) || args.congId;
-        result = await phonesAsync.searchPhones(congId, args.keyword, 'Active');
+        result = await phoneAsync.searchPhones(congId, args.keyword, 'Active');
       }
 
       return result;
