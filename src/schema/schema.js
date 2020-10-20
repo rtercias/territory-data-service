@@ -156,6 +156,15 @@ export const resolvers = {
     publisher: publisherQueryResolvers.publisher,
     address: addressQueryResolvers.address,
   },
+
+  Phone: {
+    territory: territoryQueryResolvers.territory,
+    address: addressQueryResolvers.address,
+    activityLogs: activityLogResolvers.activityLogs,
+    creator: publisherQueryResolvers.creator,
+    updater: publisherQueryResolvers.updater,
+    lastActivity: addressQueryResolvers.lastActivity,
+  },
 }
 
 export const typeDefs = [

@@ -66,6 +66,8 @@ export const queryResolvers = {
         return await addressAsync.getAddress(root.address_id, args.status);
       } else if (root.record_id && root.table_name === 'addresses') {
         return await addressAsync.getAddress(root.record_id, '*');
+      } else if (root.parent_id) {
+        return await addressAsync.getAddress(root.parent_id, '*');
       }
 
     } catch (err) {
