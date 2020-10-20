@@ -12,6 +12,8 @@ export const Congregation = gql`
     territories: [Territory]
     publishers: [Publisher]
     groups: [String]
+    language: String
+    options: String
   }
 `;
 
