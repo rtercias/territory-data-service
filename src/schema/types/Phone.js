@@ -9,7 +9,7 @@ export const Phone = gql`
     congregationId: Int!
     congregation: Congregation
     parent_id: Int
-    parent: Address
+    address: Address
     territory_id: Int
     territory: Territory
     type: String!
