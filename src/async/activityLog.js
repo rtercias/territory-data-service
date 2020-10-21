@@ -37,7 +37,7 @@ class ActivityLogAsync {
   }
 
   async readOne (id) {
-    const sql = `SELECT * FROM activitylog WHERE id=${id}`;
+    const sql = `SELECT log.*, a.parent_id FROM activitylog log LEFT JOIN addresses a ON log.address_id = a.id WHERE log.id=${id}`;
     const result = await conn.query(sql);
     if (result && result.length) {
       return result[0];
