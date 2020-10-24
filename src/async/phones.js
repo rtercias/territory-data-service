@@ -155,6 +155,20 @@ class PhonesAsync {
     const result = toArray(await conn.query(sql));
     return result.length && result[0];
   }
+
+  async searchPhones (congId, phone, status = 'Active') {
+    if (!congId || !phone) {
+      return [];
+    }
+
+    const statusCondition = status === '*' ? '' :
+      status === '!Active' ? ` AND NOT status = 'Active'` :
+      ` AND status = '${status}'`;
+
+    const sql = `SELECT *, ${this.aliases} FROM addresses 
+    WHERE type='Regular' AND congregationid=${congId}${statusCondition} AND (phone LIKE '%${phone}%' OR notes LIKE '%${phone}%')`;
+    return toArray(await conn.query(sql));
+  }
 }
 
 
