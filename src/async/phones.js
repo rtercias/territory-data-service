@@ -166,7 +166,8 @@ class PhonesAsync {
       ` AND status = '${status}'`;
 
     const sql = `SELECT *, ${this.aliases} FROM addresses 
-    WHERE type='Regular' AND congregationid=${congId}${statusCondition} AND (phone LIKE '%${phone}%' OR notes LIKE '%${phone}%')`;
+      WHERE type='Phone' AND congregationid=${congId}${statusCondition}
+      AND (phone LIKE '%${phone}%' OR notes LIKE '%${phone}%')`;
     return toArray(await conn.query(sql));
   }
 }
