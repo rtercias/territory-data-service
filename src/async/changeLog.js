@@ -44,7 +44,7 @@ class ChangeLogAsync {
     if (!recordId) {
       idClause = congId ? `congregationid=${congId}` : '';
     } else {
-      idClause = recordId ? `record_id=${recordId}` : '';
+      idClause = recordId ? `(record_id=${recordId} OR parent_id=${recordId})` : '';
     }
 
     const pubClause = publisherId ? ` AND publisher_id=${publisherId}` : '';
