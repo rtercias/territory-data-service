@@ -33,6 +33,7 @@ export const Address = gql`
     lastActivity: ActivityLog
     distance: Float
     phones: [Phone]
+    parent_id: Int
   }
 `;
 
