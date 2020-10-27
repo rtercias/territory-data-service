@@ -42,19 +42,20 @@ class ChangeLogAsync {
 
     let idClause = '';
     if (!recordId) {
-      idClause = congId ? `congregationid=${congId}` : '';
+      idClause = congId ? `a.congregationid=${congId}` : '';
     } else {
-      idClause = recordId ? `(record_id=${recordId} OR parent_id=${recordId})` : '';
+      idClause = recordId ? `(cl.record_id=${recordId} OR a.parent_id=${recordId})` : '';
     }
 
-    const pubClause = publisherId ? ` AND publisher_id=${publisherId}` : '';
+    const pubClause = publisherId ? ` AND cl.publisher_id=${publisherId}` : '';
 
     // Apply minDate filter only when there is no recordId or publisherId passed.
     // This allows users to query for all records for a given address or publisher.
-    const dateClause = recordId || publisherId ? '' : ` AND date >= '${minDate}'`;
+    const dateClause = recordId || publisherId ? '' : ` AND cl.date >= '${minDate}'`;
 
     const result = await conn.query(`
-      SELECT * FROM address_changelog
+      SELECT * FROM address_changelog cl
+      JOIN addresses a ON cl.record_id = a.id
       WHERE ${idClause}${pubClause}${dateClause}
     `);
 
