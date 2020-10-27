@@ -10,6 +10,7 @@ export const Address = gql`
     congregationId: Int!
     congregation: Congregation
     territory_id: Int
+    type: String
     status: String!
     addr1: String
     addr2: String
