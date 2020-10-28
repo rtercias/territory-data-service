@@ -3,6 +3,7 @@ import addressAsync from './../../async/addresses';
 import { Notes } from './../../utils/Notes';
 import { ActivityLog } from './ActivityLog';
 import { Phone } from './Phone';
+import { pusher } from '../../server';
 
 export const Address = gql`
   type Address {
@@ -155,12 +156,14 @@ export const mutationResolvers = {
   },
   updateAddress: async (root, { address }) => {
     await addressAsync.update(address);
+    pusher.trigger('foreign-field', 'update-address', address);
     return await addressAsync.getAddress(address.id, '*');
   },
   changeAddressStatus: async (root, args) => {
     try {
       const notes = args.note && await Notes.add(args.addressId, args.note);
       await addressAsync.changeStatus(args.addressId, args.status, args.userid, notes);
+      pusher.trigger('foreign-field', 'change-address-status', args);
       return true;
 
     } catch (err) {
@@ -173,6 +176,7 @@ export const mutationResolvers = {
       const update_user = args.userid;
       const notes = await Notes.add(args.addressId, args.note, address);
       await addressAsync.update({ ...address, notes, update_user });
+      pusher.trigger('foreign-field', 'add-note', args);
       return true;
     } catch (err) {
       throw new Error(err);
@@ -184,6 +188,7 @@ export const mutationResolvers = {
       const update_user = args.userid;
       const notes = await Notes.remove(args.addressId, args.note, address);
       await addressAsync.update({ ...address, notes, update_user });
+      pusher.trigger('foreign-field', 'remove-note', args);
       return true;
     } catch (err) {
       throw new Error(err);
