@@ -96,7 +96,7 @@ export const queryResolvers = {
 export const mutationResolvers = {
   addPhone: async (root, { phone }) => {
     const id = await phoneAsync.create(phone);
-    pusher.trigger('foreign-field', 'add-phone', phone);
+    pusher.trigger('foreign-field', 'add-phone', { ...phone, id });
     return await phoneAsync.getPhone(id);
   },
   updatePhone: async (root, { phone }) => {
@@ -108,7 +108,7 @@ export const mutationResolvers = {
     try {
       const notes = args.note && await Notes.add(args.phoneId, args.note);
       await phoneAsync.changeStatus(args.phoneId, args.status, args.userid, notes);
-      pusher.trigger('foreign-field', 'change-phone-status', args);
+      pusher.trigger('foreign-field', 'change-phone-status', { ...args, notes });
       return true;
 
     } catch (err) {
@@ -121,7 +121,7 @@ export const mutationResolvers = {
       const update_user = args.userid;
       const notes = await Notes.add(args.phoneId, args.note, phone);
       await phoneAsync.update({ ...phone, notes, update_user });
-      pusher.trigger('foreign-field', 'add-phone-tag', args);
+      pusher.trigger('foreign-field', 'add-phone-tag', { ...args, notes });
       return true;
     } catch (err) {
       throw new Error(err);
@@ -133,7 +133,7 @@ export const mutationResolvers = {
       const update_user = args.userid;
       const notes = await Notes.remove(args.phoneId, args.note, phone);
       await phoneAsync.update({ ...phone, notes, update_user });
-      pusher.trigger('foreign-field', 'remove-phone-tag', args);
+      pusher.trigger('foreign-field', 'remove-phone-tag', { ...args, notes });
       return true;
     } catch (err) {
       throw new Error(err);

@@ -176,7 +176,7 @@ export const mutationResolvers = {
       const update_user = args.userid;
       const notes = await Notes.add(args.addressId, args.note, address);
       await addressAsync.update({ ...address, notes, update_user });
-      pusher.trigger('foreign-field', 'add-note', args);
+      pusher.trigger('foreign-field', 'add-note', { ...args, notes });
       return true;
     } catch (err) {
       throw new Error(err);
@@ -188,7 +188,7 @@ export const mutationResolvers = {
       const update_user = args.userid;
       const notes = await Notes.remove(args.addressId, args.note, address);
       await addressAsync.update({ ...address, notes, update_user });
-      pusher.trigger('foreign-field', 'remove-note', args);
+      pusher.trigger('foreign-field', 'remove-note', { ...args, notes });
       return true;
     } catch (err) {
       throw new Error(err);
