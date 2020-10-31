@@ -86,6 +86,7 @@ const Mutation = gql`
     changePhoneStatus(phoneId: Int!, status: String!, userid: Int!, note: String): Boolean
     addPhoneTag(phoneId: Int!, userid: Int!, note: String!): Boolean
     removePhoneTag(phoneId: Int!, userid: Int!, note: String!): Boolean
+    resetTerritoryActivity(checkout_id: Int!, userid: Int!, tz_offset: String, timezone: String): Boolean
   }
 `;
 

@@ -63,4 +63,9 @@ export const mutationResolvers = {
   removeLog: async (root, { id }) => {
     await activityLogAsync.delete(id);
   },
+  resetTerritoryActivity: async(root, { checkout_id, userid, tz_offset, timezone }) => {
+    const result = await activityLogAsync.resetTerritoryActivity(checkout_id, userid, tz_offset, timezone);
+    pusher.trigger('foreign-field', 'territory-checkin', { checkout_id, userid, tz_offset, timezone });
+    return result;
+  },
 };

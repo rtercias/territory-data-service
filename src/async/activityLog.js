@@ -60,6 +60,29 @@ class ActivityLogAsync {
   async delete (id) {
     await conn.query(`DELETE FROM activitylog WHERE id=${id}`);
   }
+
+  async resetTerritoryActivity (checkout_id, userid, tz_offset, timezone) {
+    const sql = `INSERT INTO activitylog (
+        checkout_id,
+        address_id,
+        value,
+        tz_offset,
+        timezone,
+        publisher_id
+      )
+      SELECT 
+        tc.id,
+        a.id,
+        'START',
+        ${tz_offset},
+        '${timezone}',
+        ${userid}
+      FROM addresses a JOIN territorycheckouts tc ON a.territory_id = tc.territoryid
+      WHERE a.type IN ('Regular', 'Phone') AND a.status = 'Active' and tc.id = ${checkout_id}`;
+
+    await conn.query(sql);
+    return true;
+  }
 }
 
 export default new ActivityLogAsync();
