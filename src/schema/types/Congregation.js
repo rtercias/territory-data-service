@@ -1,6 +1,5 @@
 import { gql } from 'apollo-server-express';
-import { toArray } from 'lodash';
-import { conn } from '../../server';
+import { pusher } from '../../server';
 import congAsync from '../../async/congregations';
 import groupAsync from '../../async/groups';
 
@@ -13,11 +12,25 @@ export const Congregation = gql`
     publishers: [Publisher]
     groups: [String]
     language: String
+    campaign: Int
+    admin_email: String
     options: String
   }
 `;
 
-export const resolvers = {
+export const CongregationInput = gql`
+  input CongregationInput {
+    id: Int
+    name: String
+    description: String
+    language: String
+    campaign: Int
+    admin_email: String
+    options: String
+  }
+`;
+
+export const queryResolvers = {
   congregation: async (root, args) => {
     try {
       const congId = args.id || root.congregationid;
@@ -47,6 +60,18 @@ export const resolvers = {
         const groups = await groupAsync.getGroups(root.id) || [];
         return groups.map(g => g.code);
       }
+    } catch (err) {
+      console.error(err);
+    }
+  },
+};
+
+export const mutationResolvers = {
+  updateCongregation: async (root, { cong }) => {
+    try {
+      await congAsync.update(cong);
+      pusher.trigger('foreign-field', 'update-cong', cong);
+      return await congAsync.getCongregationById(cong.id);
     } catch (err) {
       console.error(err);
     }
