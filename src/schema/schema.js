@@ -7,7 +7,12 @@ import {
   queryResolvers as addressQueryResolvers,
   mutationResolvers as addressMutationResolvers,
 } from './types/Address';
-import { Congregation, resolvers as congregationResolvers } from './types/Congregation';
+import { 
+  Congregation,
+  CongregationInput,
+  queryResolvers as congregationQueryResolvers,
+  mutationResolvers as congregationMutationResolvers,
+} from './types/Congregation';
 import { 
   Territory,
   queryResolvers as territoryQueryResolvers,
@@ -87,6 +92,7 @@ const Mutation = gql`
     addPhoneTag(phoneId: Int!, userid: Int!, note: String!): Boolean
     removePhoneTag(phoneId: Int!, userid: Int!, note: String!): Boolean
     resetTerritoryActivity(checkout_id: Int!, userid: Int!, tz_offset: String, timezone: String): Boolean
+    updateCongregation(cong: CongregationInput!): Congregation
   }
 `;
 
@@ -101,7 +107,7 @@ export const resolvers = {
   RootQuery: merge (
     {}, 
     publisherQueryResolvers,
-    congregationResolvers,
+    congregationQueryResolvers,
     territoryQueryResolvers,
     addressQueryResolvers,
     activityLogResolvers,
@@ -116,17 +122,18 @@ export const resolvers = {
     activityLogMutationResolvers,
     addressMutationResolvers,
     phoneMutationResolvers,
+    congregationMutationResolvers,
   ),
 
   Publisher: {
-    congregation: congregationResolvers.congregation,
+    congregation: congregationQueryResolvers.congregation,
     territories: territoryQueryResolvers.territories,
   },
 
   Congregation: {
     territories: territoryQueryResolvers.territories,
     publishers: publisherQueryResolvers.publishers,
-    groups: congregationResolvers.groups,
+    groups: congregationQueryResolvers.groups,
   },
 
   Territory: {
@@ -139,7 +146,7 @@ export const resolvers = {
   },
 
   Address: {
-    congregation: congregationResolvers.congregation,
+    congregation: congregationQueryResolvers.congregation,
     territory: territoryQueryResolvers.territory,
     activityLogs: activityLogResolvers.activityLogs,
     creator: publisherQueryResolvers.creator,
@@ -173,6 +180,7 @@ export const typeDefs = [
   RootQuery,
   Mutation,
   Congregation,
+  CongregationInput,
   Territory,
   Publisher,
   Address,
