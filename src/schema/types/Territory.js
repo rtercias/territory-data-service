@@ -41,8 +41,9 @@ export const queryResolvers = {
 
   territories: async (root, args) => {
     try {
-      if (root && root.id && args.keyword) {
-        return await terrAsync.searchTerritories(root.id, args.keyword);
+      if (((root && root.congregationid) || args.congId) && args.keyword) {
+        const congId = (root ? root.congregationid : null) || args.congId;
+        return await terrAsync.searchTerritories(congId, args.keyword);
       }
 
       if (root && root.id && args.city) {

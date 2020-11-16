@@ -16,7 +16,8 @@ class TerritoryAsync {
   }
 
   async searchTerritories (congId, keyword) {
-    return toArray(await conn.query(`SELECT * FROM territories WHERE congregationid=${congId} name LIKE '%${keyword}%' OR description LIKE '%${keyword}%'`));
+    return toArray(await conn.query(`SELECT * FROM territories
+      WHERE congregationid=${congId} AND (name LIKE '%${keyword}%' OR description LIKE '%${keyword}%')`));
   }
 
   async getTerritoryStatus (congId, territoryId, username) {
