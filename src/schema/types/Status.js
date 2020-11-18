@@ -9,5 +9,6 @@ export const Status = gql`
     publisher: Publisher
     territoryid: Int
     territory: Territory
+    campaign: Boolean
   }
 `;
