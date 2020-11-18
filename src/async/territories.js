@@ -194,8 +194,8 @@ class TerritoryAsync {
 
     // get all checked out territories
     const sqlCheckOuts = `SELECT tc.* FROM territorycheckouts_pivot tc
-      WHERE congregationid = ${congId} AND tc.in IS NULL`;
-      // AND tc.territory_id = 484`; // add this for testing
+      WHERE congregationid = ${congId} AND tc.in IS NULL
+      AND tc.territory_id = 484`; // add this for testing
     const checkouts = await conn.query(sqlCheckOuts);
 
     for (const ck of checkouts) {
