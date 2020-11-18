@@ -12,7 +12,7 @@ export const Congregation = gql`
     publishers: [Publisher]
     groups: [String]
     language: String
-    campaign: Int
+    campaign: Boolean
     admin_email: String
     options: String
   }

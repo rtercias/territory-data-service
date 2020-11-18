@@ -4,7 +4,7 @@ import orderBy from 'lodash/orderBy';
 import { conn } from '../server';
 import axios from 'axios';
 import addressAsync from './addresses';
-import { result } from 'lodash';
+import activityLog from './activityLog';
 
 class TerritoryAsync {
   async getTerritory (id) {
@@ -27,6 +27,7 @@ class TerritoryAsync {
         FROM territorycheckouts ck
         JOIN territories t ON ck.territoryid = t.id
         JOIN publishers p ON ck.publisherid = p.id
+        JOIN congregations c ON t.congregationid = c.id AND ck.campaign = c.campaign
         WHERE t.congregationid=${congId}
         ${!!territoryId ? ` AND ck.territoryid=${territoryId}` : ''}
         ${!!username ? ` AND p.username='${username}'` : ''}
@@ -71,10 +72,18 @@ class TerritoryAsync {
   }
 
   async saveTerritoryActivity(status, territoryId, publisherId, user) {
+    // get cong
+    const resultCong = await conn.query(`
+      SELECT c.* FROM territories t JOIN congregations c ON t.congregationid = c.id
+      WHERE t.id=${territoryId}`);
+    const cong = resultCong[0];
+
     if (user) {
-      await conn.query(`INSERT INTO territorycheckouts (territoryid, publisherid, status, create_user) VALUES (${territoryId}, ${publisherId}, '${status}', '${user}')`);    
+      await conn.query(`INSERT INTO territorycheckouts (territoryid, publisherid, status, create_user, campaign)
+        VALUES (${territoryId}, ${publisherId}, '${status}', '${user}', ${cong.campaign})`);
     } else {
-      await conn.query(`INSERT INTO territorycheckouts (territoryid, publisherid, status) VALUES (${territoryId}, ${publisherId}, '${status}')`);    
+      await conn.query(`INSERT INTO territorycheckouts (territoryid, publisherid, status, campaign)
+        VALUES (${territoryId}, ${publisherId}, '${status}', ${cong.campaign})`);
     }
   }
 
@@ -161,12 +170,43 @@ class TerritoryAsync {
     return orderBy(addresses, 'sort');
   }
 
-  async lastActivity (territoryId) {
+  async lastActivity(territoryId) {
     if (!territoryId) throw new Error('territory id is required');
 
     const sql = `SELECT * FROM territory_last_activity WHERE territory_id=${territoryId}`;
     const result = toArray(await conn.query(sql));
     return result.length && result[0];
+  }
+
+  async checkinAll(congId, username, tz_offset, timezone) {
+    if (!congId) throw new Error('congregation id is required');
+    if (!username) throw new Error('username is required');
+    if (!tz_offset) throw new Error('tz_offset is required');
+    if (!timezone) throw new Error('timezone is required');
+
+    // get user
+    const resultUser = await conn.query(`SELECT * FROM publishers WHERE username='${username}'`);
+    const user = sqlUser[0];
+
+    // get cong
+    const resultCong = await conn.query(`SELECT * FROM congregations WHERE id=${congId}`);
+    const cong = resultCong;
+
+    // get all checked out territories
+    const sqlCheckOuts = `SELECT tc.* FROM territorycheckouts_pivot tc
+      WHERE congregationid = ${congId} AND tc.in IS NULL
+      AND tc.territory_id = 484`; // add this for testing
+    const checkouts = await conn.query(sqlCheckOuts);
+
+    for (const ck of checkouts) {
+      // check in
+      const sql = `INSERT INTO territorycheckouts (territoryid, publisherid, status, create_user, campaign)
+        VALUES (${ck.territory_id}, ${ck.publisher_id}, 'IN', '${username}', ${cong.campaign})`;
+      await conn.query(sql);
+
+      // reset NH statuses
+      await activityLog.resetTerritoryActivity(ck.checkout_id, user.id, tz_offset, timezone);
+    }
   }
 }
 

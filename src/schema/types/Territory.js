@@ -4,6 +4,7 @@ import { isArray, orderBy, some } from 'lodash';
 import { differenceInMonths } from 'date-fns';
 import { ActivityLog } from './ActivityLog';
 import { Phone } from './Phone';
+import { pusher } from '../../server';
 
 export const Territory = gql`
   type Territory {
@@ -123,6 +124,7 @@ export const queryResolvers = {
               date: a.timestamp,
               publisherid: a.publisherid,
               territoryid: a.territoryid,
+              campaign: a.campaign,
             };
             
           } else if (terrStatus[0].status === 'IN') {
@@ -136,6 +138,7 @@ export const queryResolvers = {
                 date: a.timestamp,
                 publisherid: a.publisherid,
                 territoryid: a.territoryid,
+                campaign: a.campaign,
               };
             } else {
               // ... otherwise the territory is available.
@@ -189,7 +192,11 @@ export const mutationResolvers = {
     await terrAsync.getTerritory(territoryId);
   },
   checkinTerritory: async (root, { territoryId, publisherId, user }) => {
-    terrAsync.saveTerritoryActivity('IN', territoryId, publisherId, user);
+    await terrAsync.saveTerritoryActivity('IN', territoryId, publisherId, user);
     await terrAsync.getTerritory(territoryId);
+  },
+  checkinAll: async (root, { congId, username, tz_offset, timezone }) => {
+    await terrAsync.checkinAll(congId, username, tz_offset, timezone);
+    pusher.trigger('foreign-field', 'check-in-all', congId);
   },
 };
