@@ -2,6 +2,7 @@ import { gql } from 'apollo-server-express';
 import { pusher } from '../../server';
 const { config } = require('firebase-functions');
 import activityLogAsync from '../../async/activityLog';
+import territoriesAsync from '../../async/territories';
 
 export const ActivityLog = gql`
   type ActivityLog {
@@ -52,6 +53,10 @@ export const resolvers = {
 
 export const mutationResolvers = {
   addLog: async (root, { activityLog }) => {
+    // check if territory is still checked out
+    const status = await territoriesAsync.territoryCheckoutStatus(activityLog.checkout_id);
+    if (status.in) throw new Error('Territory is no longer checked out.');
+    
     const id = await activityLogAsync.create(activityLog);
     const newLog = await activityLogAsync.readOne(id);
     pusher.trigger('foreign-field', 'add-log', newLog);
