@@ -201,7 +201,7 @@ class TerritoryAsync {
     for (const ck of checkouts) {
       // check in
       const sql = `INSERT INTO territorycheckouts (territoryid, publisherid, status, create_user, campaign)
-        VALUES (${ck.territory_id}, ${ck.publisher_id}, 'IN', '${username}', ${cong.campaign})`;
+        VALUES (${ck.territory_id}, ${ck.publisher_id}, 'IN', '${username}', ${!cong.campaign})`;
       await conn.query(sql);
 
       // reset NH statuses
@@ -226,7 +226,7 @@ class TerritoryAsync {
     for (const ck of checkouts) {
       // replicate all checked out territories with current campaign flag
       const sql = `INSERT INTO territorycheckouts (territoryid, publisherid, status, timestamp, create_user, campaign)
-        VALUES(${ck.territory_id}, ${ck.publisher_id}, 'OUT', NOW(), '${username}', ${!cong.campaign})`;
+        VALUES(${ck.territory_id}, ${ck.publisher_id}, 'OUT', NOW(), '${username}', ${cong.campaign})`;
       const result = await conn.query(sql);
       const logs = await activityLog.read(ck.checkout_id);
 
