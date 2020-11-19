@@ -208,6 +208,25 @@ class TerritoryAsync {
       await activityLog.resetTerritoryActivity(ck.checkout_id, user.id, tz_offset, timezone);
     }
   }
+
+  async createCampaignCheckouts(congId, username) {
+    if (!congId) throw new Error('congregation id is required');
+    if (!username) throw new Error('username is required');
+
+    // get cong
+    const resultCong = await conn.query(`SELECT * FROM congregations WHERE id=${congId}`);
+    const cong = resultCong[0];
+
+    // replicate all checked out territories with current campaign flag
+    const sqlInsert = `
+      INSERT INTO territorycheckouts (territoryid, publisherid, status, timestamp, create_user, campaign)
+      SELECT tc.territory_id, tc.publisher_id, 'OUT', NOW(), '${username}', ${!cong.campaign}
+      FROM territorycheckouts_pivot tc
+      WHERE congregationid = ${congId} AND tc.in IS NULL
+      AND tc.territory_id = 484`; // add this for testing
+
+    await conn.query(sqlInsert);
+  }
 }
 
 export default new TerritoryAsync();

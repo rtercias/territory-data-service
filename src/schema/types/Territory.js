@@ -199,4 +199,8 @@ export const mutationResolvers = {
     await terrAsync.checkinAll(congId, username, tz_offset, timezone);
     pusher.trigger('foreign-field', 'check-in-all', congId);
   },
+  copyCheckouts: async (root, { congId, username }) => {
+    await terrAsync.createCampaignCheckouts(congId, username);
+    pusher.trigger('foreign-field', 'copy-checkouts', congId);
+  },
 };
