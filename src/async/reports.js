@@ -8,7 +8,7 @@ class ReportsAsync {
     const cong = resultCong[0];
 
     return toArray(await conn.query(`SELECT * FROM territorycheckouts_pivot
-      where congregationid=${congId} and campaign=${cong.campaign}
+      where congregationid=${congId} and COALESCE(campaign, 0)=${cong.campaign || 0}
       order by territory_id, timestamp`));
   }
 }
