@@ -186,11 +186,11 @@ class TerritoryAsync {
 
     // get user
     const resultUser = await conn.query(`SELECT * FROM publishers WHERE username='${username}'`);
-    const user = sqlUser[0];
+    const user = resultUser[0];
 
     // get cong
     const resultCong = await conn.query(`SELECT * FROM congregations WHERE id=${congId}`);
-    const cong = resultCong;
+    const cong = resultCong[0];
 
     // get all checked out territories
     const sqlCheckOuts = `SELECT tc.* FROM territorycheckouts_pivot tc
