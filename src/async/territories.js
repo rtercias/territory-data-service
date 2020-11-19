@@ -230,7 +230,7 @@ class TerritoryAsync {
       const result = await conn.query(sql);
       const logs = await activityLog.read(ck.checkout_id);
 
-      // ONE-TIME RUN. Cleanup: Remove this after first run
+      // ONE-TIME RUN. Remove this after first run
       for (const log of logs) {
         log.checkout_id = result.insertId;
         // replicate latest activity status for each address/phone
