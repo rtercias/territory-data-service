@@ -72,7 +72,7 @@ class ActivityLogAsync {
       )
       SELECT 
         a.checkout_id,
-        a.id,
+        a.address_id,
         'START',
         ${tz_offset},
         '${timezone}',
