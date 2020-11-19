@@ -76,8 +76,8 @@ const Mutation = gql`
   type Mutation {
     checkoutTerritory(territoryId: Int!, publisherId: Int!, user: String): Territory
     checkinTerritory(territoryId: Int!, publisherId: Int!, user: String): Territory
-    checkinAll(congId: Int!, username: String!, tz_offset: String!, timezone: String!): Boolean
-    copyCheckouts(congId: Int!, username: String!): Boolean
+    checkinAll(congId: Int!, username: String!, tz_offset: String!, timezone: String!, campaign: Boolean): Boolean
+    copyCheckouts(congId: Int!, username: String!, campaign: Boolean): Boolean
     addAddress(address: AddressInput!): Address
     updateAddress(address: AddressInput!): Address
     updateSort(addressIds: [Int]!, userid: Int): Boolean

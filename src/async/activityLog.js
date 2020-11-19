@@ -71,14 +71,14 @@ class ActivityLogAsync {
         publisher_id
       )
       SELECT 
-        tc.id,
+        a.checkout_id,
         a.id,
         'START',
         ${tz_offset},
         '${timezone}',
         ${userid}
-      FROM addresses a JOIN territorycheckouts tc ON a.territory_id = tc.territoryid
-      WHERE a.type IN ('Regular', 'Phone') AND a.status = 'Active' and tc.id = ${checkout_id}`;
+      FROM address_last_activity a
+      WHERE a.checkout_id = ${checkout_id} AND a.value != 'START'`;
 
     await conn.query(sql);
     return true;

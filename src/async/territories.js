@@ -71,6 +71,12 @@ class TerritoryAsync {
     return toArray(await conn.query(`SELECT * FROM territories_by_city WHERE congregationid=${congId} AND group_code='${groupCode}' ORDER BY city, name`));
   }
 
+  async territoryCheckoutStatus (checkout_id) {
+    const sql = `SELECT * FROM territorycheckouts_pivot p WHERE p.checkout_id = ${checkout_id}`;
+    const result = await conn.query(sql);
+    return result[0];
+  }
+
   async saveTerritoryActivity(status, territoryId, publisherId, user) {
     // get cong
     const resultCong = await conn.query(`
@@ -178,7 +184,7 @@ class TerritoryAsync {
     return result.length && result[0];
   }
 
-  async checkinAll(congId, username, tz_offset, timezone) {
+  async checkinAll(congId, username, tz_offset, timezone, _campaign) {
     if (!congId) throw new Error('congregation id is required');
     if (!username) throw new Error('username is required');
     if (!tz_offset) throw new Error('tz_offset is required');
@@ -192,16 +198,18 @@ class TerritoryAsync {
     const resultCong = await conn.query(`SELECT * FROM congregations WHERE id=${congId}`);
     const cong = resultCong[0];
 
+    const campaign = _campaign === null || _campaign === undefined ? cong.campaign : _campaign;
+
     // get all checked out territories
     const sqlCheckOuts = `SELECT tc.* FROM territorycheckouts_pivot tc
       WHERE congregationid = ${congId} AND tc.in IS NULL
-      AND tc.territory_id = 484`; // add this for testing
+      AND tc.territory_id IN (484, 562)`; // add this for testing
     const checkouts = await conn.query(sqlCheckOuts);
 
     for (const ck of checkouts) {
       // check in
       const sql = `INSERT INTO territorycheckouts (territoryid, publisherid, status, create_user, campaign)
-        VALUES (${ck.territory_id}, ${ck.publisher_id}, 'IN', '${username}', ${!cong.campaign})`;
+        VALUES (${ck.territory_id}, ${ck.publisher_id}, 'IN', '${username}', ${campaign})`;
       await conn.query(sql);
 
       // reset NH statuses
@@ -209,7 +217,7 @@ class TerritoryAsync {
     }
   }
 
-  async createCampaignCheckouts(congId, username) {
+  async createCampaignCheckouts(congId, username, _campaign) {
     if (!congId) throw new Error('congregation id is required');
     if (!username) throw new Error('username is required');
 
@@ -217,16 +225,18 @@ class TerritoryAsync {
     const resultCong = await conn.query(`SELECT * FROM congregations WHERE id=${congId}`);
     const cong = resultCong[0];
 
+    const campaign = _campaign === null || _campaign === undefined ? cong.campaign : _campaign;
+
     // get all checked out territories
     const sqlCheckOuts = `SELECT tc.* FROM territorycheckouts_pivot tc
       WHERE congregationid = ${congId} AND tc.in IS NULL
-      AND tc.territory_id = 484`; // add this for testing
+      AND tc.territory_id IN (484, 562)`; // add this for testing
     const checkouts = await conn.query(sqlCheckOuts);
 
     for (const ck of checkouts) {
       // replicate all checked out territories with current campaign flag
       const sql = `INSERT INTO territorycheckouts (territoryid, publisherid, status, timestamp, create_user, campaign)
-        VALUES(${ck.territory_id}, ${ck.publisher_id}, 'OUT', NOW(), '${username}', ${cong.campaign})`;
+        VALUES(${ck.territory_id}, ${ck.publisher_id}, 'OUT', NOW(), '${username}', ${campaign})`;
       const result = await conn.query(sql);
       const logs = await activityLog.read(ck.checkout_id);
 
