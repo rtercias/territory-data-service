@@ -217,15 +217,26 @@ class TerritoryAsync {
     const resultCong = await conn.query(`SELECT * FROM congregations WHERE id=${congId}`);
     const cong = resultCong[0];
 
-    // replicate all checked out territories with current campaign flag
-    const sqlInsert = `
-      INSERT INTO territorycheckouts (territoryid, publisherid, status, timestamp, create_user, campaign)
-      SELECT tc.territory_id, tc.publisher_id, 'OUT', NOW(), '${username}', ${!cong.campaign}
-      FROM territorycheckouts_pivot tc
+    // get all checked out territories
+    const sqlCheckOuts = `SELECT tc.* FROM territorycheckouts_pivot tc
       WHERE congregationid = ${congId} AND tc.in IS NULL
       AND tc.territory_id = 484`; // add this for testing
+    const checkouts = await conn.query(sqlCheckOuts);
 
-    await conn.query(sqlInsert);
+    for (const ck of checkouts) {
+      // replicate all checked out territories with current campaign flag
+      const sql = `INSERT INTO territorycheckouts (territoryid, publisherid, status, timestamp, create_user, campaign)
+        VALUES(${ck.territory_id}, ${ck.publisher_id}, 'OUT', NOW(), '${username}', ${!cong.campaign})`;
+      const result = await conn.query(sql);
+      const logs = await activityLog.read(ck.checkout_id);
+
+      // ONE-TIME RUN. Remove this after first run
+      for (const log of logs) {
+        log.checkout_id = result.insertId;
+        // replicate latest activity status for each address/phone
+        await activityLog.create(log);
+      }
+    }
   }
 }
 
