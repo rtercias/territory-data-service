@@ -36,6 +36,10 @@ class TerritoryAsync {
   }
 
   async getTerritoriesByUser (congId, username) {
+    // get cong
+    const resultCong = await conn.query(`SELECT * FROM congregations WHERE id=${congId}`);
+    const cong = resultCong[0];
+
     return toArray(await conn.query(
       `
         SELECT ck.*, t.*
@@ -44,6 +48,7 @@ class TerritoryAsync {
         WHERE ck.congregationid=${congId}
         AND ck.username='${username}'
         AND ck.in IS NULL
+        AND ck.campaign=${cong.campaign}
       `
     ));
   }
@@ -202,7 +207,7 @@ class TerritoryAsync {
 
     // get all checked out territories
     const sqlCheckOuts = `SELECT tc.* FROM territorycheckouts_pivot tc
-      WHERE congregationid = ${congId} AND tc.in IS NULL
+      WHERE tc.congregationid = ${congId} AND tc.in IS NULL AND tc.campaign = ${cong.campaign}
       AND tc.territory_id IN (484, 562)`; // add this for testing
     const checkouts = await conn.query(sqlCheckOuts);
 
@@ -229,7 +234,7 @@ class TerritoryAsync {
 
     // get all checked out territories
     const sqlCheckOuts = `SELECT tc.* FROM territorycheckouts_pivot tc
-      WHERE congregationid = ${congId} AND tc.in IS NULL
+      WHERE tc.congregationid = ${congId} AND tc.in IS NULL AND tc.campaign = ${cong.campaign}
       AND tc.territory_id IN (484, 562)`; // add this for testing
     const checkouts = await conn.query(sqlCheckOuts);
 
