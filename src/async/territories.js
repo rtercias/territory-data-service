@@ -207,8 +207,7 @@ class TerritoryAsync {
 
     // get all checked out territories
     const sqlCheckOuts = `SELECT tc.* FROM territorycheckouts_pivot tc
-      WHERE tc.congregationid = ${congId} AND tc.in IS NULL AND COALESCE(tc.campaign, 0)=${campaign || 0}
-      AND tc.territory_id IN (484, 562)`; // add this for testing
+      WHERE tc.congregationid = ${congId} AND tc.in IS NULL AND COALESCE(tc.campaign, 0)=${campaign || 0}`;
     const checkouts = await conn.query(sqlCheckOuts);
 
     for (const ck of checkouts) {
@@ -234,8 +233,7 @@ class TerritoryAsync {
 
     // get all checked out territories
     const sqlCheckOuts = `SELECT tc.* FROM territorycheckouts_pivot tc
-      WHERE tc.congregationid = ${congId} AND tc.in IS NULL AND COALESCE(tc.campaign, 0)=${campaign || 0}
-      AND tc.territory_id IN (484, 562)`; // add this for testing
+      WHERE tc.congregationid = ${congId} AND tc.in IS NULL AND COALESCE(tc.campaign, 0)=${campaign || 0}`;
     const checkouts = await conn.query(sqlCheckOuts);
 
     for (const ck of checkouts) {
