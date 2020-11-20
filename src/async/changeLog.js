@@ -7,7 +7,7 @@ import addressAsync from './addresses';
 
 class ChangeLogAsync {
   async addAddressChangeLog (updatedAddress) {
-    // const skip = ['create_date'];
+    const skip = ['create_date'];
     if (!updatedAddress) throw new Error('updatedAddress is required');
 
     // get existing address first
@@ -16,9 +16,9 @@ class ChangeLogAsync {
     const rawChanges = omitBy(updatedAddress, (value, key) => oldAddress[key] == value);
     const changes = {};
     for (const key in rawChanges) {
-      // if (!skip.includes(key)) {
-      changes[key] = { new: rawChanges[key], old: oldAddress[key] };
-      // }
+      if (!skip.includes(key)) {
+        changes[key] = { new: rawChanges[key], old: oldAddress[key] };
+      }
     }
 
     if (isEmpty(changes)) return null;
