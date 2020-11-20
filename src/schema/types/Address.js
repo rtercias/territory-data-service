@@ -23,7 +23,7 @@ export const Address = gql`
     latitude: Float
     territory: Territory
     notes: String
-    activityLogs: [ActivityLog]
+    activityLogs(checkout_id: Int): [ActivityLog]
     sort: Int
     create_user: Int
     creator: Publisher

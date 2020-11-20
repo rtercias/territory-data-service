@@ -43,7 +43,7 @@ export const resolvers = {
   activityLogs: async (root, args) => {
     try {
       const checkout_id = args.checkout_id;
-      const address_id = args.address_id || root.id;
+      const address_id = root.id;
       return await activityLogAsync.read(checkout_id, address_id);
     } catch (err) {
       console.error(err);
