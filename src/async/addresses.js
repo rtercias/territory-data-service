@@ -43,8 +43,11 @@ class AddressAsync {
     return toArray(await conn.query(sql));
   }
 
-  async getDNC (congId) {
-    const sql = `SELECT *, ${this.aliases} FROM addresses WHERE type='Regular' AND congregationid=${congId} AND status='DNC'`;
+  async getDNC (congId, keyword) {
+    const sql = `SELECT *, ${this.aliases} FROM addresses WHERE type='Regular'
+      AND congregationid=${congId} AND status='DNC'
+      AND (addr1 LIKE '%${keyword}%' OR addr2 LIKE '%${keyword}%')`;
+
     return toArray(await conn.query(sql));
   }
 
