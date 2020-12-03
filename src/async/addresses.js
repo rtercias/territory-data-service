@@ -152,7 +152,7 @@ class AddressAsync {
 
     const sql = `SELECT * FROM address_last_activity WHERE address_id=${addressId}`;
     const result = toArray(await conn.query(sql));
-    return result.length && result[0];
+    return result.length ? result[0] : null;
   }
 
   async getNearestAddresses (congId, coordinates, radius = 1, unit = 'mi', skip = 0, take = 15) {

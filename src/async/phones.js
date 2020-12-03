@@ -153,7 +153,7 @@ class PhonesAsync {
 
     const sql = `SELECT * FROM address_last_activity WHERE address_id=${phoneId}`;
     const result = toArray(await conn.query(sql));
-    return result.length && result[0];
+    return result.length ? result[0] : null;
   }
 
   async searchPhones (congId, phone, status = 'Active') {

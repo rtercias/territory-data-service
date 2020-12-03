@@ -186,7 +186,7 @@ class TerritoryAsync {
 
     const sql = `SELECT * FROM territory_last_activity WHERE territory_id=${territoryId}`;
     const result = toArray(await conn.query(sql));
-    return result.length && result[0];
+    return result.length ? result[0] : null;
   }
 
   async checkinAll(congId, username, tz_offset, timezone, _campaign) {
