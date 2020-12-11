@@ -27,6 +27,8 @@ export const CongregationInput = gql`
     campaign: Int
     admin_email: String
     options: String
+    create_user: Int
+    update_user: Int
   }
 `;
 
@@ -67,6 +69,10 @@ export const queryResolvers = {
 };
 
 export const mutationResolvers = {
+  addCongregation: async (root, { cong }) => {
+    const id = await congAsync.create(cong);
+    return await congAsync.getCongregationById(id);
+  },
   updateCongregation: async (root, { cong }) => {
     try {
       await congAsync.update(cong);

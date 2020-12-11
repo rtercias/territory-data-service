@@ -1,6 +1,7 @@
 const { config } = require('firebase-functions');
 import toArray from 'lodash/toArray';
 import orderBy from 'lodash/orderBy';
+import get from 'lodash/get';
 import { conn } from '../server';
 import axios from 'axios';
 import addressAsync from './addresses';
@@ -80,6 +81,65 @@ class TerritoryAsync {
     const sql = `SELECT * FROM territorycheckouts_pivot p WHERE p.checkout_id = ${checkout_id}`;
     const result = await conn.query(sql);
     return result[0];
+  }
+
+  async create (territory) {
+    if (!territory.congregationid) {
+      throw new Error('congregation id is required');
+    }
+    if (!territory.group_code) {
+      throw new Error('group code is required');
+    }
+    if (!territory.create_user) {
+      throw new Error('create user is required');
+    }
+
+    const sql = `INSERT INTO territories (
+      congregationid,
+      name,
+      description,
+      type,
+      group_code,
+      create_user,
+      tags
+    ) VALUES (
+      ${ get(territory, 'congregationid', '') },
+      '${ get(territory, 'name', '') }',
+      '${ get(territory, 'description', '') }',
+      '${ get(territory, 'type', '') }',
+      '${ get(territory, 'group_code', '') }',
+      '${ get(territory, 'create_user', '') }',
+      '${ get(territory, 'tags', '') }'
+    )`;
+    const results = await conn.query(sql);
+
+    return results.insertId;
+  }
+
+  async update (territory) {
+    if (!(territory && territory.id)) {
+      throw new Error('id is required');
+    }
+    if (!territory.congregationid) {
+      throw new Error('congregation id is required');
+    }
+    if (!territory.group_code) {
+      throw new Error('group code is required');
+    }
+    if (!territory.update_user) {
+      throw new Error('update user is required');
+    }
+
+    const sql = `UPDATE territories SET
+      congregationid = ${get(territory, 'congregationid', '')},
+      name = '${get(territory, 'name', '')}',
+      description = '${get(territory, 'description', '')}',
+      type = '${get(territory, 'type', '')}',
+      group_code = '${get(territory, 'group_code', '')}',
+      update_user = ${get(territory, 'update_user', '')},
+      tags = '${get(territory, 'tags', '')}'
+    WHERE id = ${get(territory, 'id', '')}`;
+    await conn.query(sql);
   }
 
   async saveTerritoryActivity(status, territoryId, publisherId, user) {

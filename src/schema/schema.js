@@ -14,7 +14,14 @@ import {
   mutationResolvers as congregationMutationResolvers,
 } from './types/Congregation';
 import { 
+  Group,
+  GroupInput,
+  queryResolvers as groupQueryResolvers,
+  mutationResolvers as groupMutationResolvers,
+} from './types/Group';
+import { 
   Territory,
+  TerritoryInput,
   queryResolvers as territoryQueryResolvers,
   mutationResolvers as territoryMutationResolvers,
 } from './types/Territory';
@@ -65,7 +72,9 @@ const RootQuery = gql`
     optimize(territoryId: Int!, start: Float, end: Float): [Address],
     lastActivity(territoryId: Int, addressId: Int): ActivityLog,
     nearestAddresses(congId: Int, coordinates: [Float], radius: Int, unit: String, skip: Int, take: Int): [Address],
-    groups: [String],
+    group(id: Int, congId: Int, code: String): Group,
+    groups: [Group],
+    groupCodes: [String],
     addressChangeLogs(congId: Int, recordId: Int, minDate: String, publisherId: Int): [AddressChangeLog],
     phone(id: Int, status: String): Phone,
     phones(congId: Int, parentId: Int, terrId: Int, keyword: String): [Phone],
@@ -94,7 +103,12 @@ const Mutation = gql`
     addPhoneTag(phoneId: Int!, userid: Int!, note: String!): Boolean
     removePhoneTag(phoneId: Int!, userid: Int!, note: String!): Boolean
     resetTerritoryActivity(checkout_id: Int!, userid: Int!, tz_offset: String, timezone: String): Boolean
+    addCongregation(cong: CongregationInput!): Congregation
     updateCongregation(cong: CongregationInput!): Congregation
+    addTerritory(territory: TerritoryInput!): Territory
+    updateTerritory(territory: TerritoryInput!): Territory
+    addGroup(group: GroupInput!): Group
+    updateGroup(group: GroupInput!): Group
   }
 `;
 
@@ -116,6 +130,7 @@ export const resolvers = {
     assignmentRecordResolvers,
     changeLogResolvers,
     phoneQueryResolvers,
+    groupQueryResolvers,
   ),
 
   Mutation: merge (
@@ -125,6 +140,7 @@ export const resolvers = {
     addressMutationResolvers,
     phoneMutationResolvers,
     congregationMutationResolvers,
+    groupMutationResolvers,
   ),
 
   Publisher: {
@@ -135,7 +151,7 @@ export const resolvers = {
   Congregation: {
     territories: territoryQueryResolvers.territories,
     publishers: publisherQueryResolvers.publishers,
-    groups: congregationQueryResolvers.groups,
+    groups: groupQueryResolvers.groups,
   },
 
   Territory: {
@@ -184,6 +200,7 @@ export const typeDefs = [
   Congregation,
   CongregationInput,
   Territory,
+  TerritoryInput,
   Publisher,
   Address,
   AddressInput,
@@ -194,4 +211,6 @@ export const typeDefs = [
   AddressChangeLog,
   Phone,
   PhoneInput,
+  Group,
+  GroupInput,
 ];
