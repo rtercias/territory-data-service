@@ -211,6 +211,14 @@ export const mutationResolvers = {
     pusher.trigger('foreign-field', 'update-territory', territory);
     return await terrAsync.getTerritory(territory.id);
   },
+  deleteTerritory: async( root, { id }) => {
+    try {
+      await terrAsync.delete(id);
+      return true;
+    } catch (err) {
+      console.error(err);
+    }
+  },
   checkoutTerritory: async (root, { territoryId, publisherId, user }) => {
     await terrAsync.saveTerritoryActivity('OUT', territoryId, publisherId, user);
     await terrAsync.getTerritory(territoryId);

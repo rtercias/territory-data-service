@@ -142,6 +142,12 @@ class TerritoryAsync {
     await conn.query(sql);
   }
 
+  async delete (id) {
+    if (!id) throw new Error('id is required');
+    const sql = `DELETE FROM territories WHERE id = ${id}`;
+    return await conn.query(sql);
+  }
+
   async saveTerritoryActivity(status, territoryId, publisherId, user) {
     // get cong
     const resultCong = await conn.query(`

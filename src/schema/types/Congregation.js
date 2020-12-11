@@ -82,4 +82,12 @@ export const mutationResolvers = {
       console.error(err);
     }
   },
+  deleteCongregation: async( root, { id }) => {
+    try {
+      await congAsync.delete(id);
+      return true;
+    } catch (err) {
+      console.error(err);
+    }
+  },
 };

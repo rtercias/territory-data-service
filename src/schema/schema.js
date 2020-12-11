@@ -105,10 +105,13 @@ const Mutation = gql`
     resetTerritoryActivity(checkout_id: Int!, userid: Int!, tz_offset: String, timezone: String): Boolean
     addCongregation(cong: CongregationInput!): Congregation
     updateCongregation(cong: CongregationInput!): Congregation
+    deleteCongregation(id: Int!): Boolean
     addTerritory(territory: TerritoryInput!): Territory
     updateTerritory(territory: TerritoryInput!): Territory
+    deleteTerritory(id: Int!): Boolean
     addGroup(group: GroupInput!): Group
     updateGroup(group: GroupInput!): Group
+    deleteGroup(id: Int!): Boolean
   }
 `;
 

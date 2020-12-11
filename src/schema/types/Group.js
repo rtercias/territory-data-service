@@ -56,4 +56,12 @@ export const mutationResolvers = {
       console.error(err);
     }
   },
+  deleteGroup: async( root, { id }) => {
+    try {
+      await groupAsync.delete(id);
+      return true;
+    } catch (err) {
+      console.error(err);
+    }
+  },
 };
