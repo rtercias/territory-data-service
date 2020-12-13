@@ -79,7 +79,6 @@ const RootQuery = gql`
     nearestAddresses(congId: Int, coordinates: [Float], radius: Int, unit: String, skip: Int, take: Int): [Address],
     group(id: Int, congId: Int, code: String): Group,
     groups: [Group],
-    groupCodes: [String],
     addressChangeLogs(congId: Int, recordId: Int, minDate: String, publisherId: Int): [AddressChangeLog],
     phone(id: Int, status: String): Phone,
     phones(congId: Int, parentId: Int, terrId: Int, keyword: String): [Phone],
