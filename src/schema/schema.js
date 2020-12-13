@@ -14,11 +14,23 @@ import {
   mutationResolvers as congregationMutationResolvers,
 } from './types/Congregation';
 import { 
+  Group,
+  GroupInput,
+  queryResolvers as groupQueryResolvers,
+  mutationResolvers as groupMutationResolvers,
+} from './types/Group';
+import { 
   Territory,
+  TerritoryInput,
   queryResolvers as territoryQueryResolvers,
   mutationResolvers as territoryMutationResolvers,
 } from './types/Territory';
-import { Publisher, queryResolvers as publisherQueryResolvers } from './types/Publisher';
+import {
+  Publisher,
+  PublisherInput,
+  queryResolvers as publisherQueryResolvers,
+  mutationResolvers as publisherMutationResolvers,
+} from './types/Publisher';
 import { Status } from './types/Status';
 import {
   ActivityLog, 
@@ -65,7 +77,9 @@ const RootQuery = gql`
     optimize(territoryId: Int!, start: Float, end: Float): [Address],
     lastActivity(territoryId: Int, addressId: Int): ActivityLog,
     nearestAddresses(congId: Int, coordinates: [Float], radius: Int, unit: String, skip: Int, take: Int): [Address],
-    groups: [String],
+    group(id: Int, congId: Int, code: String): Group,
+    groups: [Group],
+    groupCodes: [String],
     addressChangeLogs(congId: Int, recordId: Int, minDate: String, publisherId: Int): [AddressChangeLog],
     phone(id: Int, status: String): Phone,
     phones(congId: Int, parentId: Int, terrId: Int, keyword: String): [Phone],
@@ -94,7 +108,18 @@ const Mutation = gql`
     addPhoneTag(phoneId: Int!, userid: Int!, note: String!): Boolean
     removePhoneTag(phoneId: Int!, userid: Int!, note: String!): Boolean
     resetTerritoryActivity(checkout_id: Int!, userid: Int!, tz_offset: String, timezone: String): Boolean
+    addCongregation(cong: CongregationInput!): Congregation
     updateCongregation(cong: CongregationInput!): Congregation
+    deleteCongregation(id: Int!): Boolean
+    addTerritory(territory: TerritoryInput!): Territory
+    updateTerritory(territory: TerritoryInput!): Territory
+    deleteTerritory(id: Int!): Boolean
+    addGroup(group: GroupInput!): Group
+    updateGroup(group: GroupInput!): Group
+    deleteGroup(id: Int!): Boolean
+    addPublisher(publisher: PublisherInput!): Publisher
+    updatePublisher(publisher: PublisherInput!): Publisher
+    deletePublisher(id: Int!): Boolean
   }
 `;
 
@@ -116,15 +141,18 @@ export const resolvers = {
     assignmentRecordResolvers,
     changeLogResolvers,
     phoneQueryResolvers,
+    groupQueryResolvers,
   ),
 
   Mutation: merge (
     {},
+    publisherMutationResolvers,
     territoryMutationResolvers,
     activityLogMutationResolvers,
     addressMutationResolvers,
     phoneMutationResolvers,
     congregationMutationResolvers,
+    groupMutationResolvers,
   ),
 
   Publisher: {
@@ -135,7 +163,7 @@ export const resolvers = {
   Congregation: {
     territories: territoryQueryResolvers.territories,
     publishers: publisherQueryResolvers.publishers,
-    groups: congregationQueryResolvers.groups,
+    groups: groupQueryResolvers.groups,
   },
 
   Territory: {
@@ -184,7 +212,9 @@ export const typeDefs = [
   Congregation,
   CongregationInput,
   Territory,
+  TerritoryInput,
   Publisher,
+  PublisherInput,
   Address,
   AddressInput,
   Status,
@@ -194,4 +224,6 @@ export const typeDefs = [
   AddressChangeLog,
   Phone,
   PhoneInput,
+  Group,
+  GroupInput,
 ];

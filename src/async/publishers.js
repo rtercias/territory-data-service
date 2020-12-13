@@ -1,4 +1,5 @@
-import { toArray } from 'lodash';
+import toArray from 'lodash/toArray';
+import get from 'lodash/get';
 import { conn } from '../server';
 
 class PublisherAsync {
@@ -26,6 +27,81 @@ class PublisherAsync {
     const sql = `SELECT id, firstname, lastname, congregationid, username, status FROM publishers
       WHERE congregationid = ${congId} AND (firstname LIKE '%${kw}%' OR lastname LIKE '%${kw}%')`;
     return toArray(await conn.query(sql));
+  }
+
+  async create (publisher) {
+    if (!publisher.congregationid) {
+      throw new Error('congregation id is required');
+    }
+    if (!publisher.username) {
+      throw new Error('username is required');
+    }
+    if (!publisher.create_user) {
+      throw new Error('create user is required');
+    }
+    if (!publisher.role_id) {
+      throw new Error('role id is required');
+    }
+
+    const sql = `INSERT INTO publishers (
+      congregationid,
+      username,
+      firstname,
+      lastname,
+      create_user,
+      status
+    ) VALUES (
+      ${ get(publisher, 'congregationid', '') },
+      '${ get(publisher, 'username', '') }',
+      '${ get(publisher, 'firstname', '') }',
+      '${ get(publisher, 'lastname', '') }',
+      '${ get(publisher, 'create_user', '') }',
+      '${ get(publisher, 'create_user', 'active') }'
+    )`;
+    const result = await conn.query(sql);
+
+    const roleSql = `INSERT INTO publisherroles (publisher_id, role_id)
+      VALUES (${ result.insertId }, '${ get(publisher, 'role_id', 0) }')`;
+    await conn.query(roleSql);
+
+    return result.insertId;
+  }
+
+  async update (publisher) {
+    if (!(publisher && publisher.id)) {
+      throw new Error('id is required');
+    }
+    if (!publisher.congregationid) {
+      throw new Error('congregation id is required');
+    }
+    if (!publisher.username) {
+      throw new Error('username is required');
+    }
+    if (!publisher.update_user) {
+      throw new Error('update user is required');
+    }
+
+    const sql = `UPDATE publishers SET
+      congregationid = ${get(publisher, 'congregationid', '')},
+      username = '${get(publisher, 'username', '')}',
+      firstname = '${get(publisher, 'firstname', '')}',
+      lastname = '${get(publisher, 'lastname', '')}',
+      update_user = ${get(publisher, 'update_user', '')},
+      status = '${get(publisher, 'status', '')}'
+    WHERE id = ${publisher.id}`;
+    await conn.query(sql);
+
+    if (publisher.role_id) {
+      const roleSql = `UPDATE publisherroles SET role_id = ${get(publisher, 'role_id')}
+        WHERE id = ${publisher.id}`;
+      await conn.query(roleSql);
+    }
+  }
+
+  async delete (id) {
+    if (!id) throw new Error('id is required');
+    const sql = `DELETE FROM publishers WHERE id = ${id}`;
+    return await conn.query(sql);
   }
 }
 
