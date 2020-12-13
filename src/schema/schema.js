@@ -25,7 +25,12 @@ import {
   queryResolvers as territoryQueryResolvers,
   mutationResolvers as territoryMutationResolvers,
 } from './types/Territory';
-import { Publisher, queryResolvers as publisherQueryResolvers } from './types/Publisher';
+import {
+  Publisher,
+  PublisherInput,
+  queryResolvers as publisherQueryResolvers,
+  mutationResolvers as publisherMutationResolvers,
+} from './types/Publisher';
 import { Status } from './types/Status';
 import {
   ActivityLog, 
@@ -112,6 +117,9 @@ const Mutation = gql`
     addGroup(group: GroupInput!): Group
     updateGroup(group: GroupInput!): Group
     deleteGroup(id: Int!): Boolean
+    addPublisher(publisher: PublisherInput!): Publisher
+    updatePublisher(publisher: PublisherInput!): Publisher
+    deletePublisher(id: Int!): Boolean
   }
 `;
 
@@ -138,6 +146,7 @@ export const resolvers = {
 
   Mutation: merge (
     {},
+    publisherMutationResolvers,
     territoryMutationResolvers,
     activityLogMutationResolvers,
     addressMutationResolvers,
@@ -205,6 +214,7 @@ export const typeDefs = [
   Territory,
   TerritoryInput,
   Publisher,
+  PublisherInput,
   Address,
   AddressInput,
   Status,

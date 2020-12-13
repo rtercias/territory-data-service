@@ -1,7 +1,6 @@
 import { gql } from 'apollo-server-express';
 import publisherAsync from './../../async/publishers';
 import congAsync from './../../async/congregations';
-import terrAsync from './../../async/territories';
 
 export const Publisher = gql`
   type Publisher {
@@ -15,6 +14,20 @@ export const Publisher = gql`
     territories: [Territory]
     role: String
     role_description: String
+  }
+`;
+
+export const PublisherInput = gql`
+  input PublisherInput {
+    id: Int
+    congregationid: Int!
+    firstname: String
+    lastname: String
+    username: String
+    status: String
+    role_id: Int
+    create_user: Int
+    update_user: Int
   }
 `;
 
@@ -73,6 +86,25 @@ export const queryResolvers = {
       
       const result = await publisherAsync.searchPublishers(id, args.keyword);
       return result;
+    } catch (err) {
+      console.error(err);
+    }
+  },
+};
+
+export const mutationResolvers = {
+  addPublisher: async (root, { publisher }) => {
+    const id = await publisherAsync.create(publisher);
+    return await publisherAsync.getPublisherById(id);
+  },
+  updatePublisher: async (root, { publisher }) => {
+    await publisherAsync.update(publisher);
+    return await publisherAsync.getPublisherById(publisher.id);
+  },
+  deletePublisher: async( root, { id }) => {
+    try {
+      await publisherAsync.delete(id);
+      return true;
     } catch (err) {
       console.error(err);
     }
