@@ -13,7 +13,6 @@ export const Publisher = gql`
     status: String
     territories: [Territory]
     role: String
-    role_description: String
   }
 `;
 

@@ -8,7 +8,7 @@ class PublisherAsync {
   }
 
   async getPublisherByName (firstName, lastName, congId) {
-    return (await conn.query(`SELECT id, firstname, lastname, congregationid, username, status FROM publishers
+    return (await conn.query(`SELECT * FROM users
       WHERE firstname='${firstName}' AND lastname='${lastName}' AND congregationid=${congId}`))[0];
   }
 
@@ -18,13 +18,13 @@ class PublisherAsync {
     }
 
     const congIdFilter = congId ? ` AND congregationid=${congId}` : '';
-    return (await conn.query(`SELECT id, firstname, lastname, congregationid, username, status FROM publishers
+    return (await conn.query(`SELECT * FROM users
       WHERE id=${publisherId}${congIdFilter}`))[0];
   }
 
   async searchPublishers (congId, keyword) {
     const kw = keyword || '';
-    const sql = `SELECT id, firstname, lastname, congregationid, username, status FROM publishers
+    const sql = `SELECT * FROM users
       WHERE congregationid = ${congId} AND (firstname LIKE '%${kw}%' OR lastname LIKE '%${kw}%')`;
     return toArray(await conn.query(sql));
   }
