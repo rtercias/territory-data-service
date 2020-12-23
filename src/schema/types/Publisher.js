@@ -24,7 +24,7 @@ export const PublisherInput = gql`
     lastname: String
     username: String
     status: String
-    role_id: Int
+    role: String
     create_user: Int
     update_user: Int
   }
