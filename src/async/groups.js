@@ -16,6 +16,12 @@ class GroupAsync {
     const result = await conn.query(sql);
     return result && result.length && result[0];
   }
+  async getAll (congId) {
+    if (!congId) throw new Error('cong id is required');
+
+    const sql = `SELECT * FROM groups WHERE congregation_id=${congId}`;
+    return await conn.query(sql);
+  }
   async getGroups (congId) {
     if (!congId) throw new Error('congregation id required');
     return await conn.query(`SELECT code FROM groups WHERE congregation_id=${congId}`);

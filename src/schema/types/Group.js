@@ -34,7 +34,9 @@ export const queryResolvers = {
   },
   groups: async (root, args) => {
     try {
-      const id = args.congId || root.id;
+      if (args.congId) {
+        return await groupAsync.getAll(args.congId);
+      }
       return await groupAsync.getGroups(id);
     } catch (err) {
       console.error(err);
