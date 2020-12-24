@@ -4,15 +4,9 @@ import { conn } from '../server';
 import axios from 'axios';
 
 class GroupAsync {
-  async get (id, congId, code) {
-    if (!(id || (congId && code))) throw new Error('group id or congId and group code required');
-
-    let sql;
-    if (id) {
-      sql = `SELECT * FROM groups WHERE id=${id}`;
-    } else {
-      `SELECT * FROM groups WHERE congregation_id=${congId} AND code='${code}'`;
-    }
+  async get (id) {
+    if (!id) throw new Error('group id required');
+    const sql = `SELECT * FROM groups WHERE id=${id}`;
     const result = await conn.query(sql);
     return result && result.length && result[0];
   }

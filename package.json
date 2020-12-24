@@ -11,7 +11,7 @@
     "config": "firebase functions:config:get > .runtimeconfig.json",
     "watch": "parcel src/functions.js --target node",
     "build": "parcel build src/functions.js --target node --detailed-report",
-    "serve": "export NODE_ENV=development && yarn build && yarn firebase serve --only functions",
+    "serve": "export NODE_ENV=development && yarn build && yarn firebase serve",
     "emulator": "yarn firebase emulators:start --only functions",
     "shell": "yarn firebase functions:shell",
     "start": "yarn serve",

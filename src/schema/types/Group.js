@@ -25,8 +25,8 @@ export const GroupInput = gql`
 export const queryResolvers = {
   group: async (root, args) => {
     try {
-      const { id, congId, code } = args;
-      const result = await groupAsync.get(id, congId, code);
+      const id = args.id || root.group_id;
+      const result = await groupAsync.get(id);
       return result;
     } catch (err) {
       console.error(err);

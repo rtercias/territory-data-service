@@ -63,10 +63,8 @@ const RootQuery = gql`
     congregation(id: Int!): Congregation
     congregations(keyword: String): [Congregation]
     territory(id: Int): Territory
-    territories(congId: Int, keyword: String, city: String, group_code: String): [Territory]
-    territoriesByCity(congId: Int): [Territory]
+    territories(congId: Int, keyword: String, group_id: Int): [Territory]
     status(territoryId: Int): Status
-    city: String
     address(id: Int, status: String): Address
     addresses(congId: Int, terrId: Int, keyword: String): [Address]
     inactiveAddresses(congId: Int, terrId: Int, keyword: String): [Address]
@@ -77,7 +75,7 @@ const RootQuery = gql`
     optimize(territoryId: Int!, start: Float, end: Float): [Address],
     lastActivity(territoryId: Int, addressId: Int): ActivityLog,
     nearestAddresses(congId: Int, coordinates: [Float], radius: Int, unit: String, skip: Int, take: Int): [Address],
-    group(id: Int, congId: Int, code: String): Group,
+    group(id: Int): Group,
     groups(congId: Int): [Group],
     addressChangeLogs(congId: Int, recordId: Int, minDate: String, publisherId: Int): [AddressChangeLog],
     phone(id: Int, status: String): Phone,
@@ -169,9 +167,9 @@ export const resolvers = {
     addresses: addressQueryResolvers.addresses,
     inactiveAddresses: addressQueryResolvers.inactiveAddresses,
     status: territoryQueryResolvers.status,
-    city: territoryQueryResolvers.city,
     lastActivity: territoryQueryResolvers.lastActivity,
     phones: phoneQueryResolvers.phones,
+    group: groupQueryResolvers.group,
   },
 
   Address: {

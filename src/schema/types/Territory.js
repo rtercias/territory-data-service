@@ -8,12 +8,13 @@ import { pusher } from '../../server';
 
 export const Territory = gql`
   type Territory {
-    group_code: String!
     id: Int!
     congregationid: Int!
     name: String
     description: String
     type: String
+    group_id: Int!
+    group: Group
     addresses: [Address]
     inactiveAddresses: [Address]
     city: String
@@ -26,12 +27,12 @@ export const Territory = gql`
 
 export const TerritoryInput = gql`
   input TerritoryInput {
-    group_code: String!
     id: Int
     congregationid: Int!
     name: String
     description: String
     type: String
+    group_id: Int!
     create_user: Int
     update_user: Int
     tags: String
@@ -62,12 +63,8 @@ export const queryResolvers = {
         return await terrAsync.searchTerritories(congId, args.keyword);
       }
 
-      if (root && root.id && args.city) {
-        return await terrAsync.getTerritoriesByCity(root.id, args.city);
-      }
-
-      if (args && args.congId && args.group_code) {
-        return await terrAsync.getTerritoriesByGroupCode(args.congId, args.group_code);
+      if (args && args.congId && args.group_id) {
+        return await terrAsync.getTerritoriesByGroup(args.congId, args.group_id);
       }
       
       if (root && root.congregationid && root.username) {
@@ -78,16 +75,6 @@ export const queryResolvers = {
         return await terrAsync.getTerritories(args.congId || root.id);
       }
 
-    } catch (err) {
-      console.error(err);
-    }
-  },
-
-  territoriesByCity: async(root, args) => {
-    try {
-      if (args.congId) {
-        return await terrAsync.getTerritoriesByCity(args.congId);
-      }
     } catch (err) {
       console.error(err);
     }
@@ -164,24 +151,6 @@ export const queryResolvers = {
           }
         }
       }
-    } catch (err) {
-      console.error(err);
-    }
-  },
-
-  city: async(root) => {
-    try {
-      if (root && root.city) {
-        return root.city;
-
-      } else if (root.id) {
-        const result = await terrAsync.getTerritoriesByCity(root.congregationid, null, root.id);
-        if (result.length) {
-          return result[0].city;
-        }
-      }
-
-      return null;
     } catch (err) {
       console.error(err);
     }
