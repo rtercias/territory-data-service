@@ -91,6 +91,7 @@ const Mutation = gql`
     copyCheckouts(congId: Int!, username: String!, campaign: Boolean): Boolean
     addAddress(address: AddressInput!): Address
     updateAddress(address: AddressInput!): Address
+    deleteAddress(id: Int!): Boolean
     updateSort(addressIds: [Int]!, userid: Int): Boolean
     changeAddressStatus(addressId: Int!, status: String!, userid: Int!, note: String): Boolean
     addNote(addressId: Int!, userid: Int!, note: String!): Boolean

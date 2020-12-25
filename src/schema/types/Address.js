@@ -159,6 +159,14 @@ export const mutationResolvers = {
     pusher.trigger('foreign-field', 'update-address', address);
     return await addressAsync.getAddress(address.id, '*');
   },
+  deleteAddress: async( root, { id }) => {
+    try {
+      await addressAsync.delete(id);
+      return true;
+    } catch (err) {
+      console.error(err);
+    }
+  },
   changeAddressStatus: async (root, args) => {
     try {
       const notes = args.note && await Notes.add(args.addressId, args.note);
