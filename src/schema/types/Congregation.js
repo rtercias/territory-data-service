@@ -34,24 +34,15 @@ export const CongregationInput = gql`
 
 export const queryResolvers = {
   congregation: async (root, args) => {
-    try {
-      const congId = args.id || root.congregationid;
-      return await congAsync.getCongregationById(congId);
-    } catch (err) {
-      console.error(err);
-    }
+    const congId = args.id || root.congregationid;
+    return await congAsync.getCongregationById(congId);
   },
   congregations: async (root, args) => {
-    try {
-      if (args.keyword) {
-        return await congAsync.searchCongregations(keyword);
-      }
-
-      return await congAsync.getAllCongregations();
-
-    } catch (err) {
-      console.error(err);
+    if (args.keyword) {
+      return await congAsync.searchCongregations(keyword);
     }
+
+    return await congAsync.getAllCongregations();
   },
 };
 
@@ -61,20 +52,12 @@ export const mutationResolvers = {
     return await congAsync.getCongregationById(id);
   },
   updateCongregation: async (root, { cong }) => {
-    try {
-      await congAsync.update(cong);
-      pusher.trigger('foreign-field', 'update-cong', cong);
-      return await congAsync.getCongregationById(cong.id);
-    } catch (err) {
-      console.error(err);
-    }
+    await congAsync.update(cong);
+    pusher.trigger('foreign-field', 'update-cong', cong);
+    return await congAsync.getCongregationById(cong.id);
   },
   deleteCongregation: async( root, { id }) => {
-    try {
-      await congAsync.delete(id);
-      return true;
-    } catch (err) {
-      console.error(err);
-    }
+    await congAsync.delete(id);
+    return true;
   },
 };

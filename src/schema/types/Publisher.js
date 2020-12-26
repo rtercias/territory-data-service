@@ -32,62 +32,42 @@ export const PublisherInput = gql`
 
 export const queryResolvers = {
   user: async (root, args) => {
-    try {
-      return await publisherAsync.getUser(args.username);
-    } catch (err) {
-      console.error(err);
-    }
+    return await publisherAsync.getUser(args.username);
   },
 
   publisher: async (root, args) => {
-    try {
-      if (args.publisherId) {
-        return await publisherAsync.getPublisherById(args.publisherId, args.congId);
+    if (args.publisherId) {
+      return await publisherAsync.getPublisherById(args.publisherId, args.congId);
 
-      } else if (args.firstname && args.lastname) {
-        return await publisherAsync.getPublisherByName(args.firstname, args.lastname, args.congId);
-        
-      } else if (root && (root.publisher_id || root.publisherid)) {
-        return await publisherAsync.getPublisherById(root.publisher_id || root.publisherid);
+    } else if (args.firstname && args.lastname) {
+      return await publisherAsync.getPublisherByName(args.firstname, args.lastname, args.congId);
+      
+    } else if (root && (root.publisher_id || root.publisherid)) {
+      return await publisherAsync.getPublisherById(root.publisher_id || root.publisherid);
 
-      }
-    } catch (err) {
-      console.error(err);
     }
   },
 
   creator: async (root) => {
-    try {
-      if (root.create_user) {
-        return await publisherAsync.getPublisherById(root.create_user);
-      }
-    } catch (err) {
-      console.error(err);
+    if (root.create_user) {
+      return await publisherAsync.getPublisherById(root.create_user);
     }
   },
 
   updater: async (root) => {
-    try {
-      if (root.update_user) {
-        return await publisherAsync.getPublisherById(root.update_user);
-      }
-    } catch (err) {
-      console.error(err);
+    if (root.update_user) {
+      return await publisherAsync.getPublisherById(root.update_user);
     }
   },
 
   publishers: async (root, args) => {
-    try {
-      const id = root ? root.id : (args ? args.congId : undefined);
-      if (!id) {
-        throw new Error('Congregation Id is required to query for publishers');
-      }
-      
-      const result = await publisherAsync.searchPublishers(id, args.keyword);
-      return result;
-    } catch (err) {
-      console.error(err);
+    const id = root ? root.id : (args ? args.congId : undefined);
+    if (!id) {
+      throw new Error('Congregation Id is required to query for publishers');
     }
+    
+    const result = await publisherAsync.searchPublishers(id, args.keyword);
+    return result;
   },
 };
 
@@ -101,11 +81,7 @@ export const mutationResolvers = {
     return await publisherAsync.getPublisherById(publisher.id);
   },
   deletePublisher: async( root, { id }) => {
-    try {
-      await publisherAsync.delete(id);
-      return true;
-    } catch (err) {
-      console.error(err);
-    }
+    await publisherAsync.delete(id);
+    return true;
   },
 };

@@ -56,7 +56,7 @@ class PublisherAsync {
       '${ get(publisher, 'firstname', '') }',
       '${ get(publisher, 'lastname', '') }',
       '${ get(publisher, 'create_user', '') }',
-      '${ get(publisher, 'create_user', 'active') }'
+      '${ get(publisher, 'status', 'active') }'
     )`;
     const result = await conn.query(sql);
     const role = await conn.query(`SELECT id FROM roles WHERE name = '${get(publisher, 'role')}'`);

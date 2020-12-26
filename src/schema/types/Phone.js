@@ -47,48 +47,34 @@ export const PhoneInput = gql`
 
 export const queryResolvers = {
   phone: async (root, args) => {
-    try {
-      if (args.id) {
-        return await phoneAsync.getPhone(args.id, args.status);
-      } else if (root.phone_id) {
-        return await phoneAsync.getPhone(root.phone_id, args.status);
-      } else if (root.record_id && root.table_name === 'addresses') {
-        return await phoneAsync.getPhone(root.record_id, '*');
-      }
-
-    } catch (err) {
-      console.error(err);
+    if (args.id) {
+      return await phoneAsync.getPhone(args.id, args.status);
+    } else if (root.phone_id) {
+      return await phoneAsync.getPhone(root.phone_id, args.status);
+    } else if (root.record_id && root.table_name === 'addresses') {
+      return await phoneAsync.getPhone(root.record_id, '*');
     }
   },
 
   phones: async (root, args) => {
-    try {
-      let result;
-      if ((args && args.parent_id) || (root && root.id)) {
-        const parentId = args.parent_id || root.id;
-        const terrId = args.terrId;
-        result = await phoneAsync.getPhones(parentId, terrId, 'Active');
-      }
-
-      if (((root && root.congregationid) || args.congId) && args.keyword) {
-        const congId = (root ? root.congregationid : null) || args.congId;
-        result = await phoneAsync.searchPhones(congId, args.keyword, 'Active');
-      }
-
-      return result;
-
-    } catch (err) {
-      console.error(err);
+    let result;
+    if ((args && args.parent_id) || (root && root.id)) {
+      const parentId = args.parent_id || root.id;
+      const terrId = args.terrId;
+      result = await phoneAsync.getPhones(parentId, terrId, 'Active');
     }
+
+    if (((root && root.congregationid) || args.congId) && args.keyword) {
+      const congId = (root ? root.congregationid : null) || args.congId;
+      result = await phoneAsync.searchPhones(congId, args.keyword, 'Active');
+    }
+
+    return result;
   },
 
   lastActivity: async (root, args) => {
-    try {
-      const phoneId = (root && root.id) || (args && args.phoneId);
-      return await phoneAsync.lastActivity(phoneId);
-    } catch (err) {
-      console.error(err);
-    }
+    const phoneId = (root && root.id) || (args && args.phoneId);
+    return await phoneAsync.lastActivity(phoneId);
   },
 };
 
@@ -105,52 +91,32 @@ export const mutationResolvers = {
     return await phoneAsync.getPhone(phone.id, '*');
   },
   changePhoneStatus: async (root, args) => {
-    try {
-      const notes = args.note && await Notes.add(args.phoneId, args.note);
-      await phoneAsync.changeStatus(args.phoneId, args.status, args.userid, notes);
-      pusher.trigger('foreign-field', 'change-phone-status', { ...args, notes });
-      return true;
-
-    } catch (err) {
-      throw new Error(err);
-    }
+    const notes = args.note && await Notes.add(args.phoneId, args.note);
+    await phoneAsync.changeStatus(args.phoneId, args.status, args.userid, notes);
+    pusher.trigger('foreign-field', 'change-phone-status', { ...args, notes });
+    return true;
   },
   addPhoneTag: async (root, args) => {
-    try {
-      const phone = await phoneAsync.getPhone(args.phoneId, '*');
-      const update_user = args.userid;
-      const notes = await Notes.add(args.phoneId, args.note, phone);
-      await phoneAsync.update({ ...phone, notes, update_user });
-      pusher.trigger('foreign-field', 'add-phone-tag', { ...args, notes });
-      return true;
-    } catch (err) {
-      throw new Error(err);
-    }
+    const phone = await phoneAsync.getPhone(args.phoneId, '*');
+    const update_user = args.userid;
+    const notes = await Notes.add(args.phoneId, args.note, phone);
+    await phoneAsync.update({ ...phone, notes, update_user });
+    pusher.trigger('foreign-field', 'add-phone-tag', { ...args, notes });
+    return true;
   },
   removePhoneTag: async (root, args) => {
-    try {
-      const phone = await phoneAsync.getPhone(args.phoneId, '*');
-      const update_user = args.userid;
-      const notes = await Notes.remove(args.phoneId, args.note, phone);
-      await phoneAsync.update({ ...phone, notes, update_user });
-      pusher.trigger('foreign-field', 'remove-phone-tag', { ...args, notes });
-      return true;
-    } catch (err) {
-      throw new Error(err);
-    }
+    const phone = await phoneAsync.getPhone(args.phoneId, '*');
+    const update_user = args.userid;
+    const notes = await Notes.remove(args.phoneId, args.note, phone);
+    await phoneAsync.update({ ...phone, notes, update_user });
+    pusher.trigger('foreign-field', 'remove-phone-tag', { ...args, notes });
+    return true;
   },
   updatePhoneSort: async (root, args) => {
-    let success = false;
-    try {
-      const { phoneIds, userid } = args;
-      for (const [index, value]  of phoneIds.entries()) {
-        await phoneAsync.updateSort(value, index + 1, userid);
-      }
-      success = true;
-    } catch (err) {
-      throw new Error(err);
+    const { phoneIds, userid } = args;
+    for (const [index, value]  of phoneIds.entries()) {
+      await phoneAsync.updateSort(value, index + 1, userid);
     }
-
-    return success;
+    return true;
   }
 };

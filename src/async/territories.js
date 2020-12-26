@@ -67,14 +67,9 @@ class TerritoryAsync {
     );
   }
 
-  async getTerritoriesByCity (congId, city, territoryId) {
-    const andCity = city ? ` city LIKE '%${city}%'` : '';
-    const andTerritoryId = territoryId ? ` AND id=${territoryId}` : '';
-    return toArray(await conn.query(`SELECT * FROM territories_by_city WHERE congregationid=${congId}${andCity}${andTerritoryId}`));
-  }
-
-  async getTerritoriesByGroupCode (congId, groupCode) {
-    return toArray(await conn.query(`SELECT * FROM territories_by_city WHERE congregationid=${congId} AND group_code='${groupCode}' ORDER BY city, name`));
+  async getTerritoriesByGroup (groupId) {
+    return toArray(await conn.query(`SELECT * FROM territories
+      WHERE group_id=${groupId} ORDER BY description, name`));
   }
 
   async territoryCheckoutStatus (checkout_id) {
@@ -87,8 +82,8 @@ class TerritoryAsync {
     if (!territory.congregationid) {
       throw new Error('congregation id is required');
     }
-    if (!territory.group_code) {
-      throw new Error('group code is required');
+    if (!territory.group_id) {
+      throw new Error('group id is required');
     }
     if (!territory.create_user) {
       throw new Error('create user is required');
@@ -99,7 +94,7 @@ class TerritoryAsync {
       name,
       description,
       type,
-      group_code,
+      group_id,
       create_user,
       tags
     ) VALUES (
@@ -107,7 +102,7 @@ class TerritoryAsync {
       '${ get(territory, 'name', '') }',
       '${ get(territory, 'description', '') }',
       '${ get(territory, 'type', '') }',
-      '${ get(territory, 'group_code', '') }',
+      '${ get(territory, 'group_id', '') }',
       '${ get(territory, 'create_user', '') }',
       '${ get(territory, 'tags', '') }'
     )`;
@@ -123,8 +118,8 @@ class TerritoryAsync {
     if (!territory.congregationid) {
       throw new Error('congregation id is required');
     }
-    if (!territory.group_code) {
-      throw new Error('group code is required');
+    if (!territory.group_id) {
+      throw new Error('group id is required');
     }
     if (!territory.update_user) {
       throw new Error('update user is required');
@@ -135,7 +130,7 @@ class TerritoryAsync {
       name = '${get(territory, 'name', '')}',
       description = '${get(territory, 'description', '')}',
       type = '${get(territory, 'type', '')}',
-      group_code = '${get(territory, 'group_code', '')}',
+      group_id = '${get(territory, 'group_id', '')}',
       update_user = ${get(territory, 'update_user', '')},
       tags = '${get(territory, 'tags', '')}'
     WHERE id = ${get(territory, 'id', '')}`;
@@ -144,6 +139,12 @@ class TerritoryAsync {
 
   async delete (id) {
     if (!id) throw new Error('id is required');
+
+    const addresses = await addressAsync.getAddressesByTerritory(id);
+    if (addresses.length) {
+      throw new Error('Cannot delete a territory containing addresses');
+    }
+
     const sql = `DELETE FROM territories WHERE id = ${id}`;
     return await conn.query(sql);
   }

@@ -17,10 +17,8 @@ These instructions will get you a copy of the project up and running on your loc
 
 
 ## Build
-1. `yarn watch` (run in separate tab)
-2. `yarn emulator` (run in separate tab)
-3. `yarn build`
-4. `yarn serve`
+1. `yarn watch`
+2. `yarn serve` (run in separate tab)
 
 ## Built With
 

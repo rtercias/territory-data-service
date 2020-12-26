@@ -159,53 +159,37 @@ export const mutationResolvers = {
     pusher.trigger('foreign-field', 'update-address', address);
     return await addressAsync.getAddress(address.id, '*');
   },
+  deleteAddress: async( root, { id }) => {
+    await addressAsync.delete(id);
+    return true;
+  },
   changeAddressStatus: async (root, args) => {
-    try {
-      const notes = args.note && await Notes.add(args.addressId, args.note);
-      await addressAsync.changeStatus(args.addressId, args.status, args.userid, notes);
-      pusher.trigger('foreign-field', 'change-address-status', args);
-      return true;
-
-    } catch (err) {
-      throw new Error(err);
-    }
+    const notes = args.note && await Notes.add(args.addressId, args.note);
+    await addressAsync.changeStatus(args.addressId, args.status, args.userid, notes);
+    pusher.trigger('foreign-field', 'change-address-status', args);
+    return true;
   },
   addNote: async (root, args) => {
-    try {
-      const address = await addressAsync.getAddress(args.addressId, '*');
-      const update_user = args.userid;
-      const notes = await Notes.add(args.addressId, args.note, address);
-      await addressAsync.update({ ...address, notes, update_user });
-      pusher.trigger('foreign-field', 'add-note', { ...args, notes });
-      return true;
-    } catch (err) {
-      throw new Error(err);
-    }
+    const address = await addressAsync.getAddress(args.addressId, '*');
+    const update_user = args.userid;
+    const notes = await Notes.add(args.addressId, args.note, address);
+    await addressAsync.update({ ...address, notes, update_user });
+    pusher.trigger('foreign-field', 'add-note', { ...args, notes });
+    return true;
   },
   removeNote: async (root, args) => {
-    try {
-      const address = await addressAsync.getAddress(args.addressId, '*');
-      const update_user = args.userid;
-      const notes = await Notes.remove(args.addressId, args.note, address);
-      await addressAsync.update({ ...address, notes, update_user });
-      pusher.trigger('foreign-field', 'remove-note', { ...args, notes });
-      return true;
-    } catch (err) {
-      throw new Error(err);
-    }
+    const address = await addressAsync.getAddress(args.addressId, '*');
+    const update_user = args.userid;
+    const notes = await Notes.remove(args.addressId, args.note, address);
+    await addressAsync.update({ ...address, notes, update_user });
+    pusher.trigger('foreign-field', 'remove-note', { ...args, notes });
+    return true;
   },
   updateSort: async (root, args) => {
-    let success = false;
-    try {
-      const { addressIds, userid } = args;
-      for (const [index, value]  of addressIds.entries()) {
-        await addressAsync.updateSort(value, index + 1, userid);
-      }
-      success = true;
-    } catch (err) {
-      throw new Error(err);
+    const { addressIds, userid } = args;
+    for (const [index, value]  of addressIds.entries()) {
+      await addressAsync.updateSort(value, index + 1, userid);
     }
-
-    return success;
+    return true;
   }
 };

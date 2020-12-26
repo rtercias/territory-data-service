@@ -1,18 +1,11 @@
-import orderBy from 'lodash/orderBy';
 import get from 'lodash/get';
 import { conn } from '../server';
-import axios from 'axios';
+import terrAsync from './territories';
 
 class GroupAsync {
-  async get (id, congId, code) {
-    if (!(id || (congId && code))) throw new Error('group id or congId and group code required');
-
-    let sql;
-    if (id) {
-      sql = `SELECT * FROM groups WHERE id=${id}`;
-    } else {
-      `SELECT * FROM groups WHERE congregation_id=${congId} AND code='${code}'`;
-    }
+  async get (id) {
+    if (!id) throw new Error('group id required');
+    const sql = `SELECT * FROM groups WHERE id=${id}`;
     const result = await conn.query(sql);
     return result && result.length && result[0];
   }
@@ -73,6 +66,12 @@ class GroupAsync {
 
   async delete (id) {
     if (!id) throw new Error('id is required');
+
+    const territories = await terrAsync.getTerritoriesByGroup(id);
+    if (territories.length) {
+      throw new Error('Cannot delete a group containing territories');
+    }
+
     const sql = `DELETE FROM groups WHERE id = ${id}`;
     return await conn.query(sql);
   }
