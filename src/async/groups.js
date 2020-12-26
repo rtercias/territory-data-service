@@ -1,6 +1,6 @@
 import get from 'lodash/get';
 import { conn } from '../server';
-import { TerritoryAsync } from './territories';
+import terrAsync from './territories';
 
 class GroupAsync {
   async get (id) {
@@ -64,11 +64,10 @@ class GroupAsync {
     await conn.query(sql);
   }
 
-  async delete (congId, id) {
-    if (!congId) throw new Error('cong id is required');
+  async delete (id) {
     if (!id) throw new Error('id is required');
 
-    const territories = await TerritoryAsync.getTerritoriesByGroup(congId, id);
+    const territories = await terrAsync.getTerritoriesByGroup(id);
     if (territories.length) {
       throw new Error('Cannot delete a group containing territories');
     }

@@ -6,7 +6,6 @@ import { conn } from '../server';
 import axios from 'axios';
 import addressAsync from './addresses';
 import activityLog from './activityLog';
-import { AddressAsync } from './addresses';
 
 class TerritoryAsync {
   async getTerritory (id) {
@@ -68,9 +67,9 @@ class TerritoryAsync {
     );
   }
 
-  async getTerritoriesByGroup (congId, groupId) {
+  async getTerritoriesByGroup (groupId) {
     return toArray(await conn.query(`SELECT * FROM territories
-      WHERE congregationid=${congId} AND group_id=${groupId} ORDER BY description, name`));
+      WHERE group_id=${groupId} ORDER BY description, name`));
   }
 
   async territoryCheckoutStatus (checkout_id) {
@@ -141,7 +140,7 @@ class TerritoryAsync {
   async delete (id) {
     if (!id) throw new Error('id is required');
 
-    const addresses = await AddressAsync.getAddressesByTerritory(id);
+    const addresses = await addressAsync.getAddressesByTerritory(id);
     if (addresses.length) {
       throw new Error('Cannot delete a territory containing addresses');
     }

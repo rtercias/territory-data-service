@@ -24,23 +24,15 @@ export const GroupInput = gql`
 
 export const queryResolvers = {
   group: async (root, args) => {
-    try {
-      const id = args.id || root.group_id;
-      const result = await groupAsync.get(id);
-      return result;
-    } catch (err) {
-      console.error(err);
-    }
+    const id = args.id || root.group_id;
+    const result = await groupAsync.get(id);
+    return result;
   },
   groups: async (root, args) => {
-    try {
-      if (args.congId) {
-        return await groupAsync.getAll(args.congId);
-      }
-      return await groupAsync.getGroups(root.id);
-    } catch (err) {
-      console.error(err);
+    if (args.congId) {
+      return await groupAsync.getAll(args.congId);
     }
+    return await groupAsync.getGroups(root.id);
   },
 };
 
@@ -50,20 +42,12 @@ export const mutationResolvers = {
     return await groupAsync.get(id);
   },
   updateGroup: async (root, { group }) => {
-    try {
-      await groupAsync.update(group);
-      pusher.trigger('foreign-field', 'update-group', group);
-      return await groupAsync.get(group.id);
-    } catch (err) {
-      console.error(err);
-    }
+    await groupAsync.update(group);
+    pusher.trigger('foreign-field', 'update-group', group);
+    return await groupAsync.get(group.id);
   },
   deleteGroup: async( root, { id }) => {
-    try {
-      await groupAsync.delete(id);
-      return true;
-    } catch (err) {
-      console.error(err);
-    }
+    await groupAsync.delete(id);
+    return true;
   },
 };

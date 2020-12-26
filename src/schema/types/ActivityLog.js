@@ -33,21 +33,13 @@ export const ActivityLogInput = gql`
 
 export const resolvers = {
   activityLog: async (root, args) => {
-    try {
-      return await activityLogAsync.readOne(args.id);
-    } catch (err) {
-      console.error(err);
-    }
+    return await activityLogAsync.readOne(args.id);
   },
 
   activityLogs: async (root, args) => {
-    try {
-      const checkout_id = args.checkout_id;
-      const address_id = root.id;
-      return await activityLogAsync.read(checkout_id, address_id);
-    } catch (err) {
-      console.error(err);
-    }
+    const checkout_id = args.checkout_id;
+    const address_id = root.id;
+    return await activityLogAsync.read(checkout_id, address_id);
   },
 };
 
