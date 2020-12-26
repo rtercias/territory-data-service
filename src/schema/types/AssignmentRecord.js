@@ -6,7 +6,7 @@ export const AssignmentRecord = gql`
     territory_id: Int!
     territory_name: String!
     publisher_id: Int!
-    publisher_name: String!
+    publisher_name: String
     out: String
     in: String
     timestamp: String
