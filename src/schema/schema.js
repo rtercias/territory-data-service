@@ -66,7 +66,7 @@ const RootQuery = gql`
     territories(congId: Int, keyword: String, group_id: Int): [Territory]
     status(territoryId: Int): Status
     address(id: Int, status: String): Address
-    addresses(congId: Int, terrId: Int, keyword: String): [Address]
+    addresses(congId: Int, terrId: Int, keyword: String, status: String): [Address]
     inactiveAddresses(congId: Int, terrId: Int, keyword: String): [Address]
     dnc(congId: Int, keyword: String): [Address]
     activityLog(id: Int): ActivityLog
