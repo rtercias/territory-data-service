@@ -152,6 +152,7 @@ export const queryResolvers = {
 export const mutationResolvers = {
   addAddress: async (root, { address }) => {
     const id = await addressAsync.create(address);
+    pusher.trigger('foreign-field', 'add-address', { ...address, id });
     return await addressAsync.getAddress(id);
   },
   updateAddress: async (root, { address }) => {
