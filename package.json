@@ -34,10 +34,11 @@
   },
   "dependencies": {
     "apollo-server-express": "^2.14.2",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "bl": "^4.0.3",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
+    "date-and-time": "^0.14.2",
     "date-fns": "^2.14.0",
     "elliptic": "^6.5.3",
     "express": "^4.17.1",
