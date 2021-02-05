@@ -176,7 +176,7 @@ export const mutationResolvers = {
   checkinTerritory: async (root, { territoryId, publisherId, user }) => {
     const checkout_id = await terrAsync.saveTerritoryActivity('IN', territoryId, publisherId, user);
     const date = new Date().getTime();
-    const status = 'Checked In';
+    const status = 'Recently Worked';
     pusher.trigger('foreign-field', 'check-in', { checkout_id, date, status, territoryId, publisherId });
   },
   checkinAll: async (root, { congId, username, tz_offset, timezone, campaign }) => {
