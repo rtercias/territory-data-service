@@ -171,13 +171,13 @@ export const mutationResolvers = {
     const checkout_id = await terrAsync.saveTerritoryActivity('OUT', territoryId, publisherId, user);
     const date = new Date().getTime();
     const status = 'Checked Out';
-    pusher.trigger('foreign-field', 'check-out', { checkout_id, date, status, territoryId, publisherId });
+    return { checkout_id, date, status };
   },
   checkinTerritory: async (root, { territoryId, publisherId, user }) => {
     const checkout_id = await terrAsync.saveTerritoryActivity('IN', territoryId, publisherId, user);
     const date = new Date().getTime();
     const status = 'Recently Worked';
-    pusher.trigger('foreign-field', 'check-in', { checkout_id, date, status, territoryId, publisherId });
+    return { checkout_id, date, status };
   },
   checkinAll: async (root, { congId, username, tz_offset, timezone, campaign }) => {
     await terrAsync.checkinAll(congId, username, tz_offset, timezone, campaign);
