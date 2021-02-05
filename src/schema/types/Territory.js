@@ -169,15 +169,21 @@ export const mutationResolvers = {
   },
   checkoutTerritory: async (root, { territoryId, publisherId, user }) => {
     const checkout_id = await terrAsync.saveTerritoryActivity('OUT', territoryId, publisherId, user);
-    const date = new Date().getTime();
-    const status = 'Checked Out';
-    return { checkout_id, date, status };
+    const status = await terrAsync.territoryCheckoutStatus(checkout_id);
+    return {
+      checkout_id,
+      status: 'Checked Out',
+      date: status.timestamp,
+    };
   },
   checkinTerritory: async (root, { territoryId, publisherId, user }) => {
     const checkout_id = await terrAsync.saveTerritoryActivity('IN', territoryId, publisherId, user);
-    const date = new Date().getTime();
-    const status = 'Recently Worked';
-    return { checkout_id, date, status };
+    const status = await terrAsync.territoryCheckoutStatus(checkout_id);
+    return {
+      checkout_id,
+      status: 'Recently Worked',
+      date: status.timestamp,
+    };
   },
   checkinAll: async (root, { congId, username, tz_offset, timezone, campaign }) => {
     await terrAsync.checkinAll(congId, username, tz_offset, timezone, campaign);
