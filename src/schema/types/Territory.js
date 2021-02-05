@@ -168,12 +168,14 @@ export const mutationResolvers = {
     return true;
   },
   checkoutTerritory: async (root, { territoryId, publisherId, user }) => {
-    await terrAsync.saveTerritoryActivity('OUT', territoryId, publisherId, user);
-    pusher.trigger('foreign-field', 'check-out', { territoryId, publisherId });
+    const checkout_id = await terrAsync.saveTerritoryActivity('OUT', territoryId, publisherId, user);
+    const date = new Date().getTime();
+    pusher.trigger('foreign-field', 'check-out', { checkout_id, date, territoryId, publisherId });
   },
   checkinTerritory: async (root, { territoryId, publisherId, user }) => {
-    await terrAsync.saveTerritoryActivity('IN', territoryId, publisherId, user);
-    pusher.trigger('foreign-field', 'check-in', { territoryId, publisherId });
+    const checkout_id = await terrAsync.saveTerritoryActivity('IN', territoryId, publisherId, user);
+    const date = new Date().getTime();
+    pusher.trigger('foreign-field', 'check-in', { checkout_id, date, territoryId, publisherId });
   },
   checkinAll: async (root, { congId, username, tz_offset, timezone, campaign }) => {
     await terrAsync.checkinAll(congId, username, tz_offset, timezone, campaign);
