@@ -155,14 +155,16 @@ class TerritoryAsync {
       SELECT c.* FROM territories t JOIN congregations c ON t.congregationid = c.id
       WHERE t.id=${territoryId}`);
     const cong = resultCong[0];
+    let results;
 
     if (user) {
-      await conn.query(`INSERT INTO territorycheckouts (territoryid, publisherid, status, create_user, campaign)
+      results = await conn.query(`INSERT INTO territorycheckouts (territoryid, publisherid, status, create_user, campaign)
         VALUES (${territoryId}, ${publisherId}, '${status}', '${user}', ${cong.campaign})`);
     } else {
-      await conn.query(`INSERT INTO territorycheckouts (territoryid, publisherid, status, campaign)
+      results = await conn.query(`INSERT INTO territorycheckouts (territoryid, publisherid, status, campaign)
         VALUES (${territoryId}, ${publisherId}, '${status}', ${cong.campaign})`);
     }
+    return results.insertId;
   }
 
   async optimize(territoryId, start, end) {
