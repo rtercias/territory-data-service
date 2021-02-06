@@ -124,8 +124,8 @@ class AddressAsync {
 
   async delete (id) {
     if (!id) throw new Error('id is required');
-    const sql = `DELETE FROM addresses WHERE id = ${id}`;
-    return await conn.query(sql);
+    const sql = `DELETE FROM addresses WHERE id = ${id} OR parent_id = ${id}`;
+    await conn.query(sql);
   }
 
   async changeStatus (id, status, userid, notes) {
