@@ -39,7 +39,7 @@ class AddressAsync {
 
     const sql = `SELECT *, ${this.aliases} FROM addresses 
     WHERE type='Regular' AND congregationid=${congId}${statusCondition}
-    AND (addr1 LIKE '%${keyword}%' OR addr2 LIKE '%${keyword}%')`;
+    AND (addr1 LIKE '%${keyword}%' OR addr2 LIKE '%${keyword}%') OR phone LIKE '%${keyword}%')`;
     return toArray(await conn.query(sql));
   }
 
