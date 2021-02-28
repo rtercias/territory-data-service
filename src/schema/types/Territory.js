@@ -73,7 +73,6 @@ export const queryResolvers = {
 
   status: async(root, args) => {
     if (root && root.username) {
-      console.log('root.in', root.in);
       if (root.in === null) {
         return {
           date: root.out, 
@@ -121,9 +120,8 @@ export const queryResolvers = {
           };
           
         } else if (terrStatus[0].status === 'IN') {
-          console.log('timestamp', terrStatus[0].timestamp);
           // if the last terrStatus is IN
-          // and the most recent timestamp is two months or less, then the territory is recently worked.
+          // and the most recent timestamp is one month or less, then the territory is recently worked.
           if (differenceInMonths(new Date(), terrStatus[0].timestamp) <= 1) {
             const a = terrStatus[0];
             return {
