@@ -22,19 +22,18 @@ class TerritoryAsync {
   }
 
   async getTerritoryStatus (congId, territoryId, username) {
-    const arr = toArray(await conn.query(
+    return toArray(await conn.query(
       `
-        SELECT ck.*
-        FROM territorycheckouts_pivot ck
-        JOIN congregations c ON ck.congregationid = c.id AND ck.campaign = c.campaign
-        WHERE ck.congregationid=${congId}
-        ${!!territoryId ? ` AND ck.territory_id=${territoryId}` : ''}
-        ${!!username ? ` AND ck.username='${username}'` : ''}
-        ORDER BY ck.timestamp DESC
+        SELECT ck.*, t.*, ck.id AS checkout_id, t.id AS territory_id, p.username, p.firstname, p.lastname, p.status AS publisher_status
+        FROM territorycheckouts ck
+        JOIN territories t ON ck.territoryid = t.id
+        JOIN publishers p ON ck.publisherid = p.id
+        JOIN congregations c ON t.congregationid = c.id AND ck.campaign = c.campaign
+        WHERE t.congregationid=${congId}
+        ${!!territoryId ? ` AND ck.territoryid=${territoryId}` : ''}
+        ${!!username ? ` AND p.username='${username}'` : ''}
       `
     ));
-
-    return Array.isArray(arr) ? arr[0] : null;
   }
 
   async getTerritoriesByUser (congId, username) {

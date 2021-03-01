@@ -96,34 +96,41 @@ export const queryResolvers = {
 
       if (terrStatus) {
         // no checkout records found: AVAILABLE
-        if (!terrStatus) {
+        if (!isArray(terrStatus) || terrStatus.length == 0) {
           return {
             status: 'Available',
           };
         }
-
+        
+        // re-order check in/out terrStatus by most recent timestamp
+        terrStatus = orderBy(terrStatus, 'timestamp', 'desc');
+        // reduce array to the last two records
+        terrStatus.length = 2;
+        
         // if there is no check IN terrStatus, or the last terrStatus is OUT, then territory is still checked out
-        if (!terrStatus.in) {
+        if (!some(terrStatus, ['status', 'IN']) || terrStatus[0].status === 'OUT') {
+          const a = terrStatus[0];
           return {
-            checkout_id: terrStatus.checkout_id,
+            checkout_id: a.checkout_id,
             status: 'Checked Out',
-            date: terrStatus.timestamp,
-            publisherid: terrStatus.publisher_id,
-            territoryid: terrStatus.territory_id,
-            campaign: terrStatus.campaign,
+            date: a.timestamp,
+            publisherid: a.publisherid,
+            territoryid: a.territoryid,
+            campaign: a.campaign,
           };
           
-        } else {
+        } else if (terrStatus[0].status === 'IN') {
           // if the last terrStatus is IN
           // and the most recent timestamp is one month or less, then the territory is recently worked.
-          if (differenceInMonths(new Date(), terrStatus.timestamp) <= 1) {
+          if (differenceInMonths(new Date(), terrStatus[0].timestamp) <= 1) {
+            const a = terrStatus[0];
             return {
-              checkout_id: terrStatus.checkout_id,
+              checkout_id: a.checkout_id,
               status: 'Recently Worked',
-              date: terrStatus.timestamp,
-              publisherid: terrStatus.publisher_id,
-              territoryid: terrStatus.territory_id,
-              campaign: terrStatus.campaign,
+              date: a.timestamp,
+              publisherid: a.publisherid,
+              territoryid: a.territoryid,
+              campaign: a.campaign,
             };
           } else {
             // ... otherwise the territory is available.
