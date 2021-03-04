@@ -73,7 +73,7 @@ const RootQuery = gql`
     activityLogs(checkout_id: Int, address_id: Int): [ActivityLog]
     getAssignmentRecords(congId: Int): [AssignmentRecord]
     optimize(territoryId: Int!, start: Float, end: Float): [Address],
-    lastActivity(territoryId: Int, addressId: Int): ActivityLog,
+    lastActivity(territoryId: Int, addressId: Int, checkoutId: Int): ActivityLog,
     nearestAddresses(congId: Int, coordinates: [Float], radius: Int, unit: String, skip: Int, take: Int): [Address],
     group(id: Int): Group,
     groups(congId: Int): [Group],
