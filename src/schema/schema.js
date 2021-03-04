@@ -179,7 +179,7 @@ export const resolvers = {
     activityLogs: activityLogResolvers.activityLogs,
     creator: publisherQueryResolvers.creator,
     updater: publisherQueryResolvers.updater,
-    lastActivity: addressQueryResolvers.lastActivity,
+    lastActivity: activityLogResolvers.lastActivity,
     phones: phoneQueryResolvers.phones,
   },
 
@@ -199,7 +199,7 @@ export const resolvers = {
     activityLogs: activityLogResolvers.activityLogs,
     creator: publisherQueryResolvers.creator,
     updater: publisherQueryResolvers.updater,
-    lastActivity: addressQueryResolvers.lastActivity,
+    lastActivity: activityLogResolvers.lastActivity,
   },
 }
 

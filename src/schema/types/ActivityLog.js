@@ -41,6 +41,15 @@ export const resolvers = {
     const address_id = root.id;
     return await activityLogAsync.read(checkout_id, address_id);
   },
+  lastActivity: async (root, args) => {
+    try {
+      const { checkout_id } = args;
+      const { id } = root;
+      return await activityLogAsync.lastActivity(id, checkout_id);
+    } catch (err) {
+      console.error(err);
+    }
+  },
 };
 
 export const mutationResolvers = {

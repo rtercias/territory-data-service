@@ -25,7 +25,7 @@ export const Phone = gql`
     update_user: Int
     updater: Publisher
     update_date: String
-    lastActivity: ActivityLog
+    lastActivity(checkout_id: Int): ActivityLog
   }
 `;
 
@@ -70,12 +70,6 @@ export const queryResolvers = {
     }
 
     return result;
-  },
-
-  lastActivity: async (root, args) => {
-    const phoneId = (root && root.id) || (args && args.phoneId);
-    const { checkoutId } = args;
-    return await phoneAsync.lastActivity(phoneId, checkoutId);
   },
 };
 
