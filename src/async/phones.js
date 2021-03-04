@@ -148,15 +148,6 @@ class PhonesAsync {
     await conn.query(sql);
   }
 
-  async lastActivity (phoneId, checkoutId) {
-    if (!phoneId) throw new Error('phone id is required');
-
-    const checkout = checkoutId ? ` AND checkout_id=${checkoutId}` : '';
-    const sql = `SELECT * FROM address_last_activity WHERE address_id=${phoneId}${checkout}`;
-    const result = toArray(await conn.query(sql));
-    return result.length ? result[0] : null;
-  }
-
   async searchPhones (congId, phone, status = 'Active') {
     if (!congId || !phone) {
       return [];

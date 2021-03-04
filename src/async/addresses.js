@@ -153,15 +153,6 @@ class AddressAsync {
     await conn.query(sql);
   }
 
-  async lastActivity (addressId, checkoutId) {
-    if (!addressId) throw new Error('address id is required');
-
-    const checkout = checkoutId ? ` AND checkout_id=${checkoutId}` : '';
-    const sql = `SELECT * FROM address_last_activity WHERE address_id=${addressId}${checkout}`;
-    const result = toArray(await conn.query(sql));
-    return result.length ? result[0] : null;
-  }
-
   async getNearestAddresses (congId, coordinates, radius = 1, unit = 'mi', skip = 0, take = 15) {
     if (!congId) throw new Error('cong id is required');
     if (!coordinates) throw new Error('lat/lng coordinates is required');
