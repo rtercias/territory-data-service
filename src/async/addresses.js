@@ -153,10 +153,11 @@ class AddressAsync {
     await conn.query(sql);
   }
 
-  async lastActivity (addressId) {
+  async lastActivity (addressId, checkoutId) {
     if (!addressId) throw new Error('address id is required');
 
-    const sql = `SELECT * FROM address_last_activity WHERE address_id=${addressId}`;
+    const checkout = checkoutId ? ` AND checkout_id=${checkoutId}` : '';
+    const sql = `SELECT * FROM address_last_activity WHERE address_id=${addressId}${checkout}`;
     const result = toArray(await conn.query(sql));
     return result.length ? result[0] : null;
   }

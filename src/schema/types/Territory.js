@@ -149,7 +149,8 @@ export const queryResolvers = {
 
   lastActivity: async (root, args) => {
     const territoryId = (root && root.id) || (args && args.territoryId);
-    return await terrAsync.lastActivity(territoryId);
+    const { checkoutId } = args;
+    return await terrAsync.lastActivity(territoryId, checkoutId);
   },
 };
 

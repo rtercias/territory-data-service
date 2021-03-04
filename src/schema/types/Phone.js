@@ -74,7 +74,8 @@ export const queryResolvers = {
 
   lastActivity: async (root, args) => {
     const phoneId = (root && root.id) || (args && args.phoneId);
-    return await phoneAsync.lastActivity(phoneId);
+    const { checkoutId } = args;
+    return await phoneAsync.lastActivity(phoneId, checkoutId);
   },
 };
 
