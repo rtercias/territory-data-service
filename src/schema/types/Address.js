@@ -132,7 +132,7 @@ export const queryResolvers = {
   lastActivity: async (root, args) => {
     try {
       const addressId = (root && root.id) || (args && args.addressId);
-      const checkoutId = (root && root.checkout_id) || (args && args.checkout_id);
+      const { checkoutId } = args;
       return await addressAsync.lastActivity(addressId, checkoutId);
     } catch (err) {
       console.error(err);

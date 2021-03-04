@@ -250,11 +250,10 @@ class TerritoryAsync {
     return orderBy(addresses, 'sort');
   }
 
-  async lastActivity(territoryId, checkoutId) {
+  async lastActivity(territoryId) {
     if (!territoryId) throw new Error('territory id is required');
 
-    const checkout = checkoutId ? ` AND checkout_id=${checkoutId}` : '';
-    const sql = `SELECT * FROM territory_last_activity WHERE territory_id=${territoryId}{${checkout}}`;
+    const sql = `SELECT * FROM territory_last_activity WHERE territory_id=${territoryId}`;
     const result = toArray(await conn.query(sql));
     return result.length ? result[0] : null;
   }
