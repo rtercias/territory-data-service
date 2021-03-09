@@ -80,6 +80,8 @@ const RootQuery = gql`
     addressChangeLogs(congId: Int, recordId: Int, minDate: String, publisherId: Int): [AddressChangeLog],
     phone(id: Int, status: String): Phone,
     phones(congId: Int, parentId: Int, terrId: Int, keyword: String): [Phone],
+    addressCountByTerritories(congId: Int): [Territory],
+    phoneCountByTerritories(congId: Int): [Territory],
   }
 `;
 

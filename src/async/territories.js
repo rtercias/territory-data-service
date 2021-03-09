@@ -313,6 +313,28 @@ class TerritoryAsync {
       const logs = await activityLog.read(ck.checkout_id);
     }
   }
+
+  async addressCountByTerritories (congId) {
+    if (!congId) throw new Error('cong id is required');
+
+    const sql = `SELECT a.territory_id as id, count(*) as addressCount FROM addresses a 
+      WHERE a.congregationid = ${congId} AND a.type = 'Regular'
+      AND a.status = 'Active' AND a.territory_id IS NOT NULL
+      GROUP BY a.territory_id`;
+
+    return await conn.query(sql);
+  }
+
+  async phoneCountByTerritories (congId) {
+    if (!congId) throw new Error('cong id is required');
+
+    const sql = `SELECT p.territory_id as id, count(*) as phoneCount FROM addresses a 
+      JOIN addresses p ON a.id = p.parent_id
+      WHERE p.congregationid = ${congId} AND p.type = 'Phone'
+      AND p.status = 'Active' GROUP BY p.territory_id`;
+
+    return await conn.query(sql);
+  }
 }
 
 export default new TerritoryAsync();

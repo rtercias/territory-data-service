@@ -22,6 +22,8 @@ export const Territory = gql`
     lastActivity: ActivityLog
     phones: [Phone]
     tags: String
+    addressCount: Int
+    phoneCount: Int
   }
 `;
 
@@ -150,6 +152,14 @@ export const queryResolvers = {
   lastActivity: async (root, args) => {
     const territoryId = (root && root.id) || (args && args.territoryId);
     return await terrAsync.lastActivity(territoryId);
+  },
+
+  addressCountByTerritories: async (root, { congId }) => {
+    return await terrAsync.addressCountByTerritories(congId);
+  },
+
+  phoneCountByTerritories: async (root, { congId }) => {
+    return await terrAsync.phoneCountByTerritories(congId);
   },
 };
 
