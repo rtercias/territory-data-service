@@ -74,6 +74,7 @@ const RootQuery = gql`
     getAssignmentRecords(congId: Int): [AssignmentRecord]
     optimize(territoryId: Int!, start: Float, end: Float): [Address],
     lastActivity(territoryId: Int, addressId: Int, checkoutId: Int): ActivityLog,
+    lastActivities(checkout_id: Int!): [ActivityLog],
     nearestAddresses(congId: Int, coordinates: [Float], radius: Int, unit: String, skip: Int, take: Int): [Address],
     group(id: Int): Group,
     groups(congId: Int): [Group],
@@ -171,6 +172,7 @@ export const resolvers = {
     inactiveAddresses: addressQueryResolvers.inactiveAddresses,
     status: territoryQueryResolvers.status,
     lastActivity: territoryQueryResolvers.lastActivity,
+    lastActivities: territoryQueryResolvers.lastActivities,
     phones: phoneQueryResolvers.phones,
     group: groupQueryResolvers.group,
   },

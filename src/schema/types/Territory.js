@@ -5,6 +5,7 @@ import { differenceInMonths } from 'date-fns';
 import { ActivityLog } from './ActivityLog';
 import { Phone } from './Phone';
 import { pusher } from '../../server';
+import activityLog from '../../async/activityLog';
 
 export const Territory = gql`
   type Territory {
@@ -20,6 +21,7 @@ export const Territory = gql`
     city: String
     status: Status
     lastActivity: ActivityLog
+    lastActivities(checkout_id: Int): [ActivityLog]
     phones: [Phone]
     tags: String
     addressCount: Int
@@ -152,6 +154,12 @@ export const queryResolvers = {
   lastActivity: async (root, args) => {
     const territoryId = (root && root.id) || (args && args.territoryId);
     return await terrAsync.lastActivity(territoryId);
+  },
+
+  lastActivities: async (root, args) => {
+    const { checkout_id } = args || root.status;
+    if (!checkout_id) return [];
+    return await activityLog.lastActivity(null, checkout_id);
   },
 
   addressCountByTerritories: async (root, { congId }) => {
