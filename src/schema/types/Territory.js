@@ -158,7 +158,6 @@ export const queryResolvers = {
 
   lastActivities: async (root, args) => {
     const { checkout_id } = args || root.status;
-    console.log('checkout_id', checkout_id);
     if (!checkout_id) return [];
     return await activityLog.lastActivity(null, checkout_id);
   },
