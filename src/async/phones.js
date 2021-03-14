@@ -23,9 +23,10 @@ class PhonesAsync {
       status === '!Active' ? ` AND NOT status = 'Active'` :
       ` AND status = '${status}'`;
 
+    const parentCondition = parentId ? ` AND parent_id=${parentId}` : '';
     const terrCondition = terrId ? ` AND territory_id=${terrId}` : '';
 
-    const sql = `SELECT *, ${this.aliases} FROM addresses WHERE type='Phone' AND parent_id=${parentId}${terrCondition}${statusCondition}`;
+    const sql = `SELECT *, ${this.aliases} FROM addresses WHERE type='Phone'${parentCondition}${terrCondition}${statusCondition}`;
 
     return toArray(await conn.query(sql));
   }
