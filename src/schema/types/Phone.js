@@ -57,16 +57,22 @@ export const queryResolvers = {
   },
 
   phones: async (root, args) => {
-    let result;
-    if ((args && args.parent_id) || (root && root.id)) {
-      const parentId = args.parent_id || root.id;
-      const terrId = args.terrId;
-      result = await phoneAsync.getPhones(parentId, terrId, 'Active');
-    }
+    let result, parentId, terrId;
 
-    if (((root && root.congregationid) || args.congId) && args.keyword) {
+    if (args.congId && args.keyword) {
+      // phone search query
       const congId = (root ? root.congregationid : null) || args.congId;
       result = await phoneAsync.searchPhones(congId, args.keyword, 'Active');
+
+    } else if (root.addr1) {
+      // root is an address
+      parentId = root.id;
+      result = await phoneAsync.getPhones(parentId, terrId, 'Active');
+
+    } else {
+      // root is a territory
+      terrId = root.id;
+      result = await phoneAsync.getPhones(null, terrId, 'Active');
     }
 
     return result;
