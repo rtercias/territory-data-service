@@ -46,10 +46,14 @@ class ActivityLogAsync {
   }
 
   async lastActivity (id, checkoutId) {
-    if (!id) throw new Error('id is required');
-    const sql = `SELECT * FROM address_last_activity WHERE address_id=${id} AND checkout_id=${checkoutId}`;
+    const addressSQL = id ? ` AND address_id=${id}` : '';
+    const sql = `SELECT * FROM address_last_activity WHERE checkout_id=${checkoutId}${addressSQL}`;
     const result = toArray(await conn.query(sql));
-    return result.length ? result[0] : null;
+    if (id) {
+      return result.length ? result[0] : null;
+    }
+
+    return result;
   }
 
   async update (activityLog) {
