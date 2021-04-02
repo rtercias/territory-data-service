@@ -6,25 +6,34 @@ import { omitBy, isEmpty } from 'lodash';
 import addressAsync from './addresses';
 
 class ChangeLogAsync {
-  async addAddressChangeLog (updatedAddress) {
+  async addAddressChangeLog (address, operation, recordId) {
     const skip = ['create_date', 'create_user', 'update_date', 'update_user'];
-    if (!updatedAddress) throw new Error('updatedAddress is required');
+    if (!address) throw new Error('address is required');
 
-    // get existing address first
-    const { id, update_user: userid } = updatedAddress;
-    const oldAddress = await addressAsync.getAddress(id, '*');
-    const rawChanges = omitBy(updatedAddress, (value, key) => oldAddress[key] == value);
+    const tableName = 'addresses';
+    const id = operation === 'insert' ? recordId : address.id;
+    const userid = operation === 'insert' ? address.create_user : address.update_user;
     const changes = {};
-    for (const key in rawChanges) {
-      if (!skip.includes(key)) {
-        changes[key] = { new: rawChanges[key], old: oldAddress[key] };
+
+    if (operation === 'insert') {
+      changes.added = true;
+    } else if (operation === 'delete') {
+      changes.removed = true;
+    } else {
+      // get existing address first
+      const oldAddress = await addressAsync.getAddress(id, '*');
+      const rawChanges = omitBy(address, (value, key) => oldAddress[key] == value);
+      for (const key in rawChanges) {
+        if (!skip.includes(key)) {
+          changes[key] = { new: rawChanges[key], old: oldAddress[key] };
+        }
       }
     }
 
     if (isEmpty(changes)) return null;
 
     const sql = `INSERT INTO changelog (publisher_id, table_name, record_id, changes) VALUES (?, ?, ?, ?)`;
-    const values = [userid, 'addresses', id, JSON.stringify(changes)];
+    const values = [userid, tableName, id, JSON.stringify(changes)];
     const result = await conn.query(sql, values);
     result.insertId;
   }

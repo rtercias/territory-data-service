@@ -1,4 +1,5 @@
 import { toArray, get } from 'lodash';
+import { escape } from 'mysql';
 import { conn } from '../server';
 
 class CongregationAsync {
@@ -31,13 +32,13 @@ class CongregationAsync {
       admin_email,
       options
     ) VALUES (
-      '${ get(cong, 'name', '') }',
-      '${ get(cong, 'description', '') }',
-      '${ get(cong, 'create_user', '') }',
-      '${ get(cong, 'language', '') }',
-      ${ get(cong, 'campaign', '') },
-      '${ get(cong, 'admin_email', '') }',
-      '${ get(cong, 'options', '') }'
+      ${ escape(cong.name) },
+      ${ escape(get(cong, 'description')) || '' },
+      ${ escape(cong.create_user) },
+      ${ escape(get(cong, 'language')) || '' },
+      ${ escape(get(cong, 'campaign')) || '' },
+      ${ escape(get(cong, 'admin_email')) || '' },
+      ${ escape(get(cong, 'options')) || '' }
     )`;
     const results = await conn.query(sql);
 
@@ -53,13 +54,14 @@ class CongregationAsync {
     }
 
     const sql = `UPDATE congregations SET
-      name = '${get(cong, 'name', '')}',
-      description = '${get(cong, 'description', '')}',
-      language = '${get(cong, 'language', '')}',
-      campaign = ${get(cong, 'campaign', 0)},
-      admin_email = '${get(cong, 'admin_email', '')}',
-      options = '${get(cong, 'options', '')}'
-    WHERE id = ${get(cong, 'id', '')}`;
+      name = ${escape(get(cong, 'name')) || ''},
+      description = ${escape(get(cong, 'description')) || ''},
+      language = ${escape(get(cong, 'language')) || ''},
+      campaign = ${escape(get(cong, 'campaign')) || 0},
+      admin_email = ${escape(get(cong, 'admin_email')) || ''},
+      options = ${escape(get(cong, 'options')) || ''},
+      update_user = ${cong.update_user}
+    WHERE id = ${cong.id}`;
 
     await conn.query(sql);
   }

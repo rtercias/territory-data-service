@@ -1,7 +1,9 @@
 const { config } = require('firebase-functions');
+
 import toArray from 'lodash/toArray';
 import orderBy from 'lodash/orderBy';
 import get from 'lodash/get';
+import { escape } from 'mysql';
 import { conn } from '../server';
 import axios from 'axios';
 import addressAsync from './addresses';
@@ -98,13 +100,13 @@ class TerritoryAsync {
       create_user,
       tags
     ) VALUES (
-      ${ get(territory, 'congregationid', '') },
-      '${ get(territory, 'name', '') }',
-      '${ get(territory, 'description', '') }',
-      '${ get(territory, 'type', '') }',
-      '${ get(territory, 'group_id', '') }',
-      '${ get(territory, 'create_user', '') }',
-      '${ get(territory, 'tags', '') }'
+      ${ territory.congregationid },
+      ${ escape(get(territory, 'name')) || '' },
+      ${ escape(get(territory, 'description')) || '' },
+      ${ escape(get(territory, 'type')) || '' },
+      ${ territory.group_id },
+      ${ territory.create_user },
+      ${ escape(get(territory, 'tags')) || '' }
     )`;
     const results = await conn.query(sql);
 
@@ -126,14 +128,14 @@ class TerritoryAsync {
     }
 
     const sql = `UPDATE territories SET
-      congregationid = ${get(territory, 'congregationid', '')},
-      name = '${get(territory, 'name', '')}',
-      description = '${get(territory, 'description', '')}',
-      type = '${get(territory, 'type', '')}',
-      group_id = '${get(territory, 'group_id', '')}',
-      update_user = ${get(territory, 'update_user', '')},
-      tags = '${get(territory, 'tags', '')}'
-    WHERE id = ${get(territory, 'id', '')}`;
+      congregationid = ${territory.congregationid},
+      name = ${escape(get(territory, 'name')) || ''},
+      description = ${escape(get(territory, 'description')) || ''},
+      type = ${escape(get(territory, 'type')) || ''},
+      group_id = ${territory.group_id},
+      update_user = ${territory.update_user},
+      tags = ${escape(get(territory, 'tags')) || ''}
+    WHERE id = ${territory.id}`;
     await conn.query(sql);
   }
 
