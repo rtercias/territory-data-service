@@ -1,4 +1,5 @@
 import { toArray, get } from 'lodash';
+import { escape } from 'mysql';
 import { conn } from '../server';
 import changeLogAsync from './changeLog';
 
@@ -78,20 +79,22 @@ class PhonesAsync {
       ${ get(phone, 'territory_id', '') },
       ${ get(phone, 'parent_id', '') },
       'Phone',
-      '${ get(phone, 'status', 'Active') }',
+      ${ escape(get(phone, 'status')) || 'Active' },
       ${ get(phone, 'sort', '') },
-      '${ get(phone, 'addr1', '') }',
-      '${ get(phone, 'addr2', '') }',
-      '${ get(phone, 'city', '') }',
-      '${ get(phone, 'state_province', '') }',
-      '${ get(phone, 'postal_code', '') }',
-      '${ get(phone, 'phone', '') }',
+      ${ escape(get(phone, 'addr1')) || '' },
+      ${ escape(get(phone, 'addr2')) || '' },
+      ${ escape(get(phone, 'city')) || '' },
+      ${ escape(get(phone, 'state_province')) || '' },
+      ${ escape(get(phone, 'postal_code')) || '' },
+      ${ escape(get(phone, 'phone')) || '' },
       ${ get(phone, 'longitude', 'NULL') },
       ${ get(phone, 'latitude', 'NULL') },
-      '${ get(phone, 'notes', '') }',
+      ${ escape(get(phone, 'notes')) || '' },
       ${ get(phone, 'create_user', '') },
       NOW()
     )`);
+
+    await changeLogAsync.addAddressChangeLog(phone, 'insert', results.insertId);
 
     return results.insertId;
   }
@@ -105,19 +108,19 @@ class PhonesAsync {
       congregationid = ${get(phone, 'congregationId', '')},
       territory_id = ${get(phone, 'territory_id', '')},
       parent_id = ${get(phone, 'parent_id', '')},
-      status = '${get(phone, 'status', '')}',
+      status = ${escape(get(phone, 'status')) || ''},
       sort = ${get(phone, 'sort', '')},
-      addr1 = '${get(phone, 'addr1', '')}',
-      addr2 = '${get(phone, 'addr2', '')}',
-      city = '${get(phone, 'city', '')}',
-      state_province = '${get(phone, 'state_province', '')}',
-      postal_code = '${get(phone, 'postal_code', '')}',
-      phone = '${get(phone, 'phone', '')}',
+      addr1 = ${escape(get(phone, 'addr1')) || ''},
+      addr2 = ${escape(get(phone, 'addr2')) || ''},
+      city = ${escape(get(phone, 'city')) || ''},
+      state_province = ${escape(get(phone, 'state_province')) || ''},
+      postal_code = ${escape(get(phone, 'postal_code')) || ''},
+      phone = ${escape(get(phone, 'phone')) || ''},
       longitude = ${get(phone, 'longitude', 'NULL')},
       latitude = ${get(phone, 'latitude', 'NULL')},
       update_user = ${get(phone, 'update_user', '')},
       update_date = NOW(),
-      notes = '${get(phone, 'notes', '')}'
+      notes = ${escape(get(phone, 'notes')) || ''}
     WHERE id = ${get(phone, 'id', '')}`;
 
     await changeLogAsync.addAddressChangeLog(phone);
@@ -130,7 +133,7 @@ class PhonesAsync {
     if (!userid) throw new Error('userid is required');
 
     const sql = `UPDATE addresses SET 
-      status = '${status}', update_user = ${userid}, notes = '${notes}'
+      status = ${escape(status)}, update_user = ${userid}, notes = ${escape(notes)}
       WHERE id=${id}`;
 
     await changeLogAsync.addAddressChangeLog({ id, update_user: userid, status, notes });

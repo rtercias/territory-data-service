@@ -1,4 +1,5 @@
 import get from 'lodash/get';
+import { escape } from 'mysql';
 import { conn } from '../server';
 import terrAsync from './territories';
 
@@ -34,10 +35,10 @@ class GroupAsync {
       description,
       overseer
     ) VALUES (
-      ${ get(group, 'congregation_id', '') },
-      '${ get(group, 'code', '') }',
-      '${ get(group, 'description', '') }',
-      ${ get(group, 'overseer', '') }
+      ${ group.congregation_id },
+      ${ escape(group.code) },
+      ${ escape(get(group, 'description')) || '' },
+      ${ escape(get(group, 'overseer')) || '' }
     )`);
 
     return results.insertId;
@@ -55,11 +56,11 @@ class GroupAsync {
     }
 
     const sql = `UPDATE groups SET
-      congregation_id = ${get(group, 'congregation_id', '')},
-      code = '${get(group, 'code', '')}',
-      description = '${get(group, 'description', '')}',
-      overseer = ${get(group, 'overseer', '')}
-    WHERE id = ${get(group, 'id', '')}`;
+      congregation_id = ${group.congregation_id},
+      code = '${group.code}',
+      description = ${escape(get(group, 'description')) || ''},
+      overseer = ${escape(get(group, 'overseer')) || ''}
+    WHERE id = ${group.id}`;
 
     await conn.query(sql);
   }

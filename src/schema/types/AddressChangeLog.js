@@ -10,6 +10,7 @@ export const AddressChangeLog = gql`
     record_id: Int
     address: Address
     changes: String
+    parent_id: Int
   }
 `;
 

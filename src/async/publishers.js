@@ -1,4 +1,5 @@
 import toArray from 'lodash/toArray';
+import { escape } from 'mysql';
 import get from 'lodash/get';
 import { conn } from '../server';
 
@@ -51,15 +52,15 @@ class PublisherAsync {
       create_user,
       status
     ) VALUES (
-      ${ get(publisher, 'congregationid', '') },
-      '${ get(publisher, 'username', '') }',
-      '${ get(publisher, 'firstname', '') }',
-      '${ get(publisher, 'lastname', '') }',
-      '${ get(publisher, 'create_user', '') }',
-      '${ get(publisher, 'status', 'active') }'
+      ${ publisher.congregationid },
+      ${ escape(publisher.username) },
+      ${ escape(get(publisher, 'firstname')) || '' },
+      ${ escape(get(publisher, 'lastname')) || '' },
+      ${ publisher.create_user },
+      ${ escape(get(publisher, 'status')) || 'active' }
     )`;
     const result = await conn.query(sql);
-    const role = await conn.query(`SELECT id FROM roles WHERE name = '${get(publisher, 'role')}'`);
+    const role = await conn.query(`SELECT id FROM roles WHERE name = '${publisher.role}'`);
     if (role && role.length) {
       const roleSql = `INSERT INTO publisherroles (publisher_id, role_id)
         VALUES (${ result.insertId }, '${role[0].id}')`;
@@ -84,17 +85,17 @@ class PublisherAsync {
     }
 
     const sql = `UPDATE publishers SET
-      congregationid = ${get(publisher, 'congregationid', '')},
-      username = '${get(publisher, 'username', '')}',
-      firstname = '${get(publisher, 'firstname', '')}',
-      lastname = '${get(publisher, 'lastname', '')}',
-      update_user = ${get(publisher, 'update_user', '')},
-      status = '${get(publisher, 'status', '')}'
+      congregationid = ${publisher.congregationid},
+      username = ${escape(publisher.username)},
+      firstname = ${escape(get(publisher, 'firstname')) || ''},
+      lastname = ${escape(get(publisher, 'lastname')) || ''},
+      update_user = ${publisher.update_user},
+      status = ${escape(get(publisher, 'status')) || ''}
     WHERE id = ${publisher.id}`;
     await conn.query(sql);
 
     if (publisher.role) {
-      const role = await conn.query(`SELECT id FROM roles WHERE name = '${get(publisher, 'role')}'`);
+      const role = await conn.query(`SELECT id FROM roles WHERE name = '${publisher.role}'`);
       if (role && role.length) {
         const roleSql = `UPDATE publisherroles SET role_id = ${role[0].id}
           WHERE publisher_id = ${publisher.id}`;

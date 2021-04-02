@@ -1,4 +1,5 @@
 import { toArray, get } from 'lodash';
+import { escape } from 'mysql';
 import { conn } from '../server';
 import changeLogAsync from './changeLog';
 
@@ -77,20 +78,22 @@ class AddressAsync {
       ${ get(address, 'congregationId', '') },
       ${ get(address, 'territory_id', '') },
       'Regular',
-      '${ get(address, 'status', 'Active') }',
+      ${ escape(get(address, 'status')) || 'Active' },
       ${ get(address, 'sort', '') },
-      '${ get(address, 'addr1', '') }',
-      '${ get(address, 'addr2', '') }',
-      '${ get(address, 'city', '') }',
-      '${ get(address, 'state_province', '') }',
-      '${ get(address, 'postal_code', '') }',
-      '${ get(address, 'phone', '') }',
+      ${ escape(get(address, 'addr1')) || '' },
+      ${ escape(get(address, 'addr2')) || '' },
+      ${ escape(get(address, 'city')) || '' },
+      ${ escape(get(address, 'state_province')) || '' },
+      ${ escape(get(address, 'postal_code')) || '' },
+      ${ escape(get(address, 'phone')) || '' },
       ${ get(address, 'longitude', 'NULL') },
       ${ get(address, 'latitude', 'NULL') },
-      '${ get(address, 'notes', '') }',
+      ${ escape(get(address, 'notes')) || '' },
       ${ get(address, 'create_user', '') },
       NOW()
     )`);
+
+    await changeLogAsync.addAddressChangeLog(address, 'insert', results.insertId);
 
     return results.insertId;
   }
@@ -100,32 +103,46 @@ class AddressAsync {
       throw new Error('Address id is required');
     }
 
+    const existing = this.getAddress(address.id);
+
     const sql = `UPDATE addresses SET
       congregationid = ${get(address, 'congregationId', '')},
-      territory_id = ${get(address, 'territory_id', '')},
-      status = '${get(address, 'status', '')}',
+      territory_id = ${get(address, 'territory_id', 0)},
+      status = ${escape(get(address, 'status')) || ''},
       sort = ${get(address, 'sort', '')},
-      addr1 = '${get(address, 'addr1', '')}',
-      addr2 = '${get(address, 'addr2', '')}',
-      city = '${get(address, 'city', '')}',
-      state_province = '${get(address, 'state_province', '')}',
-      postal_code = '${get(address, 'postal_code', '')}',
-      phone = '${get(address, 'phone', '')}',
+      addr1 = ${escape(get(address, 'addr1')) || ''},
+      addr2 = ${escape(get(address, 'addr2')) || ''},
+      city = ${escape(get(address, 'city')) || ''},
+      state_province = ${escape(get(address, 'state_province')) || ''},
+      postal_code = ${escape(get(address, 'postal_code')) || ''},
+      phone = ${escape(get(address, 'phone')) || ''},
       longitude = ${get(address, 'longitude', 'NULL')},
       latitude = ${get(address, 'latitude', 'NULL')},
       update_user = ${get(address, 'update_user', '')},
       update_date = NOW(),
-      notes = '${get(address, 'notes', '')}'
+      notes = ${escape(get(address, 'notes')) || ''}
     WHERE id = ${get(address, 'id', '')}`;
 
     await changeLogAsync.addAddressChangeLog(address);
     await conn.query(sql);
+
+    if (address.territory_id !== existing.territory_id) {
+      // also change associated phone territory ids
+      const sqlPhones = `UPDATE addresses SET
+        territory_id = ${address.territory_id}
+      WHERE type = 'Phone' AND parent_id = ${address.id}`;
+
+      await conn.query(sqlPhones);
+    }
+
   }
 
   async delete (id) {
     if (!id) throw new Error('id is required');
     const sql = `DELETE FROM addresses WHERE id = ${id} OR parent_id = ${id}`;
     await conn.query(sql);
+
+    await changeLogAsync.addAddressChangeLog(address, 'delete');
   }
 
   async changeStatus (id, status, userid, notes) {
@@ -134,7 +151,7 @@ class AddressAsync {
     if (!userid) throw new Error('userid is required');
 
     const sql = `UPDATE addresses SET 
-      status = '${status}', update_user = ${userid}, notes = '${notes}'
+      status = ${escape(status)}, update_user = ${userid}, notes = ${escape(notes)}
       WHERE id=${id}`;
 
     await changeLogAsync.addAddressChangeLog({ id, update_user: userid, status, notes });
