@@ -169,6 +169,18 @@ class TerritoryAsync {
     return results.insertId;
   }
 
+  async reassignCheckout(checkoutId, publisherId, user) {
+    if (!checkoutId) throw new Error('checkout id is required');
+    if (!publisherId) throw new Error('publisher id is required');
+    if (!user) throw new Error('user is required');
+    const sql = `
+      UPDATE territorycheckouts SET publisherid = ${publisherId}, create_user = '${user}'
+      WHERE id = ${checkoutId}
+    `;
+    await conn.query(sql);
+    return true;
+  }
+
   async optimize(territoryId, start, end) {
     try {
       const addresses = orderBy(await addressAsync.getAddressesByTerritory(territoryId), 'sort');

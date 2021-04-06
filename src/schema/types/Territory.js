@@ -199,4 +199,7 @@ export const mutationResolvers = {
     await terrAsync.createCampaignCheckouts(congId, username, campaign);
     pusher.trigger('foreign-field', 'copy-checkouts', congId);
   },
+  reassignCheckout: async(root, { checkoutId, publisherId, user }) => {
+    return await terrAsync.reassignCheckout(checkoutId, publisherId, user);
+  },
 };
