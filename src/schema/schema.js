@@ -71,7 +71,7 @@ const RootQuery = gql`
     dnc(congId: Int, keyword: String): [Address]
     activityLog(id: Int): ActivityLog
     activityLogs(checkout_id: Int, address_id: Int): [ActivityLog]
-    getAssignmentRecords(congId: Int): [AssignmentRecord]
+    getAssignmentRecords(congId: Int, campaignMode: Boolean): [AssignmentRecord]
     optimize(territoryId: Int!, start: Float, end: Float): [Address],
     lastActivity(territoryId: Int, addressId: Int, checkoutId: Int): ActivityLog,
     lastActivities(checkout_id: Int!): [ActivityLog],

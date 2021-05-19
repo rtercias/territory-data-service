@@ -18,6 +18,7 @@ export const AssignmentRecord = gql`
 export const resolvers = {
   getAssignmentRecords: async (root, args) => {
     const congId = args.congId;
-    return await reportsAsync.getAssignmentRecords(congId);
+    const campaignMode = args.campaignMode;
+    return await reportsAsync.getAssignmentRecords(congId, campaignMode);
   },
 };
