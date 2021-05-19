@@ -5,6 +5,7 @@ export const AssignmentRecord = gql`
   type AssignmentRecord {
     territory_id: Int!
     territory_name: String!
+    territory_description: String
     publisher_id: Int!
     publisher_name: String
     out: String
