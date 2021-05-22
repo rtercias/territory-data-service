@@ -9,6 +9,7 @@ export const ActivityLog = gql`
     id: Int
     checkout_id: Int
     address_id: Int
+    territory_id: Int
     value: String
     timestamp: String
     tz_offset: Int
