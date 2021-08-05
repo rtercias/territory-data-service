@@ -1,7 +1,7 @@
 import { gql } from 'apollo-server-express';
 import terrAsync from './../../async/territories';
 import { isArray, orderBy, some } from 'lodash';
-import { differenceInMonths } from 'date-fns';
+import { differenceInCalendarDays } from 'date-fns';
 import { ActivityLog } from './ActivityLog';
 import { Phone } from './Phone';
 import { pusher } from '../../server';
@@ -83,7 +83,7 @@ export const queryResolvers = {
           status: 'Checked Out',
         };
 
-      } else if (differenceInMonths(new Date(), root.in) <= 1) {
+      } else if (differenceInCalendarDays(new Date(), root.in) <= 30) {
         return {
           date: root.in,
           status: 'Recently Worked',
@@ -125,8 +125,8 @@ export const queryResolvers = {
           
         } else if (terrStatus[0].status === 'IN') {
           // if the last terrStatus is IN
-          // and the most recent timestamp is one month or less, then the territory is recently worked.
-          if (differenceInMonths(new Date(), terrStatus[0].timestamp) <= 1) {
+          // and the most recent timestamp is 30 days or less, then the territory is recently worked.
+          if (differenceInCalendarDays(new Date(), terrStatus[0].timestamp) <= 30) {
             const a = terrStatus[0];
             return {
               checkout_id: a.checkout_id,
