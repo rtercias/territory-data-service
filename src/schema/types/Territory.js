@@ -83,7 +83,8 @@ export const queryResolvers = {
           status: 'Checked Out',
         };
 
-      } else if (differenceInCalendarDays(new Date(), root.in) <= 30) {
+      // TODO: make the day limit configurable
+      } else if (differenceInCalendarDays(new Date(), root.in) <= 70) {
         return {
           date: root.in,
           status: 'Recently Worked',
@@ -125,8 +126,9 @@ export const queryResolvers = {
           
         } else if (terrStatus[0].status === 'IN') {
           // if the last terrStatus is IN
-          // and the most recent timestamp is 30 days or less, then the territory is recently worked.
-          if (differenceInCalendarDays(new Date(), terrStatus[0].timestamp) <= 30) {
+          // and the most recent timestamp is 70 days or less, then the territory is recently worked.
+          // TODO: make the day limit configurable
+          if (differenceInCalendarDays(new Date(), terrStatus[0].timestamp) <= 70) {
             const a = terrStatus[0];
             return {
               checkout_id: a.checkout_id,
