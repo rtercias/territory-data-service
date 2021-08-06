@@ -1,11 +1,14 @@
 import { gql } from 'apollo-server-express';
 import terrAsync from './../../async/territories';
-import { isArray, orderBy, some } from 'lodash';
+import congAsync from './../../async/congregations';
+import { isArray, orderBy, some, get } from 'lodash';
 import { differenceInCalendarDays } from 'date-fns';
 import { ActivityLog } from './ActivityLog';
 import { Phone } from './Phone';
 import { pusher } from '../../server';
 import activityLog from '../../async/activityLog';
+
+const DEFAULT_DAY_LIMIT = 30;
 
 export const Territory = gql`
   type Territory {
@@ -76,6 +79,10 @@ export const queryResolvers = {
   },
 
   status: async(root, args) => {
+    const cong = await congAsync.getCongregationById(root.congregationid);
+    const congOptions = cong && JSON.parse(cong.options);
+    const dayLimit = get(congOptions, 'territories.daysAsRecent') || DEFAULT_DAY_LIMIT;
+
     if (root && root.username) {
       if (root.in === null) {
         return {
@@ -83,8 +90,7 @@ export const queryResolvers = {
           status: 'Checked Out',
         };
 
-      // TODO: make the day limit configurable
-      } else if (differenceInCalendarDays(new Date(), root.in) <= 70) {
+      } else if (differenceInCalendarDays(new Date(), root.in) <= dayLimit) {
         return {
           date: root.in,
           status: 'Recently Worked',
@@ -97,7 +103,6 @@ export const queryResolvers = {
     } else if (root && root.congregationid && root.id) {
       let terrStatus;
       terrStatus = await terrAsync.getTerritoryStatus(root.congregationid, root.id);
-      
 
       if (terrStatus) {
         // no checkout records found: AVAILABLE
@@ -127,8 +132,7 @@ export const queryResolvers = {
         } else if (terrStatus[0].status === 'IN') {
           // if the last terrStatus is IN
           // and the most recent timestamp is 70 days or less, then the territory is recently worked.
-          // TODO: make the day limit configurable
-          if (differenceInCalendarDays(new Date(), terrStatus[0].timestamp) <= 70) {
+          if (differenceInCalendarDays(new Date(), terrStatus[0].timestamp) <= dayLimit) {
             const a = terrStatus[0];
             return {
               checkout_id: a.checkout_id,
