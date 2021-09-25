@@ -29,7 +29,7 @@ export const conn = mysql.createPool({
   host: config().api.territory_server,
   user: config().api.territory_userid,
   password: config().api.territory_password,
-  database: 'territory'
+  database: config().api.database
 });
 
 export const pusher = new Pusher({
