@@ -18,7 +18,7 @@
     "predeploy": "yarn build",
     "predeploy-staging": "yarn build",
     "deploy": "yarn firebase deploy --only functions",
-    "deploy-staging": "yarn firebase deploy --only functions -P staging"
+    "deploy-staging": "yarn firebase deploy --only functions -P staging",
     "logs": "yarn firebase functions:log"
   },
   "repository": {
