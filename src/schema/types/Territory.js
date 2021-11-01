@@ -144,8 +144,14 @@ export const queryResolvers = {
             };
           } else {
             // ... otherwise the territory is available.
+            const a = terrStatus[0];
             return {
+              checkout_id: a.checkout_id,
               status: 'Available',
+              date: a.timestamp,
+              publisherid: a.publisherid,
+              territoryid: a.territoryid,
+              campaign: a.campaign,
             };
           }
         }
