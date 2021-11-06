@@ -12,7 +12,8 @@ class CongregationAsync {
   }
 
   async searchCongregations (keyword) {
-    return toArray(await conn.query(`SELECT * FROM congregations WHERE name LIKE '%${keyword}%' OR description LIKE '%${keyword}%'`));
+    return toArray(await conn.query(`SELECT * FROM congregations
+      WHERE name LIKE '%${keyword}%' OR description LIKE '%${keyword}%' OR circuit = '${keyword}'`));
   }
 
   async create (cong) {

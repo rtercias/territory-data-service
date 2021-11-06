@@ -41,7 +41,7 @@ export const queryResolvers = {
   },
   congregations: async (root, args) => {
     if (args.keyword) {
-      return await congAsync.searchCongregations(keyword);
+      return await congAsync.searchCongregations(args.keyword);
     }
 
     return await congAsync.getAllCongregations();
