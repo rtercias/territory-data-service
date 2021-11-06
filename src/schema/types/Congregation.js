@@ -15,6 +15,7 @@ export const Congregation = gql`
     campaign: Boolean
     admin_email: String
     options: String
+    circuit: String
   }
 `;
 
@@ -27,6 +28,7 @@ export const CongregationInput = gql`
     campaign: Int
     admin_email: String
     options: String
+    circuit: String
     create_user: Int
     update_user: Int
   }
