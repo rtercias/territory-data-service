@@ -30,7 +30,8 @@ class CongregationAsync {
       language,
       campaign,
       admin_email,
-      options
+      options,
+      circuit
     ) VALUES (
       ${ escape(cong.name) },
       ${ escape(get(cong, 'description')) || '' },
@@ -38,7 +39,8 @@ class CongregationAsync {
       ${ escape(get(cong, 'language')) || '' },
       ${ escape(get(cong, 'campaign')) || '' },
       ${ escape(get(cong, 'admin_email')) || '' },
-      ${ escape(get(cong, 'options')) || '' }
+      ${ escape(get(cong, 'options')) || '' },
+      ${ escape(get(cong, 'circuit')) || '' }
     )`;
     const results = await conn.query(sql);
 
@@ -60,6 +62,7 @@ class CongregationAsync {
       campaign = ${escape(get(cong, 'campaign')) || 0},
       admin_email = ${escape(get(cong, 'admin_email')) || ''},
       options = ${escape(get(cong, 'options')) || ''},
+      circuit = ${escape(get(cong, 'circuit')) || ''},
       update_user = ${cong.update_user}
     WHERE id = ${cong.id}`;
 
