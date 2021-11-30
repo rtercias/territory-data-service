@@ -38,6 +38,14 @@ class TerritoryAsync {
     ));
   }
 
+  async getTerritoryCurrentStatus(territoryId, username) {
+    const sql = `SELECT * FROM territorycheckouts_pivot p
+      WHERE territory_id=${territoryId} AND p.in is null
+      ORDER BY timestamp DESC `;
+
+    return await conn.query(sql);
+  }
+
   async getTerritoriesByUser (congId, username) {
     // get cong
     const resultCong = await conn.query(`SELECT * FROM congregations WHERE id=${congId}`);
@@ -178,7 +186,8 @@ class TerritoryAsync {
       WHERE id = ${checkoutId}
     `;
     await conn.query(sql);
-    return true;
+    const checkout = await this.territoryCheckoutStatus(checkoutId);
+    return get(checkout, 'territory_id');
   }
 
   async optimize(territoryId, start, end) {

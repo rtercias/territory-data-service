@@ -1,6 +1,7 @@
 import { gql } from 'apollo-server-express';
 import terrAsync from './../../async/territories';
 import congAsync from './../../async/congregations';
+import publisherAsync from './../../async/publishers';
 import { isArray, orderBy, some, get } from 'lodash';
 import { differenceInCalendarDays } from 'date-fns';
 import { ActivityLog } from './ActivityLog';
@@ -198,10 +199,22 @@ export const mutationResolvers = {
     return true;
   },
   checkoutTerritory: async (root, { territoryId, publisherId, user }) => {
-    return await terrAsync.saveTerritoryActivity('OUT', territoryId, publisherId, user);
+    // check if territory is already checked out
+    const existing = await terrAsync.getTerritoryCurrentStatus(territoryId);
+    if (existing && existing.length) {
+      throw new Error(`Territory ${territoryId} is already checked out`);
+    }
+
+    const checkoutId = await terrAsync.saveTerritoryActivity('OUT', territoryId, publisherId, user);
+    const publisher = await publisherAsync.getPublisherById(publisherId);
+    pusher.trigger('foreign-field', 'checkout-territory', { checkoutId, territoryId, publisher });
+    return checkoutId;
   },
   checkinTerritory: async (root, { territoryId, publisherId, user }) => {
-    return await terrAsync.saveTerritoryActivity('IN', territoryId, publisherId, user);
+    const checkoutId = await terrAsync.saveTerritoryActivity('IN', territoryId, publisherId, user);
+    const publisher = await publisherAsync.getPublisherById(publisherId);
+    pusher.trigger('foreign-field', 'checkin-territory', { checkoutId, territoryId, publisher });
+    return checkoutId;
   },
   checkinAll: async (root, { congId, username, tz_offset, timezone, campaign }) => {
     await terrAsync.checkinAll(congId, username, tz_offset, timezone, campaign);
@@ -212,6 +225,9 @@ export const mutationResolvers = {
     pusher.trigger('foreign-field', 'copy-checkouts', congId);
   },
   reassignCheckout: async(root, { checkoutId, publisherId, user }) => {
-    return await terrAsync.reassignCheckout(checkoutId, publisherId, user);
+    const territoryId = await terrAsync.reassignCheckout(checkoutId, publisherId, user);
+    const publisher = await publisherAsync.getPublisherById(publisherId);
+    pusher.trigger('foreign-field', 'reassign-territory', { checkoutId, territoryId, publisher });
+    return territoryId;
   },
 };
