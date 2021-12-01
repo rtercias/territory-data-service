@@ -39,8 +39,15 @@ class TerritoryAsync {
   }
 
   async getTerritoryCurrentStatus(territoryId, username) {
+    // get cong
+    const resultCong = await conn.query(`
+      SELECT c.* FROM territories t JOIN congregations c ON t.congregationid = c.id
+      WHERE t.id=${territoryId}`);
+    const cong = resultCong[0];
+
     const sql = `SELECT * FROM territorycheckouts_pivot p
       WHERE territory_id=${territoryId} AND p.in is null
+        AND campaign=${cong.campaign}
       ORDER BY timestamp DESC `;
 
     return await conn.query(sql);
@@ -299,13 +306,13 @@ class TerritoryAsync {
 
     // get all checked out territories
     const sqlCheckOuts = `SELECT tc.* FROM territorycheckouts_pivot tc
-      WHERE tc.congregationid = ${congId} AND tc.in IS NULL AND COALESCE(tc.campaign, 0)=${campaign || 0}`;
+      WHERE tc.congregationid = ${congId} AND tc.in IS NULL`;
     const checkouts = await conn.query(sqlCheckOuts);
 
     for (const ck of checkouts) {
       // check in
       const sql = `INSERT INTO territorycheckouts (territoryid, publisherid, status, create_user, campaign)
-        VALUES (${ck.territory_id}, ${ck.publisher_id}, 'IN', '${username}', ${campaign})`;
+        VALUES (${ck.territory_id}, ${ck.publisher_id}, 'IN', '${username}', ${ck.campaign})`;
       await conn.query(sql);
 
       // reset NH statuses
