@@ -82,7 +82,7 @@ export const queryResolvers = {
   status: async(root, args) => {
     const cong = await congAsync.getCongregationById(root.congregationid);
     const congOptions = cong && JSON.parse(cong.options);
-    const dayLimit = get(congOptions, 'territories.daysAsRecent') || DEFAULT_DAY_LIMIT;
+    const dayLimit = get(congOptions, 'territories.cycle') || DEFAULT_DAY_LIMIT;
 
     if (root && root.username) {
       if (root.in === null) {
