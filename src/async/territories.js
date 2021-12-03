@@ -283,7 +283,12 @@ class TerritoryAsync {
   async lastActivity(territoryId) {
     if (!territoryId) throw new Error('territory id is required');
 
-    const sql = `SELECT * FROM territory_last_activity WHERE territory_id=${territoryId}`;
+    const sql = `SELECT log.*, ck.territoryid AS territory_id
+      FROM activitylog log 
+      JOIN territorycheckouts ck ON log.checkout_id = ck.id
+      WHERE ck.territoryid = ${territoryId}
+      ORDER BY log.timestamp DESC
+      LIMIT 1`;
     const result = toArray(await conn.query(sql));
     return result.length ? result[0] : null;
   }
