@@ -63,7 +63,7 @@ const RootQuery = gql`
     congregation(id: Int!): Congregation
     congregations(keyword: String): [Congregation]
     territory(id: Int): Territory
-    territories(congId: Int, keyword: String, group_id: Int): [Territory]
+    territories(congId: Int, keyword: String, group_id: Int, limit: Int, offset: Int): [Territory]
     status(territoryId: Int): Status
     address(id: Int, status: String): Address
     addresses(congId: Int, terrId: Int, keyword: String, status: String): [Address]
