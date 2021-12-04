@@ -14,8 +14,12 @@ class TerritoryAsync {
     return toArray(await conn.query(`SELECT * FROM territories WHERE id=${id}`))[0];
   }
 
-  async getTerritories (congId) {
-    return toArray(await conn.query(`SELECT * FROM territories WHERE congregationid=${congId}`));
+  async getTerritories (congId, limit, offset = 0) {
+    return toArray(await conn.query(`
+      SELECT * FROM territories
+      WHERE congregationid=${congId}
+      ${limit ? `LIMIT ${offset},${limit}` : ''}
+    `));
   }
 
   async searchTerritories (congId, keyword) {
@@ -52,7 +56,7 @@ class TerritoryAsync {
     return await conn.query(sql);
   }
 
-  async getTerritoriesByUser (congId, username) {
+  async getTerritoriesByUser (congId, username, limit, offset=0) {
     // get cong
     const resultCong = await conn.query(`SELECT * FROM congregations WHERE id=${congId}`);
     const cong = resultCong[0];
@@ -66,6 +70,7 @@ class TerritoryAsync {
         AND ck.username='${username}'
         AND ck.in IS NULL
         AND COALESCE(ck.campaign, 0)=${cong.campaign || 0}
+        ${limit ? `LIMIT ${offset},${limit}` : ''}
       `
     ));
   }
@@ -83,9 +88,12 @@ class TerritoryAsync {
     );
   }
 
-  async getTerritoriesByGroup (groupId) {
+  async getTerritoriesByGroup (groupId, limit, offset = 0) {
     return toArray(await conn.query(`SELECT * FROM territories
-      WHERE group_id=${groupId} ORDER BY description, name`));
+      WHERE group_id=${groupId}
+      ORDER BY description, name
+      ${limit ? `LIMIT ${offset},${limit}` : ''}
+    `));
   }
 
   async territoryCheckoutStatus (checkout_id) {

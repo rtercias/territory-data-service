@@ -67,15 +67,15 @@ export const queryResolvers = {
     }
 
     if (args && args.group_id) {
-      return await terrAsync.getTerritoriesByGroup(args.group_id);
+      return await terrAsync.getTerritoriesByGroup(args.group_id, args.limit, args.offset);
     }
     
     if (root && root.congregationid && root.username) {
-      return await terrAsync.getTerritoriesByUser(root.congregationid, root.username);
+      return await terrAsync.getTerritoriesByUser(root.congregationid, root.username, args.limit, args.offset);
     }
 
     if ((args && args.congId) || (root && root.id)) {
-      return await terrAsync.getTerritories(args.congId || root.id);
+      return await terrAsync.getTerritories(args.congId || root.id, args.limit, args.offset);
     }
   },
 
