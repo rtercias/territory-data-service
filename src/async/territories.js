@@ -23,17 +23,16 @@ class TerritoryAsync {
       WHERE congregationid=${congId} AND (name LIKE '%${keyword}%' OR description LIKE '%${keyword}%')`));
   }
 
-  async getTerritoryStatus (congId, territoryId, username) {
+  async getTerritoryStatus (territoryId) {
     return toArray(await conn.query(
       `
-        SELECT ck.*, t.*, ck.id AS checkout_id, t.id AS territory_id, p.username, p.firstname, p.lastname, p.status AS publisher_status
+        SELECT ck.*, ck.id AS checkout_id, ck.territoryid AS territory_id,
+          p.username, p.firstname, p.lastname, p.status AS publisher_status
         FROM territorycheckouts ck
-        JOIN territories t ON ck.territoryid = t.id
         JOIN publishers p ON ck.publisherid = p.id
-        JOIN congregations c ON t.congregationid = c.id
-        WHERE t.congregationid=${congId}
-        ${!!territoryId ? ` AND ck.territoryid=${territoryId}` : ''}
-        ${!!username ? ` AND p.username='${username}'` : ''}
+        WHERE ck.territoryid=${territoryId}
+        ORDER BY ck.timestamp DESC
+        LIMIT 2
       `
     ));
   }

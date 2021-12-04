@@ -103,7 +103,7 @@ export const queryResolvers = {
       }
     } else if (root && root.congregationid && root.id) {
       let terrStatus;
-      terrStatus = await terrAsync.getTerritoryStatus(root.congregationid, root.id);
+      terrStatus = await terrAsync.getTerritoryStatus(root.id);
 
       if (terrStatus) {
         // no checkout records found: AVAILABLE
@@ -112,12 +112,7 @@ export const queryResolvers = {
             status: 'Available',
           };
         }
-        
-        // re-order check in/out terrStatus by most recent timestamp
-        terrStatus = orderBy(terrStatus, 'timestamp', 'desc');
-        // reduce array to the last two records
-        terrStatus.length = 2;
-        
+
         // if there is no check IN terrStatus, or the last terrStatus is OUT, then territory is still checked out
         if (!some(terrStatus, ['status', 'IN']) || terrStatus[0].status === 'OUT') {
           const a = terrStatus[0];
