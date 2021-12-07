@@ -1,5 +1,10 @@
 const admin = require('firebase-admin');
-admin.initializeApp();
+const serviceAccount = require(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: 'https://foreign-field.firebaseio.com',
+});
 
 export const validateFirebaseIdToken = async (req, res, next) => {
   if ((!req.headers.authorization || !req.headers.authorization.startsWith('Bearer ')) &&
@@ -34,5 +39,14 @@ export const validateFirebaseIdToken = async (req, res, next) => {
     console.error('Error while verifying Firebase ID token:', error);
     res.status(403).send('Unauthorized');
     return;
+  }
+};
+
+export const generateUserToken = async (username) => {
+  try {
+    return await admin.auth().createCustomToken(username);
+  }
+  catch (error) {
+    console.error('Error creating custom token:', error);
   }
 };

@@ -1,5 +1,6 @@
 import { gql } from 'apollo-server-express';
 import { merge } from 'lodash';
+import { generateUserToken } from '../utils/Firebase';
 
 import {
   Address,
@@ -83,6 +84,7 @@ const RootQuery = gql`
     phones(congId: Int, parentId: Int, terrId: Int, keyword: String): [Phone],
     addressCountByTerritories(congId: Int): [Territory],
     phoneCountByTerritories(congId: Int): [Territory],
+    token(username: String): String,
   }
 `;
 
@@ -134,7 +136,12 @@ const SchemaDefinition = gql`
 
 export const resolvers = {
   RootQuery: merge (
-    {}, 
+    {
+      token: async (root, { username }) => {
+        if (!username) throw new Error('username is required');
+        return await generateUserToken(username);
+      },
+    }, 
     publisherQueryResolvers,
     congregationQueryResolvers,
     territoryQueryResolvers,
