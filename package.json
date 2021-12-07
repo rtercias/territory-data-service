@@ -4,7 +4,7 @@
   "description": "graphQL service",
   "main": "dist/functions.js",
   "engines": {
-    "node": "14"
+    "node": "10"
   },
   "scripts": {
     "lint": "xo",
@@ -16,7 +16,7 @@
     "shell": "yarn firebase functions:shell",
     "start": "yarn serve",
     "predeploy": "yarn build",
-    "predeploy-staging": "yarn build",
+    "predeploy-test": "yarn build",
     "deploy": "yarn firebase deploy --only functions",
     "deploy-test": "yarn firebase deploy --only functions -P foreign-field-test",
     "logs": "yarn firebase functions:log"
