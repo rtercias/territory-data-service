@@ -53,6 +53,7 @@ import {
   queryResolvers as phoneQueryResolvers,
   mutationResolvers as phoneMutationResolvers,
 } from './types/Phone';
+import { sendSMSMessage } from '../utils/Twilio';
 
 const RootQuery = gql`
   type RootQuery {
@@ -124,6 +125,7 @@ const Mutation = gql`
     addPublisher(publisher: PublisherInput!): Publisher
     updatePublisher(publisher: PublisherInput!): Publisher
     deletePublisher(id: Int!): Boolean
+    sendSMS(text: String!, number: String!): String
   }
 `;
 
@@ -154,7 +156,11 @@ export const resolvers = {
   ),
 
   Mutation: merge (
-    {},
+    {
+      sendSMS: async (root, { text, number }) => {
+        return await sendSMSMessage(text, number);
+      },
+    },
     publisherMutationResolvers,
     territoryMutationResolvers,
     activityLogMutationResolvers,
