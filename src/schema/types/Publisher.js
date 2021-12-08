@@ -1,6 +1,5 @@
 import { gql } from 'apollo-server-express';
 import publisherAsync from './../../async/publishers';
-import congAsync from './../../async/congregations';
 
 export const Publisher = gql`
   type Publisher {
