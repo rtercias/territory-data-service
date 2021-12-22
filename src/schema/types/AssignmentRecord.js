@@ -14,6 +14,7 @@ export const AssignmentRecord = gql`
     congregationid: Int!
     username: String
     campaign: Boolean
+    type: String
   }
 `;
 
