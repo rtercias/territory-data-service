@@ -22,6 +22,7 @@ const { promisify } = require('util');
 const Pusher = require('pusher');
 const { resolvers, typeDefs } = require('./schema/schema');
 const { validateFirebaseIdToken } = require('./utils/Firebase');
+const twilio = require('twilio');
 
 export const conn = mysql.createPool({
   connectionLimit: 10,
@@ -39,6 +40,10 @@ export const pusher = new Pusher({
   cluster: config().api.pusher_cluster,
   encrypted: true,
 });
+
+const accountSid = config().api.twilio_account_sid;
+const authToken = config().api.twilio_auth_token;
+export const twilioClient = twilio(accountSid, authToken);
 
 export function gqlServer() {
   const app = express();
