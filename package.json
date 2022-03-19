@@ -4,22 +4,22 @@
   "description": "graphQL service",
   "main": "dist/functions.js",
   "engines": {
-    "node": "10"
+    "node": "12"
   },
   "scripts": {
     "lint": "xo",
     "config": "firebase functions:config:get > .runtimeconfig.json",
     "watch": "parcel src/functions.js --target node",
     "build": "parcel build src/functions.js --target node --detailed-report",
-    "serve": "export NODE_ENV=development && yarn build && yarn firebase serve",
-    "emulator": "yarn firebase emulators:start --only functions",
-    "shell": "yarn firebase functions:shell",
+    "serve": "export NODE_ENV=development && yarn build && firebase serve",
+    "emulator": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
     "start": "yarn serve",
     "predeploy": "yarn build",
     "predeploy-test": "yarn build",
-    "deploy": "yarn firebase deploy --only functions",
-    "deploy-test": "yarn firebase deploy --only functions -P foreign-field-test",
-    "logs": "yarn firebase functions:log"
+    "deploy": "firebase deploy --only functions",
+    "deploy-test": "firebase deploy --only functions -P foreign-field-test",
+    "logs": "firebase functions:log"
   },
   "repository": {
     "type": "git",
@@ -44,9 +44,8 @@
     "date-fns": "^2.14.0",
     "elliptic": "^6.5.4",
     "express": "^4.17.1",
-    "firebase-admin": "^8.12.1",
-    "firebase-functions": "^3.7.0",
-    "firebase-tools": "8.4.2",
+    "firebase-admin": "^10.0.2",
+    "firebase-functions": "^3.19.0",
     "graphql": "^14.3.0",
     "graphql-tools": "^6.2.6",
     "is-svg": "^4.2.2",
