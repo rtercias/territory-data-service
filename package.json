@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "graphQL service",
   "main": "dist/functions.js",
+  "engines": {
+    "node": "10"
+  },
   "scripts": {
     "lint": "xo",
     "config": "firebase functions:config:get > .runtimeconfig.json",
