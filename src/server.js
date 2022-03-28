@@ -25,7 +25,7 @@ const { validateFirebaseIdToken } = require('./utils/Firebase');
 const twilio = require('twilio');
 
 export const conn = mysql.createPool({
-  connectionLimit: 10,
+  connectionLimit: 100,
   ssl: { rejectUnauthorized: false }, // TODO: add SSL certificate file here (see https://github.com/mysqljs/mysql#ssl-options)
   host: config().api.territory_server,
   user: config().api.territory_userid,
