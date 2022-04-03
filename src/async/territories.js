@@ -173,7 +173,7 @@ class TerritoryAsync {
     return await conn.query(sql);
   }
 
-  async saveTerritoryActivity(status, territoryId, publisherId, user) {
+  async saveTerritoryActivity(status, territoryId, publisherId, user, checkoutId) {
     // get cong
     const resultCong = await conn.query(`
       SELECT c.* FROM territories t JOIN congregations c ON t.congregationid = c.id
@@ -181,13 +181,15 @@ class TerritoryAsync {
     const cong = resultCong[0];
     let results;
 
-    if (user) {
-      results = await conn.query(`INSERT INTO territorycheckouts (territoryid, publisherid, status, create_user, campaign)
-        VALUES (${territoryId}, ${publisherId}, '${status}', '${user}', ${cong.campaign})`);
-    } else {
-      results = await conn.query(`INSERT INTO territorycheckouts (territoryid, publisherid, status, campaign)
-        VALUES (${territoryId}, ${publisherId}, '${status}', ${cong.campaign})`);
-    }
+    const checkout = {
+      territoryid: escape(territoryId),
+      publisherid: escape(publisherId),
+      status,
+      create_user: escape(user),
+      campaign: escape(cong.campaign),
+      parent_checkout_id: escape(checkoutId),
+    };
+    results = await conn.query('INSERT INTO territorycheckouts SET ?', checkout);
     return results.insertId;
   }
 
@@ -323,8 +325,8 @@ class TerritoryAsync {
 
     for (const ck of checkouts) {
       // check in
-      const sql = `INSERT INTO territorycheckouts (territoryid, publisherid, status, create_user, campaign)
-        VALUES (${ck.territory_id}, ${ck.publisher_id}, 'IN', '${username}', ${ck.campaign})`;
+      const sql = `INSERT INTO territorycheckouts (territoryid, publisherid, status, create_user, campaign, parent_checkout_id)
+        VALUES (${ck.territory_id}, ${ck.publisher_id}, 'IN', '${username}', ${ck.campaign}, ${ck.id})`;
       await conn.query(sql);
 
       // reset NH statuses

@@ -205,11 +205,11 @@ export const mutationResolvers = {
     pusher.trigger('foreign-field', 'checkout-territory', { checkoutId, territoryId, publisher });
     return checkoutId;
   },
-  checkinTerritory: async (root, { territoryId, publisherId, user }) => {
-    const checkoutId = await terrAsync.saveTerritoryActivity('IN', territoryId, publisherId, user);
+  checkinTerritory: async (root, { territoryId, publisherId, user, checkoutId }) => {
+    const id = await terrAsync.saveTerritoryActivity('IN', territoryId, publisherId, user, checkoutId);
     const publisher = await publisherAsync.getPublisherById(publisherId);
     pusher.trigger('foreign-field', 'checkin-territory', { checkoutId, territoryId, publisher });
-    return checkoutId;
+    return id;
   },
   checkinAll: async (root, { congId, username, tz_offset, timezone, campaign }) => {
     await terrAsync.checkinAll(congId, username, tz_offset, timezone, campaign);
