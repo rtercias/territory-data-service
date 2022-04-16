@@ -33,6 +33,8 @@ class TerritoryAsync {
         SELECT ck.*, ck.id AS checkout_id, ck.territoryid AS territory_id,
           p.username, p.firstname, p.lastname, p.status AS publisher_status
         FROM territorycheckouts ck
+        JOIN territories t ON ck.territoryid = t.id
+        JOIN congregations c ON t.congregationid = c.id AND ck.campaign = c.campaign
         JOIN publishers p ON ck.publisherid = p.id
         WHERE ck.territoryid=${territoryId}
         ORDER BY ck.timestamp DESC
