@@ -1,4 +1,4 @@
-import { conn } from '../server';
+import { pool } from '../server';
 import addWeeks from 'date-fns/addWeeks';
 import format from 'date-fns/format';
 import isValid from 'date-fns/isValid';
@@ -34,7 +34,7 @@ class ChangeLogAsync {
 
     const sql = `INSERT INTO changelog (publisher_id, table_name, record_id, changes) VALUES (?, ?, ?, ?)`;
     const values = [userid, tableName, id, JSON.stringify(changes)];
-    const result = await conn.query(sql, values);
+    const result = await pool.query(sql, values);
     result.insertId;
   }
 
@@ -62,7 +62,7 @@ class ChangeLogAsync {
     // This allows users to query for all records for a given address or publisher.
     const dateClause = recordId || publisherId ? '' : ` AND cl.date >= '${minDate}'`;
 
-    const result = await conn.query(`
+    const result = await pool.query(`
       SELECT * FROM address_changelog cl
       JOIN addresses a ON cl.record_id = a.id
       WHERE ${idClause}${pubClause}${dateClause}

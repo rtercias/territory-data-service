@@ -1,19 +1,19 @@
-import { toArray, get } from 'lodash';
+import { get } from 'lodash';
 import { escape } from 'mysql';
-import { conn } from '../server';
+import { pool } from '../server';
 
 class CongregationAsync {
   async getCongregationById (id) {
-    return (await conn.query(`SELECT * FROM congregations WHERE id=${id}`))[0];
+    return (await pool.query(`SELECT * FROM congregations WHERE id=${id}`))[0];
   }
 
   async getAllCongregations () {
-    return toArray(await conn.query(`SELECT * FROM congregations`));
+    return await pool.query(`SELECT * FROM congregations`);
   }
 
   async searchCongregations (keyword) {
-    return toArray(await conn.query(`SELECT * FROM congregations
-      WHERE name LIKE '%${keyword}%' OR description LIKE '%${keyword}%' OR circuit = '${keyword}'`));
+    return await pool.query(`SELECT * FROM congregations
+      WHERE name LIKE '%${keyword}%' OR description LIKE '%${keyword}%' OR circuit = '${keyword}'`);
   }
 
   async create (cong) {
@@ -43,7 +43,7 @@ class CongregationAsync {
       ${ escape(get(cong, 'options')) || '' },
       ${ escape(get(cong, 'circuit')) || '' }
     )`;
-    const results = await conn.query(sql);
+    const results = await pool.query(sql);
 
     return results.insertId;
   }
@@ -67,13 +67,13 @@ class CongregationAsync {
       update_user = ${cong.update_user}
     WHERE id = ${cong.id}`;
 
-    await conn.query(sql);
+    await pool.query(sql);
   }
 
   async delete (id) {
     if (!id) throw new Error('id is required');
     const sql = `DELETE FROM congregations WHERE id = ${id}`;
-    return await conn.query(sql);
+    return await pool.query(sql);
   }
 }
 

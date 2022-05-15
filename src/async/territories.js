@@ -1,34 +1,33 @@
 const { config } = require('firebase-functions');
 
-import toArray from 'lodash/toArray';
 import orderBy from 'lodash/orderBy';
 import get from 'lodash/get';
 import { escape } from 'mysql';
-import { conn } from '../server';
+import { pool } from '../server';
 import axios from 'axios';
 import addressAsync from './addresses';
 import activityLog from './activityLog';
 
 class TerritoryAsync {
   async getTerritory (id) {
-    return toArray(await conn.query(`SELECT * FROM territories WHERE id=${id}`))[0];
+    return await pool.query(`SELET * FROM territories WHERE id=${id}`)[0];
   }
 
   async getTerritories (congId, limit, offset = 0) {
-    return toArray(await conn.query(`
+    return await pool.query(`
       SELECT * FROM territories
       WHERE congregationid=${congId}
       ${limit ? `LIMIT ${offset},${limit}` : ''}
-    `));
+    `);
   }
 
   async searchTerritories (congId, keyword) {
-    return toArray(await conn.query(`SELECT * FROM territories
-      WHERE congregationid=${congId} AND (name LIKE '%${keyword}%' OR description LIKE '%${keyword}%')`));
+    return await pool.query(`SELECT * FROM territories
+      WHERE congregationid=${congId} AND (name LIKE '%${keyword}%' OR description LIKE '%${keyword}%')`);
   }
 
   async getTerritoryStatus (territoryId) {
-    return toArray(await conn.query(
+    return await pool.query(
       `
         SELECT ck.*, ck.id AS checkout_id, ck.territoryid AS territory_id,
           p.username, p.firstname, p.lastname, p.status AS publisher_status
@@ -40,12 +39,12 @@ class TerritoryAsync {
         ORDER BY ck.timestamp DESC
         LIMIT 2
       `
-    ));
+    );
   }
 
   async getTerritoryCurrentStatus(territoryId, username) {
     // get cong
-    const resultCong = await conn.query(`
+    const resultCong = await pool.query(`
       SELECT c.* FROM territories t JOIN congregations c ON t.congregationid = c.id
       WHERE t.id=${territoryId}`);
     const cong = resultCong[0];
@@ -55,15 +54,15 @@ class TerritoryAsync {
         AND campaign=${cong.campaign}
       ORDER BY timestamp DESC `;
 
-    return await conn.query(sql);
+    return await pool.query(sql);
   }
 
   async getTerritoriesByUser (congId, username, limit, offset=0) {
     // get cong
-    const resultCong = await conn.query(`SELECT * FROM congregations WHERE id=${congId}`);
+    const resultCong = await pool.query(`SELECT * FROM congregations WHERE id=${congId}`);
     const cong = resultCong[0];
 
-    return toArray(await conn.query(
+    return await pool.query(
       `
         SELECT ck.*, t.*
         FROM territorycheckouts_pivot ck
@@ -74,11 +73,11 @@ class TerritoryAsync {
         AND COALESCE(ck.campaign, 0)=${cong.campaign || 0}
         ${limit ? `LIMIT ${offset},${limit}` : ''}
       `
-    ));
+    );
   }
 
   async getMostRecentCheckin (territoryId, username) {
-    return await conn.query(
+    return await pool.query(
       `
         SELECT ck.* FROM territorycheckouts ck
         JOIN publishers p ON ck.publisherid = p.id
@@ -91,16 +90,16 @@ class TerritoryAsync {
   }
 
   async getTerritoriesByGroup (groupId, limit, offset = 0) {
-    return toArray(await conn.query(`SELECT * FROM territories
+    return await pool.query(`SELECT * FROM territories
       WHERE group_id=${groupId}
       ORDER BY description, name
       ${limit ? `LIMIT ${offset},${limit}` : ''}
-    `));
+    `);
   }
 
   async territoryCheckoutStatus (checkout_id) {
     const sql = `SELECT * FROM territorycheckouts_pivot p WHERE p.checkout_id = ${checkout_id}`;
-    const result = await conn.query(sql);
+    const result = await pool.query(sql);
     return result[0];
   }
 
@@ -132,7 +131,7 @@ class TerritoryAsync {
       ${ territory.create_user },
       ${ escape(get(territory, 'tags')) || '' }
     )`;
-    const results = await conn.query(sql);
+    const results = await pool.query(sql);
 
     return results.insertId;
   }
@@ -160,7 +159,7 @@ class TerritoryAsync {
       update_user = ${territory.update_user},
       tags = ${escape(get(territory, 'tags')) || ''}
     WHERE id = ${territory.id}`;
-    await conn.query(sql);
+    await pool.query(sql);
   }
 
   async delete (id) {
@@ -172,12 +171,12 @@ class TerritoryAsync {
     }
 
     const sql = `DELETE FROM territories WHERE id = ${id}`;
-    return await conn.query(sql);
+    return await pool.query(sql);
   }
 
   async saveTerritoryActivity(status, territoryId, publisherId, user, checkoutId) {
     // get cong
-    const resultCong = await conn.query(`
+    const resultCong = await pool.query(`
       SELECT c.* FROM territories t JOIN congregations c ON t.congregationid = c.id
       WHERE t.id=${territoryId}`);
     const cong = resultCong[0];
@@ -191,7 +190,7 @@ class TerritoryAsync {
       campaign: escape(cong.campaign),
       parent_checkout_id: escape(checkoutId),
     };
-    results = await conn.query('INSERT INTO territorycheckouts SET ?', checkout);
+    results = await pool.query('INSERT INTO territorycheckouts SET ?', checkout);
     return results.insertId;
   }
 
@@ -203,7 +202,7 @@ class TerritoryAsync {
       UPDATE territorycheckouts SET publisherid = ${publisherId}, create_user = '${user}'
       WHERE id = ${checkoutId}
     `;
-    await conn.query(sql);
+    await pool.query(sql);
     const checkout = await this.territoryCheckoutStatus(checkoutId);
     return get(checkout, 'territory_id');
   }
@@ -300,7 +299,7 @@ class TerritoryAsync {
       WHERE ck.territoryid = ${territoryId}
       ORDER BY log.timestamp DESC
       LIMIT 1`;
-    const result = toArray(await conn.query(sql));
+    const result = await pool.query(sql);
     return result.length ? result[0] : null;
   }
 
@@ -311,11 +310,11 @@ class TerritoryAsync {
     if (!timezone) throw new Error('timezone is required');
 
     // get user
-    const resultUser = await conn.query(`SELECT * FROM publishers WHERE username='${username}'`);
+    const resultUser = await pool.query(`SELECT * FROM publishers WHERE username='${username}'`);
     const user = resultUser[0];
 
     // get cong
-    const resultCong = await conn.query(`SELECT * FROM congregations WHERE id=${congId}`);
+    const resultCong = await pool.query(`SELECT * FROM congregations WHERE id=${congId}`);
     const cong = resultCong[0];
 
     const campaign = _campaign === null || _campaign === undefined ? cong.campaign : _campaign;
@@ -323,13 +322,13 @@ class TerritoryAsync {
     // get all checked out territories
     const sqlCheckOuts = `SELECT tc.* FROM territorycheckouts_pivot tc
       WHERE tc.congregationid = ${congId} AND tc.in IS NULL`;
-    const checkouts = await conn.query(sqlCheckOuts);
+    const checkouts = await pool.query(sqlCheckOuts);
 
     for (const ck of checkouts) {
       // check in
       const sql = `INSERT INTO territorycheckouts (territoryid, publisherid, status, create_user, campaign, parent_checkout_id)
         VALUES (${ck.territory_id}, ${ck.publisher_id}, 'IN', '${username}', ${ck.campaign}, ${ck.id})`;
-      await conn.query(sql);
+      await pool.query(sql);
 
       // reset NH statuses
       await activityLog.resetTerritoryActivity(ck.checkout_id, user.id, tz_offset, timezone);
@@ -341,7 +340,7 @@ class TerritoryAsync {
     if (!username) throw new Error('username is required');
 
     // get cong
-    const resultCong = await conn.query(`SELECT * FROM congregations WHERE id=${congId}`);
+    const resultCong = await pool.query(`SELECT * FROM congregations WHERE id=${congId}`);
     const cong = resultCong[0];
 
     const campaign = _campaign === null || _campaign === undefined ? cong.campaign : _campaign;
@@ -349,13 +348,13 @@ class TerritoryAsync {
     // get all checked out territories
     const sqlCheckOuts = `SELECT tc.* FROM territorycheckouts_pivot tc
       WHERE tc.congregationid = ${congId} AND tc.in IS NULL AND COALESCE(tc.campaign, 0)=${campaign || 0}`;
-    const checkouts = await conn.query(sqlCheckOuts);
+    const checkouts = await pool.query(sqlCheckOuts);
 
     for (const ck of checkouts) {
       // replicate all checked out territories with current campaign flag
       const sql = `INSERT INTO territorycheckouts (territoryid, publisherid, status, timestamp, create_user, campaign)
         VALUES(${ck.territory_id}, ${ck.publisher_id}, 'OUT', NOW(), '${username}', ${campaign})`;
-      const result = await conn.query(sql);
+      const result = await pool.query(sql);
       const logs = await activityLog.read(ck.checkout_id);
     }
   }
@@ -368,7 +367,7 @@ class TerritoryAsync {
       AND a.status = 'Active' AND a.territory_id IS NOT NULL
       GROUP BY a.territory_id`;
 
-    return await conn.query(sql);
+    return await pool.query(sql);
   }
 
   async phoneCountByTerritories (congId) {
@@ -379,7 +378,7 @@ class TerritoryAsync {
       WHERE p.congregationid = ${congId} AND p.type = 'Phone'
       AND p.status = 'Active' GROUP BY p.territory_id`;
 
-    return await conn.query(sql);
+    return await pool.query(sql);
   }
 }
 
