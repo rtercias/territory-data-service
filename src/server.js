@@ -19,7 +19,7 @@ const cookieParser = require('cookie-parser')();
 const mysql = require('promise-mysql');
 const { ApolloServer } = require('apollo-server-express');
 const Pusher = require('pusher');
-const { resolvers, typeDefs } = require('./schema/schema');
+const { resolvers, typeDefs, formatError } = require('./schema/schema');
 const { validateFirebaseIdToken } = require('./utils/Firebase');
 const twilio = require('twilio');
 
@@ -57,6 +57,7 @@ export function gqlServer() {
   const apolloServer = new ApolloServer({
     typeDefs,
     resolvers,
+    formatError,
     introspection: true,
     playground: true,
   });

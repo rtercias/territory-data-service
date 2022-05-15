@@ -243,3 +243,9 @@ export const typeDefs = [
   Group,
   GroupInput,
 ];
+
+export const formatError = (err) => {
+  delete err.extensions.exception;
+  err.extensions.timestamp = (new Date()).getTime();
+  return err;
+};
