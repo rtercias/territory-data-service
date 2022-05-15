@@ -73,8 +73,12 @@ export const queryResolvers = {
         return await addressAsync.getAddress(root.parent_id, '*');
       }
 
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to get address',
+        'QUERY_RESOLVER_ERROR',
+        { error, path: 'Address/address', arguments: { root, args }},
+      );
     }
   },
 
@@ -92,9 +96,12 @@ export const queryResolvers = {
       }
 
       return result;
-
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to get addresses',
+        'QUERY_RESOLVER_ERROR',
+        { error, path: 'Address/addresses', arguments: { root, args }},
+      );
     }
   },
 
@@ -113,8 +120,12 @@ export const queryResolvers = {
       }
 
       return result;
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to get inactive addresses',
+        'QUERY_RESOLVER_ERROR',
+        { error, path: 'Address/inactiveAddresses', arguments: { root, args }},
+      );
     }
   },
 
@@ -124,8 +135,12 @@ export const queryResolvers = {
       const congId = (root ? root.congregationid : null) || args.congId;
       result = await addressAsync.getDNC(congId, args.keyword);
       return result;
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to get dnc',
+        'QUERY_RESOLVER_ERROR',
+        { error, path: 'Address/dnc', arguments: { root, args }},
+      );
     }
   },
 
@@ -133,8 +148,12 @@ export const queryResolvers = {
     try {
       const { congId, coordinates, radius, unit, skip, take } = args;
       return await addressAsync.getNearestAddresses(congId, coordinates, radius, unit, skip, take);
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to get neared addresses',
+        'QUERY_RESOLVER_ERROR',
+        { error, path: 'Address/nearestAddresses', arguments: { root, args }},
+      );
     }
   },
 };
@@ -142,47 +161,103 @@ export const queryResolvers = {
 
 export const mutationResolvers = {
   addAddress: async (root, { address }) => {
-    const id = await addressAsync.create(address);
-    pusher.trigger('foreign-field', 'add-address', { ...address, id });
-    return await addressAsync.getAddress(id);
+    try {
+      const id = await addressAsync.create(address);
+      pusher.trigger('foreign-field', 'add-address', { ...address, id });
+      return await addressAsync.getAddress(id);
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to add address',
+        'MUTATION_RESOLVER_ERROR',
+        { error, path: 'Address/addAddress', arguments: { root, address }},
+      );
+    }
   },
   updateAddress: async (root, { address }) => {
-    await addressAsync.update(address);
-    pusher.trigger('foreign-field', 'update-address', address);
-    return await addressAsync.getAddress(address.id, '*');
+    try {
+      await addressAsync.update(address);
+      pusher.trigger('foreign-field', 'update-address', address);
+      return await addressAsync.getAddress(address.id, '*');
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to update address',
+        'MUTATION_RESOLVER_ERROR',
+        { error, path: 'Address/updateAddress', arguments: { root, address }},
+      );
+    }
   },
   deleteAddress: async( root, { id }) => {
-    await addressAsync.delete(id);
-    pusher.trigger('foreign-field', 'delete-address', id);
-    return true;
+    try {
+      await addressAsync.delete(id);
+      pusher.trigger('foreign-field', 'delete-address', id);
+      return true;
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to delete address',
+        'MUTATION_RESOLVER_ERROR',
+        { error, path: 'Address/deleteAddress', arguments: { root, id }},
+      );
+    }
   },
   changeAddressStatus: async (root, args) => {
-    const notes = args.note && await Notes.add(args.addressId, args.note);
-    await addressAsync.changeStatus(args.addressId, args.status, args.userid, notes);
-    pusher.trigger('foreign-field', 'change-address-status', args);
-    return true;
+    try {
+      const notes = args.note && await Notes.add(args.addressId, args.note);
+      await addressAsync.changeStatus(args.addressId, args.status, args.userid, notes);
+      pusher.trigger('foreign-field', 'change-address-status', args);
+      return true;
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to change address status',
+        'MUTATION_RESOLVER_ERROR',
+        { error, path: 'Address/changeAddressStatus', arguments: { root, args }},
+      );
+    }
   },
   addNote: async (root, args) => {
-    const address = await addressAsync.getAddress(args.addressId, '*');
-    const update_user = args.userid;
-    const notes = await Notes.add(args.addressId, args.note, address);
-    await addressAsync.update({ ...address, notes, update_user });
-    pusher.trigger('foreign-field', 'add-note', { ...args, notes });
-    return true;
+    try {
+      const address = await addressAsync.getAddress(args.addressId, '*');
+      const update_user = args.userid;
+      const notes = await Notes.add(args.addressId, args.note, address);
+      await addressAsync.update({ ...address, notes, update_user });
+      pusher.trigger('foreign-field', 'add-note', { ...args, notes });
+      return true;
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to add note',
+        'MUTATION_RESOLVER_ERROR',
+        { error, path: 'Address/addNote', arguments: { root, args }},
+      );
+    }
   },
   removeNote: async (root, args) => {
-    const address = await addressAsync.getAddress(args.addressId, '*');
-    const update_user = args.userid;
-    const notes = await Notes.remove(args.addressId, args.note, address);
-    await addressAsync.update({ ...address, notes, update_user });
-    pusher.trigger('foreign-field', 'remove-note', { ...args, notes });
-    return true;
+    try {
+      const address = await addressAsync.getAddress(args.addressId, '*');
+      const update_user = args.userid;
+      const notes = await Notes.remove(args.addressId, args.note, address);
+      await addressAsync.update({ ...address, notes, update_user });
+      pusher.trigger('foreign-field', 'remove-note', { ...args, notes });
+      return true;
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to remove note',
+        'MUTATION_RESOLVER_ERROR',
+        { error, path: 'Address/removeNote', arguments: { root, args }},
+      );
+    }
   },
   updateSort: async (root, args) => {
-    const { addressIds, userid } = args;
-    for (const [index, value]  of addressIds.entries()) {
-      await addressAsync.updateSort(value, index + 1, userid);
+    try {
+      const { addressIds, userid } = args;
+      for (const [index, value]  of addressIds.entries()) {
+        await addressAsync.updateSort(value, index + 1, userid);
+      }
+      return true;
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to update sort',
+        'MUTATION_RESOLVER_ERROR',
+        { error, path: 'Address/updateSort', arguments: { root, args }},
+      );
     }
-    return true;
   }
 };
