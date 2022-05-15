@@ -44,7 +44,7 @@ class ActivityLogAsync {
   }
 
   async lastActivity (id, checkoutId) {
-    if (!id && !checkoutId) {
+    if (!id || !checkoutId) {
       return null;
     }
     const addressSQL = id ? ` AND address_id=${id}` : '';
