@@ -16,15 +16,14 @@ const express = require('express');
 const { config } = require('firebase-functions');
 const cors = require('cors')({origin: true});
 const cookieParser = require('cookie-parser')();
-const mysql = require('mysql');
+const mysql = require('promise-mysql');
 const { ApolloServer } = require('apollo-server-express');
-const { promisify } = require('util');
 const Pusher = require('pusher');
-const { resolvers, typeDefs } = require('./schema/schema');
+const { resolvers, typeDefs, formatError } = require('./schema/schema');
 const { validateFirebaseIdToken } = require('./utils/Firebase');
 const twilio = require('twilio');
 
-export const conn = mysql.createPool({
+export const pool = mysql.createPool({
   connectionLimit: 10,
   ssl: { rejectUnauthorized: false }, // TODO: add SSL certificate file here (see https://github.com/mysqljs/mysql#ssl-options)
   host: config().api.territory_server,
@@ -58,11 +57,11 @@ export function gqlServer() {
   const apolloServer = new ApolloServer({
     typeDefs,
     resolvers,
+    formatError,
     introspection: true,
     playground: true,
   });
 
-  conn.query = promisify(conn.query);
   apolloServer.applyMiddleware({ app, path: '/', cors: true });
 
   // To listen from a local server

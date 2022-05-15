@@ -1,9 +1,7 @@
-import { conn } from '../server';
-import { toArray } from 'lodash';
-
+import { pool } from '../server';
 class ActivityLogAsync {
   async create (activityLog) {
-    const result = await conn.query(`INSERT INTO activitylog (
+    const result = await pool.query(`INSERT INTO activitylog (
       checkout_id,
       address_id,
       value,
@@ -27,18 +25,18 @@ class ActivityLogAsync {
   async read (checkout_id, address_id) {
     let result;
     if (checkout_id && address_id) {
-      result = toArray(await conn.query(`SELECT * FROM activitylog WHERE checkout_id=${checkout_id} AND address_id=${address_id}`));
+      result = await pool.query(`SELECT * FROM activitylog WHERE checkout_id=${checkout_id} AND address_id=${address_id}`);
     } else if (checkout_id) {
-      result = toArray(await conn.query(`SELECT * FROM activitylog WHERE checkout_id=${checkout_id}`));
+      result = await pool.query(`SELECT * FROM activitylog WHERE checkout_id=${checkout_id}`);
     } else if (address_id) {
-      result = toArray(await conn.query(`SELECT * FROM activitylog WHERE address_id=${address_id}`));
+      result = await pool.query(`SELECT * FROM activitylog WHERE address_id=${address_id}`);
     }
     return result;
   }
 
   async readOne (id) {
     const sql = `SELECT log.*, a.parent_id, a.territory_id FROM activitylog log LEFT JOIN addresses a ON log.address_id = a.id WHERE log.id=${id}`;
-    const result = await conn.query(sql);
+    const result = await pool.query(sql);
     if (result && result.length) {
       return result[0];
     }
@@ -46,9 +44,11 @@ class ActivityLogAsync {
   }
 
   async lastActivity (id, checkoutId) {
-    const addressSQL = id ? ` AND address_id=${id}` : '';
-    const sql = `SELECT * FROM address_last_activity WHERE checkout_id=${checkoutId}${addressSQL}`;
-    const result = toArray(await conn.query(sql));
+    const checkoutSQL = checkoutId ? ` checkout_id=${checkoutId}` : '';
+    const and = checkoutId && id ? ` AND ` : '';
+    const addressSQL = id ? ` address_id=${id}` : '';
+    const sql = `SELECT * FROM address_last_activity WHERE${checkoutSQL}${and}${addressSQL}`;
+    const result = await pool.query(sql);
     if (id) {
       return result.length ? result[0] : null;
     }
@@ -57,7 +57,7 @@ class ActivityLogAsync {
   }
 
   async update (activityLog) {
-    await conn.query(`UPDATE activitylog SET
+    await pool.query(`UPDATE activitylog SET
       checkout_id = ${ activityLog.checkout_id },
       address_id = ${ activityLog.address_id },
       value = '${ activityLog.value }',
@@ -69,7 +69,7 @@ class ActivityLogAsync {
   }
 
   async delete (id) {
-    await conn.query(`DELETE FROM activitylog WHERE id=${id}`);
+    await pool.query(`DELETE FROM activitylog WHERE id=${id}`);
   }
 
   async resetTerritoryActivity (checkout_id, userid, tz_offset, timezone) {
@@ -91,7 +91,7 @@ class ActivityLogAsync {
       FROM address_last_activity a
       WHERE a.checkout_id = ${checkout_id} AND a.value != 'START'`;
 
-    await conn.query(sql);
+    await pool.query(sql);
     return true;
   }
 }

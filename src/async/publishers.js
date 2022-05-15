@@ -1,16 +1,18 @@
-import toArray from 'lodash/toArray';
 import { escape } from 'mysql';
 import get from 'lodash/get';
-import { conn } from '../server';
+import { pool } from '../server';
 
 class PublisherAsync {
   async getUser (username) {
-    return (await conn.query(`SELECT * FROM users WHERE username='${username}'`))[0];
+    const result = await pool.query(`SELECT * FROM users WHERE username='${username}'`);
+    return result[0];
   }
 
   async getPublisherByName (firstName, lastName, congId) {
-    return (await conn.query(`SELECT * FROM users
-      WHERE firstname='${firstName}' AND lastname='${lastName}' AND congregationid=${congId}`))[0];
+    const result = await pool.query(`SELECT * FROM users
+      WHERE firstname='${firstName}' AND lastname='${lastName}' AND congregationid=${congId}`);
+
+    return result[0];
   }
 
   async getPublisherById (publisherId, congId) {
@@ -19,15 +21,17 @@ class PublisherAsync {
     }
 
     const congIdFilter = congId ? ` AND congregationid=${congId}` : '';
-    return (await conn.query(`SELECT * FROM users
-      WHERE id=${publisherId}${congIdFilter}`))[0];
+    const result = await pool.query(`SELECT * FROM users
+      WHERE id=${publisherId}${congIdFilter}`);
+      
+    return result[0];
   }
 
   async searchPublishers (congId, keyword) {
     const kw = keyword || '';
     const sql = `SELECT * FROM users
       WHERE congregationid = ${congId} AND (firstname LIKE '%${kw}%' OR lastname LIKE '%${kw}%')`;
-    return toArray(await conn.query(sql));
+    return await pool.query(sql);
   }
 
   async create (publisher) {
@@ -59,12 +63,12 @@ class PublisherAsync {
       ${ publisher.create_user },
       ${ escape(get(publisher, 'status')) || 'active' }
     )`;
-    const result = await conn.query(sql);
-    const role = await conn.query(`SELECT id FROM roles WHERE name = '${publisher.role}'`);
+    const result = await pool.query(sql);
+    const role = await pool.query(`SELECT id FROM roles WHERE name = '${publisher.role}'`);
     if (role && role.length) {
       const roleSql = `INSERT INTO publisherroles (publisher_id, role_id)
         VALUES (${ result.insertId }, '${role[0].id}')`;
-      await conn.query(roleSql);
+      await pool.query(roleSql);
     }
 
     return result.insertId;
@@ -92,14 +96,14 @@ class PublisherAsync {
       update_user = ${publisher.update_user},
       status = ${escape(get(publisher, 'status')) || ''}
     WHERE id = ${publisher.id}`;
-    await conn.query(sql);
+    await pool.query(sql);
 
     if (publisher.role) {
-      const role = await conn.query(`SELECT id FROM roles WHERE name = '${publisher.role}'`);
+      const role = await pool.query(`SELECT id FROM roles WHERE name = '${publisher.role}'`);
       if (role && role.length) {
         const roleSql = `UPDATE publisherroles SET role_id = ${role[0].id}
           WHERE publisher_id = ${publisher.id}`;
-        await conn.query(roleSql);
+        await pool.query(roleSql);
       }
     }
   }
@@ -107,7 +111,7 @@ class PublisherAsync {
   async delete (id) {
     if (!id) throw new Error('id is required');
     const sql = `DELETE FROM publishers WHERE id = ${id}`;
-    return await conn.query(sql);
+    return await pool.query(sql);
   }
 }
 

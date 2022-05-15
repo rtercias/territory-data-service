@@ -1,6 +1,6 @@
-import { toArray, get } from 'lodash';
+import { get } from 'lodash';
 import { escape } from 'mysql';
-import { conn } from '../server';
+import { pool } from '../server';
 import changeLogAsync from './changeLog';
 
 class PhonesAsync {
@@ -15,7 +15,8 @@ class PhonesAsync {
   async getPhone (id, status = 'Active') {
     const statusCondition = status === '*' ? '' : ` AND status='${status}'`;
     const sql = `SELECT *, ${this.aliases} FROM addresses WHERE id=${id}${statusCondition}`;
-    return (await conn.query(sql))[0];
+    const result = await pool.query(sql);
+    return result[0];
   }
 
   async getPhones (parentId, terrId, status = 'Active') {
@@ -29,7 +30,7 @@ class PhonesAsync {
 
     const sql = `SELECT *, ${this.aliases} FROM addresses WHERE type='Phone'${parentCondition}${terrCondition}${statusCondition}`;
 
-    return toArray(await conn.query(sql));
+    return await pool.query(sql);
   }
 
   async searchPhones (congId, keyword, status = 'Active') {
@@ -43,12 +44,12 @@ class PhonesAsync {
 
     const sql = `SELECT *, ${this.aliases} FROM addresses 
     WHERE type='Phone' AND congregationid=${congId}${statusCondition} AND phone LIKE '%${keyword}%'`;
-    return toArray(await conn.query(sql));
+    return await pool.query(sql);
   }
 
   async getDNC (congId) {
     const sql = `SELECT *, ${this.aliases} FROM addresses WHERE type='Phone' AND congregationid=${congId} AND status='DNC'`;
-    return toArray(await conn.query(sql));
+    return await pool.query(sql);
   }
 
   async create (phone) {
@@ -56,7 +57,7 @@ class PhonesAsync {
       throw new Error('congregation id is required');
     }
 
-    const results = await conn.query(`INSERT INTO addresses (
+    const results = await pool.query(`INSERT INTO addresses (
       congregationid,
       territory_id,
       parent_id,
@@ -124,7 +125,7 @@ class PhonesAsync {
     WHERE id = ${get(phone, 'id', '')}`;
 
     await changeLogAsync.addAddressChangeLog(phone);
-    await conn.query(sql);
+    await pool.query(sql);
   }
 
   async changeStatus (id, status, userid, notes) {
@@ -137,7 +138,7 @@ class PhonesAsync {
       WHERE id=${id}`;
 
     await changeLogAsync.addAddressChangeLog({ id, update_user: userid, status, notes });
-    await conn.query(sql);
+    await pool.query(sql);
   }
 
   async updateSort (id, sort, userid) {
@@ -164,7 +165,7 @@ class PhonesAsync {
     const sql = `SELECT *, ${this.aliases} FROM addresses 
       WHERE type = 'Phone' AND congregationid=${congId}${statusCondition}
       AND (phone LIKE '%${phone}%' OR notes LIKE '%${phone}%')`;
-    return toArray(await conn.query(sql));
+    return await conn.query(sql);
   }
 }
 

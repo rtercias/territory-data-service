@@ -1,7 +1,6 @@
-import { gql } from 'apollo-server-express';
+import { ApolloError, gql } from 'apollo-server-express';
 import { pusher } from '../../server';
 import congAsync from '../../async/congregations';
-import groupAsync from '../../async/groups';
 
 export const Congregation = gql`
   type Congregation {
@@ -36,30 +35,70 @@ export const CongregationInput = gql`
 
 export const queryResolvers = {
   congregation: async (root, args) => {
-    const congId = args.id || root.congregationid;
-    return await congAsync.getCongregationById(congId);
+    try {
+      const congId = args.id || root.congregationid;
+      return await congAsync.getCongregationById(congId);
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to get congregation',
+        'QUERY_RESOLVER_ERROR',
+        { error, path: 'Congregation/congregation', arguments: { root, args }},
+      );
+    }
   },
   congregations: async (root, args) => {
-    if (args.keyword) {
-      return await congAsync.searchCongregations(args.keyword);
-    }
+    try {
+      if (args.keyword) {
+        return await congAsync.searchCongregations(args.keyword);
+      }
 
-    return await congAsync.getAllCongregations();
+      return await congAsync.getAllCongregations();
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to get congregations',
+        'QUERY_RESOLVER_ERROR',
+        { error, path: 'Congregation/congregations', arguments: { root, args }},
+      );
+    }
   },
 };
 
 export const mutationResolvers = {
   addCongregation: async (root, { cong }) => {
-    const id = await congAsync.create(cong);
-    return await congAsync.getCongregationById(id);
+    try {
+      const id = await congAsync.create(cong);
+      return await congAsync.getCongregationById(id);
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to add congregation',
+        'MUTATION_RESOLVER_ERROR',
+        { error, path: 'Congregation/addCongregation', arguments: { root, cong }},
+      );
+    }
   },
   updateCongregation: async (root, { cong }) => {
-    await congAsync.update(cong);
-    pusher.trigger('foreign-field', 'update-cong', cong);
-    return await congAsync.getCongregationById(cong.id);
+    try {
+      await congAsync.update(cong);
+      pusher.trigger('foreign-field', 'update-cong', cong);
+      return await congAsync.getCongregationById(cong.id);
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to update congregation',
+        'MUTATION_RESOLVER_ERROR',
+        { error, path: 'Congregation/updateCongregation', arguments: { root, cong }},
+      );
+    }
   },
   deleteCongregation: async( root, { id }) => {
-    await congAsync.delete(id);
-    return true;
+    try {
+      await congAsync.delete(id);
+      return true;
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to delete congregation',
+        'MUTATION_RESOLVER_ERROR',
+        { error, path: 'Congregation/deleteCongregation', arguments: { root, id }},
+      );
+    }
   },
 };

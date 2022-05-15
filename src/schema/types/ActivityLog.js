@@ -1,4 +1,4 @@
-import { gql } from 'apollo-server-express';
+import { ApolloError, gql } from 'apollo-server-express';
 import { pusher } from '../../server';
 const { config } = require('firebase-functions');
 import activityLogAsync from '../../async/activityLog';
@@ -34,45 +34,103 @@ export const ActivityLogInput = gql`
 
 export const resolvers = {
   activityLog: async (root, args) => {
-    return await activityLogAsync.readOne(args.id);
+    try {
+      return await activityLogAsync.readOne(args.id);
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to get activity log',
+        'QUERY_RESOLVER_ERROR',
+        { error, path: 'ActivityLog/activityLog', arguments: { root, args }},
+      );
+    }
   },
 
   activityLogs: async (root, args) => {
-    const checkout_id = args.checkout_id;
-    const address_id = root.id;
-    return await activityLogAsync.read(checkout_id, address_id);
+    try {
+      const checkout_id = args.checkout_id;
+      const address_id = root.id;
+      return await activityLogAsync.read(checkout_id, address_id);
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to get activity logs',
+        'QUERY_RESOLVER_ERROR',
+        { error, path: 'ActivityLog/activityLogs', arguments: { root, args }},
+      );
+    }
   },
   lastActivity: async (root, args) => {
     try {
       const { checkout_id } = args;
       const { id } = root;
       return await activityLogAsync.lastActivity(id, checkout_id);
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to get last activity',
+        'QUERY_RESOLVER_ERROR',
+        { error, path: 'ActivityLog/lastActivity', arguments: { root, args }},
+      );
     }
   },
 };
 
 export const mutationResolvers = {
   addLog: async (root, { activityLog }) => {
-    // check if territory is still checked out
-    const status = await territoriesAsync.territoryCheckoutStatus(activityLog.checkout_id);
-    if (status.in) throw new Error('Territory is no longer checked out.');
-    
-    const id = await activityLogAsync.create(activityLog);
-    const newLog = await activityLogAsync.readOne(id);
-    pusher.trigger('foreign-field', 'add-log', newLog);
-    return newLog;
+    try {
+      // check if territory is still checked out
+      const status = await territoriesAsync.territoryCheckoutStatus(activityLog.checkout_id);
+      if (status.in) throw new Error('Territory is no longer checked out.');
+      
+      const id = await activityLogAsync.create(activityLog);
+      const newLog = await activityLogAsync.readOne(id);
+      pusher.trigger('foreign-field', 'add-log', newLog);
+      return newLog;
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to add activity log',
+        'MUTATION_RESOLVER_ERROR',
+        { error, path: 'ActivityLog/addLog', arguments: { root, activityLog }},
+      );
+    }
   },
   updateLog: async (root, { activityLog }) => {
-    await activityLogAsync.update(activityLog);
+    try {
+      await activityLogAsync.update(activityLog);
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to update activity log',
+        'MUTATION_RESOLVER_ERROR',
+        { error, path: 'ActivityLog/updateLog', arguments: { root, activityLog }},
+      );
+    }
   },
   removeLog: async (root, { id }) => {
-    await activityLogAsync.delete(id);
+    try {
+      await activityLogAsync.delete(id);
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to remove activity log',
+        'MUTATION_RESOLVER_ERROR',
+        { error, path: 'ActivityLog/removeLog', arguments: { root, id }},
+      );
+    }
   },
   resetTerritoryActivity: async(root, { checkout_id, userid, tz_offset, timezone }) => {
-    const result = await activityLogAsync.resetTerritoryActivity(checkout_id, userid, tz_offset, timezone);
-    pusher.trigger('foreign-field', 'territory-checkin', { checkout_id, userid, tz_offset, timezone });
-    return result;
+    try {
+      const result = await activityLogAsync.resetTerritoryActivity(checkout_id, userid, tz_offset, timezone);
+      pusher.trigger('foreign-field', 'territory-checkin', { checkout_id, userid, tz_offset, timezone });
+      return result;
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to reset territory activity',
+        'MUTATION_RESOLVER_ERROR',
+        { error, path: 'ActivityLog/resetTerritoryActivity', arguments: {
+          root,
+          checkout_id,
+          userid,
+          tz_offset,
+          timezone,
+        }},
+      );
+    }
   },
 };

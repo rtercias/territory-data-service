@@ -1,4 +1,4 @@
-import { gql } from 'apollo-server-express';
+import { ApolloError, gql } from 'apollo-server-express';
 import changeLogAsync from '../../async/changeLog';
 
 export const AddressChangeLog = gql`
@@ -16,6 +16,20 @@ export const AddressChangeLog = gql`
 
 export const resolvers = {
   addressChangeLogs: async (root, { congId, recordId, minDate, publisherId }) => {
-    return await changeLogAsync.getAddressChangeLog(congId, recordId, minDate, publisherId);
+    try {
+      return await changeLogAsync.getAddressChangeLog(congId, recordId, minDate, publisherId);
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to get address change logs',
+        'QUERY_RESOLVER_ERROR',
+        { error, path: 'AddressChangeLog/addressChangeLogs', arguments: {
+          root,
+          congId,
+          recordId,
+          minDate,
+          publisherId,
+        }},
+      );
+    }
   },
 };

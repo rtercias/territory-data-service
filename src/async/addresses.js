@@ -1,6 +1,7 @@
-import { toArray, get } from 'lodash';
+import { ApolloError } from 'apollo-server-express';
+import { get } from 'lodash';
 import { escape } from 'mysql';
-import { conn } from '../server';
+import { pool } from '../server';
 import changeLogAsync from './changeLog';
 
 class AddressAsync {
@@ -15,7 +16,8 @@ class AddressAsync {
   async getAddress (id, status = 'Active') {
     const statusCondition = status === '*' ? '' : ` AND status='${status}'`;
     const sql = `SELECT *, ${this.aliases} FROM addresses WHERE id=${id}${statusCondition}`;
-    return (await conn.query(sql))[0];
+    const result = await pool.query(sql);
+    return result[0];
   }
 
   async getAddressesByTerritory (terrId, status = 'Active') {
@@ -26,7 +28,7 @@ class AddressAsync {
 
     const sql = `SELECT *, ${this.aliases} FROM addresses WHERE type='Regular' AND territory_id=${terrId}${statusCondition}`;
 
-    return toArray(await conn.query(sql));
+    return await pool.query(sql);
   }
 
   async searchAddresses (congId, keyword, status = 'Active') {
@@ -41,7 +43,7 @@ class AddressAsync {
     const sql = `SELECT *, ${this.aliases} FROM addresses 
     WHERE type='Regular' AND congregationid=${congId}${statusCondition}
     AND (addr1 LIKE '%${keyword}%' OR addr2 LIKE '%${keyword}%' OR notes LIKE '%${keyword}%')`;
-    return toArray(await conn.query(sql));
+    return await pool.query(sql);
   }
 
   async getDNC (congId, keyword) {
@@ -49,7 +51,7 @@ class AddressAsync {
       AND congregationid=${congId} AND status='DNC'
       AND (addr1 LIKE '%${keyword}%' OR addr2 LIKE '%${keyword}%')`;
 
-    return toArray(await conn.query(sql));
+    return await pool.query(sql);
   }
 
   async create (address) {
@@ -57,7 +59,7 @@ class AddressAsync {
       throw new Error('congregation id is required');
     }
 
-    const results = await conn.query(`INSERT INTO addresses (
+    const results = await pool.query(`INSERT INTO addresses (
       congregationid,
       territory_id,
       type,
@@ -124,7 +126,7 @@ class AddressAsync {
     WHERE id = ${get(address, 'id', '')}`;
 
     await changeLogAsync.addAddressChangeLog(address);
-    await conn.query(sql);
+    await pool.query(sql);
 
     if (address.territory_id !== existing.territory_id) {
       // also change associated phone territory ids
@@ -132,7 +134,7 @@ class AddressAsync {
         territory_id = ${address.territory_id}
       WHERE type = 'Phone' AND parent_id = ${address.id}`;
 
-      await conn.query(sqlPhones);
+      await pool.query(sqlPhones);
     }
 
   }
@@ -140,7 +142,7 @@ class AddressAsync {
   async delete (id) {
     if (!id) throw new Error('id is required');
     const sql = `DELETE FROM addresses WHERE id = ${id} OR parent_id = ${id}`;
-    await conn.query(sql);
+    await pool.query(sql);
 
     await changeLogAsync.addAddressChangeLog(address, 'delete');
   }
@@ -155,7 +157,7 @@ class AddressAsync {
       WHERE id=${id}`;
 
     await changeLogAsync.addAddressChangeLog({ id, update_user: userid, status, notes });
-    await conn.query(sql);
+    await pool.query(sql);
   }
 
   async updateSort (id, sort, userid) {
@@ -167,7 +169,7 @@ class AddressAsync {
       sort = ${sort} WHERE id=${id}`;
 
     await changeLogAsync.addAddressChangeLog({ id, update_user: userid, sort });
-    await conn.query(sql);
+    await pool.query(sql);
   }
 
   async getNearestAddresses (congId, coordinates, radius = 1, unit = 'mi', skip = 0, take = 15) {
@@ -186,7 +188,7 @@ class AddressAsync {
       WHERE congregationid=${congId} AND status='Active' and territory_id != 0
       HAVING distance < ${radius} ORDER BY distance, territory_id LIMIT ${skip} , ${take}`;
 
-    return await conn.query(sql);
+    return await pool.query(sql);
   }
 }
 

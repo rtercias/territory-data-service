@@ -1,24 +1,24 @@
 import get from 'lodash/get';
 import { escape } from 'mysql';
-import { conn } from '../server';
+import { pool } from '../server';
 import terrAsync from './territories';
 
 class GroupAsync {
   async get (id) {
     if (!id) throw new Error('group id required');
     const sql = `SELECT * FROM groups WHERE id=${id}`;
-    const result = await conn.query(sql);
+    const result = await pool.query(sql);
     return result && result.length && result[0];
   }
   async getAll (congId) {
     if (!congId) throw new Error('cong id is required');
 
     const sql = `SELECT * FROM groups WHERE congregation_id=${congId}`;
-    return await conn.query(sql);
+    return await pool.query(sql);
   }
   async getGroups (congId) {
     if (!congId) throw new Error('congregation id required');
-    return await conn.query(`SELECT code FROM groups WHERE congregation_id=${congId}`);
+    return await pool.query(`SELECT code FROM groups WHERE congregation_id=${congId}`);
   }
 
   async create (group) {
@@ -29,7 +29,7 @@ class GroupAsync {
       throw new Error('cong id is required');
     }
 
-    const results = await conn.query(`INSERT INTO groups (
+    const results = await pool.query(`INSERT INTO groups (
       congregation_id,
       code,
       description,
@@ -62,7 +62,7 @@ class GroupAsync {
       overseer = ${escape(get(group, 'overseer')) || ''}
     WHERE id = ${group.id}`;
 
-    await conn.query(sql);
+    await pool.query(sql);
   }
 
   async delete (id) {
@@ -74,7 +74,7 @@ class GroupAsync {
     }
 
     const sql = `DELETE FROM groups WHERE id = ${id}`;
-    return await conn.query(sql);
+    return await pool.query(sql);
   }
 }
 

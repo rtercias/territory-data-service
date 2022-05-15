@@ -1,4 +1,4 @@
-import { gql } from 'apollo-server-express';
+import { ApolloError, gql } from 'apollo-server-express';
 import reportsAsync from '../../async/reports';
 
 export const AssignmentRecord = gql`
@@ -20,8 +20,16 @@ export const AssignmentRecord = gql`
 
 export const resolvers = {
   getAssignmentRecords: async (root, args) => {
-    const congId = args.congId;
-    const campaignMode = args.campaignMode;
-    return await reportsAsync.getAssignmentRecords(congId, campaignMode);
+    try {
+      const congId = args.congId;
+      const campaignMode = args.campaignMode;
+      return await reportsAsync.getAssignmentRecords(congId, campaignMode);
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to get assignment records',
+        'QUERY_RESOLVER_ERROR',
+        { error, path: 'AssignmentRecord/getAssignmentRecords', arguments: { root, args }},
+      );
+    }
   },
 };

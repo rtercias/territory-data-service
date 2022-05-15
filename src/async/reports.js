@@ -1,5 +1,4 @@
-import { conn } from '../server';
-import { toArray } from 'lodash';
+import { pool } from '../server';
 
 class ReportsAsync {
   async getAssignmentRecords(congId, campaignMode) {
@@ -14,7 +13,7 @@ class ReportsAsync {
       order by territory_id, timestamp`;
     }
 
-    return toArray(await conn.query(sql));
+    return await pool.query(sql);
   }
 }
 
