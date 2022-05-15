@@ -44,11 +44,10 @@ class ActivityLogAsync {
   }
 
   async lastActivity (id, checkoutId) {
-    if (!id || !checkoutId) {
-      return null;
-    }
-    const addressSQL = id ? ` AND address_id=${id}` : '';
-    const sql = `SELECT * FROM address_last_activity WHERE checkout_id=${checkoutId}${addressSQL}`;
+    const checkoutSQL = checkoutId ? ` checkout_id=${checkoutId}` : '';
+    const and = checkoutId && id ? ` AND ` : '';
+    const addressSQL = id ? ` address_id=${id}` : '';
+    const sql = `SELECT * FROM address_last_activity WHERE${checkoutSQL}${and}${addressSQL}`;
     const result = await pool.query(sql);
     if (id) {
       return result.length ? result[0] : null;
