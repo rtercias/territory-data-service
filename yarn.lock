@@ -6004,7 +6004,7 @@ find-up@^4.1.0:
     locate-path "^5.0.0"
     path-exists "^4.0.0"
 
-firebase-admin@8:
+firebase-admin@8.13.0:
   version "8.13.0"
   resolved "https://registry.yarnpkg.com/firebase-admin/-/firebase-admin-8.13.0.tgz#997d34ae8357d7dc162ba622148bbebcf7f2e923"
   integrity sha512-krXj5ncWMJBhCpXSn9UFY6zmDWjFjqgx+1e9ATXKFYndEjmKtNBuJzqdrAdDh7aTUR7X6+0TPx4Hbc08kd0lwQ==
@@ -6026,7 +6026,7 @@ firebase-functions-test@^0.2.1:
     "@types/lodash" "^4.14.104"
     lodash "^4.17.5"
 
-firebase-functions@3:
+firebase-functions@3.21.1:
   version "3.21.1"
   resolved "https://registry.yarnpkg.com/firebase-functions/-/firebase-functions-3.21.1.tgz#5ab56be63bcf4cabd78c82a4f20e031229b4ee64"
   integrity sha512-wUxJaUEceGpCxa+uAYTQUGM13Uc/mekWfJnhuqqPKr8S09WosoVRpoh1yVQO+AnMqNChq3psLkLxHPubW9Tg2A==
@@ -6038,7 +6038,7 @@ firebase-functions@3:
     lodash "^4.17.14"
     node-fetch "^2.6.7"
 
-firebase-tools@8:
+firebase-tools@8.20.0:
   version "8.20.0"
   resolved "https://registry.yarnpkg.com/firebase-tools/-/firebase-tools-8.20.0.tgz#0c7b69a611f584c44ca4cbf9e3003b18ebfd17be"
   integrity sha512-FovOHkPEvdT31EqxDzjJkaJIYLrc+0GZwQ3ixT1WI3yF3o4TG8MCVo+QidmcNqyX0XZnI3/5sF3dpxXQ/HzaVw==
@@ -6700,7 +6700,7 @@ graphql-tag@^2.11.0, graphql-tag@^2.12.6:
   dependencies:
     tslib "^2.1.0"
 
-graphql-tools@6:
+graphql-tools@6.2.6:
   version "6.2.6"
   resolved "https://registry.yarnpkg.com/graphql-tools/-/graphql-tools-6.2.6.tgz#557c6d32797a02988f214bd596dec2abd12425dd"
   integrity sha512-OyhSvK5ALVVD6bFiWjAqv2+lRyvjIRfb6Br5Tkjrv++rxnXDodPH/zhMbDGRw+W3SD5ioGEEz84yO48iPiN7jA==
