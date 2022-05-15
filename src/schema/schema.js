@@ -1,7 +1,7 @@
 import { gql } from 'apollo-server-express';
+const { logger } = require('firebase-functions');
 import { merge } from 'lodash';
 import { generateUserToken } from '../utils/Firebase';
-
 import {
   Address,
   AddressInput,
@@ -246,6 +246,7 @@ export const typeDefs = [
 
 export const formatError = (err) => {
   delete err.extensions.exception;
-  err.extensions.timestamp = (new Date()).getTime();
+  err.extensions.timestamp = (new Date()).toUTCString();
+  logger.error(err);
   return err;
 };

@@ -44,6 +44,9 @@ class ActivityLogAsync {
   }
 
   async lastActivity (id, checkoutId) {
+    if (!id && !checkoutId) {
+      return null;
+    }
     const addressSQL = id ? ` AND address_id=${id}` : '';
     const sql = `SELECT * FROM address_last_activity WHERE checkout_id=${checkoutId}${addressSQL}`;
     const result = await pool.query(sql);
