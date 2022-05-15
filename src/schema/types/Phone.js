@@ -1,4 +1,4 @@
-import { gql } from 'apollo-server-express';
+import { ApolloError, gql } from 'apollo-server-express';
 import phoneAsync from '../../async/phones';
 import { Notes } from '../../utils/Notes';
 import { ActivityLog } from './ActivityLog';
@@ -47,77 +47,141 @@ export const PhoneInput = gql`
 
 export const queryResolvers = {
   phone: async (root, args) => {
-    if (args.id) {
-      return await phoneAsync.getPhone(args.id, args.status);
-    } else if (root.phone_id) {
-      return await phoneAsync.getPhone(root.phone_id, args.status);
-    } else if (root.record_id && root.table_name === 'addresses') {
-      return await phoneAsync.getPhone(root.record_id, '*');
+    try {
+      if (args.id) {
+        return await phoneAsync.getPhone(args.id, args.status);
+      } else if (root.phone_id) {
+        return await phoneAsync.getPhone(root.phone_id, args.status);
+      } else if (root.record_id && root.table_name === 'addresses') {
+        return await phoneAsync.getPhone(root.record_id, '*');
+      }
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to get phone',
+        'QUERY_RESOLVER_ERROR',
+        { error, path: 'Phone/phone', arguments: { root, args }},
+      );
     }
   },
 
   phones: async (root, args) => {
-    let result, parentId, terrId;
+    try {
+      let result, parentId, terrId;
 
-    if (args.congId && args.keyword) {
-      // phone search query
-      const congId = (root ? root.congregationid : null) || args.congId;
-      result = await phoneAsync.searchPhones(congId, args.keyword, 'Active');
+      if (args.congId && args.keyword) {
+        // phone search query
+        const congId = (root ? root.congregationid : null) || args.congId;
+        result = await phoneAsync.searchPhones(congId, args.keyword, 'Active');
 
-    } else if (root.addr1) {
-      // root is an address
-      parentId = root.id;
-      result = await phoneAsync.getPhones(parentId, terrId, 'Active');
+      } else if (root.addr1) {
+        // root is an address
+        parentId = root.id;
+        result = await phoneAsync.getPhones(parentId, terrId, 'Active');
 
-    } else {
-      // root is a territory
-      terrId = root.id;
-      result = await phoneAsync.getPhones(null, terrId, 'Active');
+      } else {
+        // root is a territory
+        terrId = root.id;
+        result = await phoneAsync.getPhones(null, terrId, 'Active');
+      }
+
+      return result;
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to get phones',
+        'QUERY_RESOLVER_ERROR',
+        { error, path: 'Phone/phones', arguments: { root, args }},
+      );
     }
-
-    return result;
   },
 };
 
 
 export const mutationResolvers = {
   addPhone: async (root, { phone }) => {
-    const id = await phoneAsync.create(phone);
-    pusher.trigger('foreign-field', 'add-phone', { ...phone, id });
-    return await phoneAsync.getPhone(id);
+    try {
+      const id = await phoneAsync.create(phone);
+      pusher.trigger('foreign-field', 'add-phone', { ...phone, id });
+      return await phoneAsync.getPhone(id);
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to add phone',
+        'MUTATION_RESOLVER_ERROR',
+        { error, path: 'Phone/addPhone', arguments: { root, phone }},
+      );
+    }
   },
   updatePhone: async (root, { phone }) => {
-    await phoneAsync.update(phone);
-    pusher.trigger('foreign-field', 'update-phone', phone);
-    return await phoneAsync.getPhone(phone.id, '*');
+    try {
+      await phoneAsync.update(phone);
+      pusher.trigger('foreign-field', 'update-phone', phone);
+      return await phoneAsync.getPhone(phone.id, '*');
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to update phone',
+        'MUTATION_RESOLVER_ERROR',
+        { error, path: 'Phone/updatePhone', arguments: { root, phone }},
+      );
+    }
   },
   changePhoneStatus: async (root, args) => {
-    const notes = args.note && await Notes.add(args.phoneId, args.note);
-    await phoneAsync.changeStatus(args.phoneId, args.status, args.userid, notes);
-    pusher.trigger('foreign-field', 'change-phone-status', { ...args, notes });
-    return true;
+    try {
+      const notes = args.note && await Notes.add(args.phoneId, args.note);
+      await phoneAsync.changeStatus(args.phoneId, args.status, args.userid, notes);
+      pusher.trigger('foreign-field', 'change-phone-status', { ...args, notes });
+      return true;
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to change phone status',
+        'MUTATION_RESOLVER_ERROR',
+        { error, path: 'Phone/changePhoneStatus', arguments: { root, args }},
+      );
+    }
   },
   addPhoneTag: async (root, args) => {
-    const phone = await phoneAsync.getPhone(args.phoneId, '*');
-    const update_user = args.userid;
-    const notes = await Notes.add(args.phoneId, args.note, phone);
-    await phoneAsync.update({ ...phone, notes, update_user });
-    pusher.trigger('foreign-field', 'add-phone-tag', { ...args, notes });
-    return true;
+    try {
+      const phone = await phoneAsync.getPhone(args.phoneId, '*');
+      const update_user = args.userid;
+      const notes = await Notes.add(args.phoneId, args.note, phone);
+      await phoneAsync.update({ ...phone, notes, update_user });
+      pusher.trigger('foreign-field', 'add-phone-tag', { ...args, notes });
+      return true;
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to add phone tag',
+        'MUTATION_RESOLVER_ERROR',
+        { error, path: 'Phone/addPhoneTag', arguments: { root, args }},
+      );
+    }
   },
   removePhoneTag: async (root, args) => {
-    const phone = await phoneAsync.getPhone(args.phoneId, '*');
-    const update_user = args.userid;
-    const notes = await Notes.remove(args.phoneId, args.note, phone);
-    await phoneAsync.update({ ...phone, notes, update_user });
-    pusher.trigger('foreign-field', 'remove-phone-tag', { ...args, notes });
-    return true;
+    try {
+      const phone = await phoneAsync.getPhone(args.phoneId, '*');
+      const update_user = args.userid;
+      const notes = await Notes.remove(args.phoneId, args.note, phone);
+      await phoneAsync.update({ ...phone, notes, update_user });
+      pusher.trigger('foreign-field', 'remove-phone-tag', { ...args, notes });
+      return true;
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to remove phone tag',
+        'MUTATION_RESOLVER_ERROR',
+        { error, path: 'Phone/removePhoneTag', arguments: { root, args }},
+      );
+    }
   },
   updatePhoneSort: async (root, args) => {
-    const { phoneIds, userid } = args;
-    for (const [index, value]  of phoneIds.entries()) {
-      await phoneAsync.updateSort(value, index + 1, userid);
+    try {
+      const { phoneIds, userid } = args;
+      for (const [index, value]  of phoneIds.entries()) {
+        await phoneAsync.updateSort(value, index + 1, userid);
+      }
+      return true;
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to update phone sort',
+        'MUTATION_RESOLVER_ERROR',
+        { error, path: 'Phone/updatePhoneSort', arguments: { root, args }},
+      );
     }
-    return true;
   }
 };

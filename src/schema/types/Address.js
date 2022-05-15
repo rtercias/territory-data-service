@@ -1,4 +1,4 @@
-import { gql } from 'apollo-server-express';
+import { ApolloError, gql } from 'apollo-server-express';
 import addressAsync from './../../async/addresses';
 import { Notes } from './../../utils/Notes';
 import { ActivityLog } from './ActivityLog';
