@@ -16,7 +16,8 @@ class AddressAsync {
   async getAddress (id, status = 'Active') {
     const statusCondition = status === '*' ? '' : ` AND status='${status}'`;
     const sql = `SELECT *, ${this.aliases} FROM addresses WHERE id=${id}${statusCondition}`;
-    return (await pool.query(sql))[0];
+    const result = await pool.query(sql);
+    return result[0];
   }
 
   async getAddressesByTerritory (terrId, status = 'Active') {

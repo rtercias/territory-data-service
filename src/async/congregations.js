@@ -4,7 +4,8 @@ import { pool } from '../server';
 
 class CongregationAsync {
   async getCongregationById (id) {
-    return (await pool.query(`SELECT * FROM congregations WHERE id=${id}`))[0];
+    const result = await pool.query(`SELECT * FROM congregations WHERE id=${id}`);
+    return result[0];
   }
 
   async getAllCongregations () {

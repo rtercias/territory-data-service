@@ -4,12 +4,15 @@ import { pool } from '../server';
 
 class PublisherAsync {
   async getUser (username) {
-    return (await pool.query(`SELECT * FROM users WHERE username='${username}'`))[0];
+    const result = await pool.query(`SELECT * FROM users WHERE username='${username}'`);
+    return result[0];
   }
 
   async getPublisherByName (firstName, lastName, congId) {
-    return (await pool.query(`SELECT * FROM users
-      WHERE firstname='${firstName}' AND lastname='${lastName}' AND congregationid=${congId}`))[0];
+    const result = await pool.query(`SELECT * FROM users
+      WHERE firstname='${firstName}' AND lastname='${lastName}' AND congregationid=${congId}`);
+
+    return result[0];
   }
 
   async getPublisherById (publisherId, congId) {
@@ -18,8 +21,10 @@ class PublisherAsync {
     }
 
     const congIdFilter = congId ? ` AND congregationid=${congId}` : '';
-    return (await pool.query(`SELECT * FROM users
-      WHERE id=${publisherId}${congIdFilter}`))[0];
+    const result = await pool.query(`SELECT * FROM users
+      WHERE id=${publisherId}${congIdFilter}`);
+      
+    return result[0];
   }
 
   async searchPublishers (congId, keyword) {

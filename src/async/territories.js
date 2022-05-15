@@ -10,7 +10,8 @@ import activityLog from './activityLog';
 
 class TerritoryAsync {
   async getTerritory (id) {
-    return await pool.query(`SELECT * FROM territories WHERE id=${id}`)[0];
+    const result = await (pool.query(`SELECT * FROM territories WHERE id=${id}`));
+    return result[0];
   }
 
   async getTerritories (congId, limit, offset = 0) {
