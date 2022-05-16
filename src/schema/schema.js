@@ -247,6 +247,7 @@ export const typeDefs = [
 export const formatError = (err) => {
   delete err.extensions.exception;
   err.extensions.timestamp = (new Date()).toUTCString();
+  err.extensions.arguments = JSON.stringify(err.extensions.arguments);
   logger.error(err);
   return err;
 };

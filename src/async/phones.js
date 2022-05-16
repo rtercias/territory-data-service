@@ -150,7 +150,7 @@ class PhonesAsync {
       sort = ${sort} WHERE id=${id}`;
 
     await changeLogAsync.addAddressChangeLog({ id, update_user: userid, sort });
-    await conn.query(sql);
+    await pool.query(sql);
   }
 
   async searchPhones (congId, phone, status = 'Active') {
@@ -165,7 +165,7 @@ class PhonesAsync {
     const sql = `SELECT *, ${this.aliases} FROM addresses 
       WHERE type = 'Phone' AND congregationid=${congId}${statusCondition}
       AND (phone LIKE '%${phone}%' OR notes LIKE '%${phone}%')`;
-    return await conn.query(sql);
+    return await pool.query(sql);
   }
 }
 
