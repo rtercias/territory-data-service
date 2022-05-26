@@ -4,13 +4,15 @@ class ReportsAsync {
   async getAssignmentRecords(congId, campaignMode) {
     let sql = '';
     if (campaignMode === undefined) {
-      sql = `SELECT * FROM territorycheckouts_pivot
-      where congregationid=${congId}
-      order by territory_id, timestamp`;
+      sql = `SELECT p.*, t.id as territory_id, t.name as territory_name, t.description as territory_description
+      FROM territories t LEFT JOIN territorycheckouts_pivot p ON t.id = p.territory_id
+      WHERE t.congregationid=${congId}
+      ORDER BY t.id, p.timestamp`;
     } else {
-      sql = `SELECT * FROM territorycheckouts_pivot
-      where congregationid=${congId} and COALESCE(campaign, 0)=${campaignMode}
-      order by territory_id, timestamp`;
+      sql = `SELECT p.*, t.id as territory_id, t.name as territory_name, t.description as territory_description
+      FROM territories t LEFT JOIN territorycheckouts_pivot p ON t.id = p.territory_id
+      WHERE t.congregationid=${congId} AND COALESCE(p.campaign, 0)=${campaignMode}
+      ORDER BY t.id, p.timestamp`;
     }
 
     return await pool.query(sql);
