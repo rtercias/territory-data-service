@@ -248,9 +248,7 @@ export const mutationResolvers = {
   updateSort: async (root, args) => {
     try {
       const { addressIds, userid } = args;
-      for (const [index, value]  of addressIds.entries()) {
-        await addressAsync.updateSort(value, index + 1, userid);
-      }
+      await addressAsync.updateSort(addressIds, userid)
       return true;
     } catch (error) {
       throw new ApolloError(
