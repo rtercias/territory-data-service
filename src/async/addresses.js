@@ -160,16 +160,31 @@ class AddressAsync {
     await pool.query(sql);
   }
 
-  async updateSort (id, sort, userid) {
-    if (!id) throw new Error('id is required');
-    if (!sort) throw new Error('sort is required');
+  async updateSort (addressIds, userid) {
+    if (!addressIds) throw new Error('addressIds is required');
     if (!userid) throw new Error('userid is required');
 
-    const sql = `UPDATE addresses SET 
-      sort = ${sort} WHERE id=${id}`;
+    const conn = await pool.getConnection();
+    await conn.beginTransaction();
 
-    await changeLogAsync.addAddressChangeLog({ id, update_user: userid, sort });
-    await pool.query(sql);
+    try {
+      const promises = [];
+      for (const [index, value]  of addressIds.entries()) {
+        const id = value, sort = index + 1;
+        const sql = `UPDATE addresses SET 
+          sort = ${sort} WHERE id=${id}`;
+
+        await changeLogAsync.addAddressChangeLog({ id, update_user: userid, sort });
+        promises.push(conn ? await conn.query(sql) : await pool.query(sql));
+      }
+      await Promise.all(promises);
+      await conn.commit();
+      await conn.release();
+    } catch (e) {
+      await conn.rollback();
+      await conn.release();
+      throw new Error(e);
+    }
   }
 
   async getNearestAddresses (congId, coordinates, radius = 1, unit = 'mi', skip = 0, take = 15) {
