@@ -328,7 +328,7 @@ class TerritoryAsync {
     for (const ck of checkouts) {
       // check in
       const sql = `INSERT INTO territorycheckouts (territoryid, publisherid, status, create_user, campaign, parent_checkout_id)
-        VALUES (${ck.territory_id}, ${ck.publisher_id}, 'IN', '${username}', ${ck.campaign}, ${ck.id})`;
+        VALUES (${ck.territory_id}, ${ck.publisher_id}, 'IN', '${username}', ${ck.campaign}, ${ck.checkout_id})`;
       await pool.query(sql);
 
       // reset NH statuses
