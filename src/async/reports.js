@@ -3,8 +3,9 @@ import { getCurrentCampaign } from './campaigns';
 
 class ReportsAsync {
   async getAssignmentRecords(congId, campaignMode) {
+    // TODO: change back to prod pivot
     let sql = `SELECT p.*, t.id as territory_id, t.name as territory_name, t.description as territory_description
-      FROM territories t LEFT JOIN territorycheckouts_pivot p ON t.id = p.territory_id
+      FROM territories t LEFT JOIN territorycheckouts_pivot_campaign p ON t.id = p.territory_id
       WHERE t.congregationid=${congId}`;
 
     switch (campaignMode) {

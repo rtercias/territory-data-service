@@ -53,7 +53,8 @@ class TerritoryAsync {
     const currentCampaign = await getCurrentCampaign(cong.id, pool);
     const campaignFilter = currentCampaign ? `AND campaign_id = ${currentCampaign.id}` : '';
 
-    const sql = `SELECT * FROM territorycheckouts_pivot p
+    // TODO: change back to prod pivot
+    const sql = `SELECT * FROM territorycheckouts_pivot_campaign p
       WHERE territory_id=${territoryId} AND p.in is null
         ${campaignFilter}
       ORDER BY timestamp DESC `;
@@ -66,10 +67,11 @@ class TerritoryAsync {
     const resultCong = await pool.query(`SELECT * FROM congregations WHERE id=${congId}`);
     const cong = resultCong[0];
 
+    // TODO: change back to prod pivot
     return await pool.query(
       `
         SELECT ck.*, t.*
-        FROM territorycheckouts_pivot ck
+        FROM territorycheckouts_pivot_campaign ck
         JOIN territories t ON ck.territory_id = t.id
         WHERE ck.congregationid=${congId}
         AND ck.username='${username}'
@@ -102,7 +104,8 @@ class TerritoryAsync {
   }
 
   async territoryCheckoutStatus (checkout_id) {
-    const sql = `SELECT * FROM territorycheckouts_pivot p WHERE p.checkout_id = ${checkout_id}`;
+    // TODO: change back to prod pivot
+    const sql = `SELECT * FROM territorycheckouts_pivot_campaign p WHERE p.checkout_id = ${checkout_id}`;
     const result = await pool.query(sql);
     return result[0];
   }
@@ -327,7 +330,8 @@ class TerritoryAsync {
     const campaign = _campaign === null || _campaign === undefined ? cong.campaign : _campaign;
 
     // get all checked out territories
-    const sqlCheckOuts = `SELECT tc.* FROM territorycheckouts_pivot tc
+    // TODO: change back to prod pivot
+    const sqlCheckOuts = `SELECT tc.* FROM territorycheckouts_pivot_campaign tc
       WHERE tc.congregationid = ${congId} AND tc.in IS NULL`;
     const checkouts = await pool.query(sqlCheckOuts);
 
@@ -353,7 +357,8 @@ class TerritoryAsync {
     const campaign = _campaign === null || _campaign === undefined ? cong.campaign : _campaign;
 
     // get all checked out territories
-    const sqlCheckOuts = `SELECT tc.* FROM territorycheckouts_pivot tc
+    // TODO: change back to prod pivot
+    const sqlCheckOuts = `SELECT tc.* FROM territorycheckouts_pivot_campaign tc
       WHERE tc.congregationid = ${congId} AND tc.in IS NULL AND COALESCE(tc.campaign, 0)=${campaign || 0}`;
     const checkouts = await pool.query(sqlCheckOuts);
 
