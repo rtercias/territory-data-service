@@ -7,6 +7,7 @@ import { pool } from '../server';
 import axios from 'axios';
 import addressAsync from './addresses';
 import activityLog from './activityLog';
+import { getCurrentCampaign } from './campaigns';
 
 class TerritoryAsync {
   async getTerritory (id) {
@@ -49,10 +50,12 @@ class TerritoryAsync {
       SELECT c.* FROM territories t JOIN congregations c ON t.congregationid = c.id
       WHERE t.id=${territoryId}`);
     const cong = resultCong[0];
+    const currentCampaign = await getCurrentCampaign(cong.id, pool);
+    const campaignFilter = currentCampaign ? `AND campaign_id = ${currentCampaign.id}` : '';
 
     const sql = `SELECT * FROM territorycheckouts_pivot p
       WHERE territory_id=${territoryId} AND p.in is null
-        AND campaign=${cong.campaign}
+        ${campaignFilter}
       ORDER BY timestamp DESC `;
 
     return await pool.query(sql);
@@ -181,8 +184,10 @@ class TerritoryAsync {
       SELECT c.* FROM territories t JOIN congregations c ON t.congregationid = c.id
       WHERE t.id=${territoryId}`);
     const cong = resultCong[0];
-    let results;
 
+    const currentCampaign = await getCurrentCampaign(cong, pool);
+
+    let results;
     const checkout = {
       territoryid: escape(territoryId),
       publisherid: escape(publisherId),
@@ -190,6 +195,7 @@ class TerritoryAsync {
       create_user: escape(user),
       campaign: escape(cong.campaign),
       parent_checkout_id: escape(checkoutId),
+      campaign_id: currentCampaign ? escape(currentCampaign.id) : null,
     };
     results = await pool.query('INSERT INTO territorycheckouts SET ?', checkout);
     return results.insertId;
