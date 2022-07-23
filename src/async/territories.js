@@ -335,14 +335,30 @@ class TerritoryAsync {
       WHERE tc.congregationid = ${congId} AND tc.in IS NULL`;
     const checkouts = await pool.query(sqlCheckOuts);
 
-    for (const ck of checkouts) {
-      // check in
-      const sql = `INSERT INTO territorycheckouts (territoryid, publisherid, status, create_user, campaign, parent_checkout_id)
-        VALUES (${ck.territory_id}, ${ck.publisher_id}, 'IN', '${username}', ${ck.campaign}, ${ck.checkout_id})`;
-      await pool.query(sql);
+    const conn = await pool.getConnection();
+    await conn.beginTransaction();
 
-      // reset NH statuses
-      await activityLog.resetTerritoryActivity(ck.checkout_id, user.id, tz_offset, timezone);
+    try {
+      const promises = [];
+      for (const ck of checkouts) {
+        // check in
+        const sql = `INSERT INTO territorycheckouts (territoryid, publisherid, status, create_user, campaign, parent_checkout_id)
+          VALUES (${ck.territory_id}, ${ck.publisher_id}, 'IN', '${username}', ${ck.campaign}, ${ck.checkout_id})`;
+
+        promises.push(conn ? await conn.query(sql) : await pool.query(sql));
+
+        // reset NH statuses
+        promises.push(activityLog.resetTerritoryActivity(ck.checkout_id, user.id, tz_offset, timezone, conn));
+      }
+
+      await Promise.all(promises);
+      await conn.commit();
+      await conn.release();
+
+    } catch (e) {
+      await conn.rollback();
+      await conn.release();
+      throw new Error(e);
     }
   }
 
