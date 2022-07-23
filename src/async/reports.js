@@ -12,11 +12,15 @@ class ReportsAsync {
       case true:
         const currentCampaign = await getCurrentCampaign(congId, pool);
         if (currentCampaign) {
-          sql += ` AND p.campaign_id = ${currentCampaign.id}`;
+          // for backwards compatibility. TODO: replace with commmented code at the end of 2022
+          sql += ` AND (p.campaign_id = ${currentCampaign.id} OR p.campaign = true)`;
+          // sql += ` AND p.campaign_id = ${currentCampaign.id}`;
         }
         break;
       case false:
-        sql += ' AND p.campaign_id IS NULL';
+        // for backwards compatibility. TODO: replace with commmented code at the end of 2022
+        sql += ' AND p.campaign_id IS NULL AND p.campaign = false';
+        // sql += ' AND p.campaign_id IS NULL';
         break;
       default:
         // no filter
