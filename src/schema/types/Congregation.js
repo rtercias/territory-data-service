@@ -1,7 +1,10 @@
 import { ApolloError, gql } from 'apollo-server-express';
 import { pusher } from '../../server';
 import congAsync from '../../async/congregations';
+import { getCurrentCampaign, startCampaign, endCampaign } from '../../async/campaigns';
 
+// NOTE: congregation's campaign field is DEPRECATED.
+// Use the derived object currentCampaign instead
 export const Congregation = gql`
   type Congregation {
     id: Int
@@ -15,6 +18,7 @@ export const Congregation = gql`
     admin_email: String
     options: String
     circuit: String
+    currentCampaign: Campaign
   }
 `;
 
@@ -61,6 +65,17 @@ export const queryResolvers = {
       );
     }
   },
+  currentCampaign: async (root) => {
+    try {
+      return await getCurrentCampaign(root.id);
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to get current campaign',
+        'QUERY_RESOLVER_ERROR',
+        { error, path: 'Congregation/currentCampaign', arguments: { root }},
+      );
+    }
+  },
 };
 
 export const mutationResolvers = {
@@ -97,7 +112,29 @@ export const mutationResolvers = {
       throw new ApolloError(
         'Unable to delete congregation',
         'MUTATION_RESOLVER_ERROR',
-        { error, path: 'Congregation/deleteCongregation', arguments: { root, id }},
+        { error, path: 'Congregation/deleteCongregation', arguments: { root, id } },
+      );
+    }
+  },
+  startCampaign: async( root, { name, congId, startDate, publisherId }) => {
+    try {
+      return await startCampaign(name, congId, startDate, publisherId);
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to start campaign',
+        'MUTATION_RESOLVER_ERROR',
+        { error, path: 'Congregation/startCampaign', arguments: { root, name, congId, startDate, publiseherId } },
+      );
+    }
+  },
+  endCampaign: async( root, { campaignId, endDate }) => {
+    try {
+      return await endCampaign(campaignId, endDate);
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to end campaign',
+        'MUTATION_RESOLVER_ERROR',
+        { error, path: 'Congregation/endCampaign', arguments: { root, campaignId, endDate } },
       );
     }
   },

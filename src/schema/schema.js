@@ -53,6 +53,9 @@ import {
   queryResolvers as phoneQueryResolvers,
   mutationResolvers as phoneMutationResolvers,
 } from './types/Phone';
+import {
+  Campaign,
+} from './types/Campaign';
 import { sendSMSMessage } from '../utils/Twilio';
 
 const RootQuery = gql`
@@ -64,6 +67,7 @@ const RootQuery = gql`
     updater: Publisher
     congregation(id: Int!): Congregation
     congregations(keyword: String): [Congregation]
+    currentCampaign: Campaign
     territory(id: Int): Territory
     territories(congId: Int, keyword: String, group_id: Int, limit: Int, offset: Int): [Territory]
     status(territoryId: Int): Status
@@ -93,8 +97,8 @@ const Mutation = gql`
   type Mutation {
     checkoutTerritory(territoryId: Int!, publisherId: Int!, user: String): Int
     checkinTerritory(territoryId: Int!, publisherId: Int!, user: String, checkoutId: Int!): Int
-    checkinAll(congId: Int!, username: String!, tz_offset: String!, timezone: String!, campaign: Boolean): Boolean
-    copyCheckouts(congId: Int!, username: String!, campaign: Boolean): Boolean
+    checkinAll(congId: Int!, username: String!, tz_offset: String!, timezone: String!): Boolean
+    copyCheckouts(congId: Int!, username: String!): Boolean
     reassignCheckout(checkoutId: Int!, publisherId: Int!, user: String!): Boolean
     addAddress(address: AddressInput!): Address
     updateAddress(address: AddressInput!): Address
@@ -126,6 +130,8 @@ const Mutation = gql`
     updatePublisher(publisher: PublisherInput!): Publisher
     deletePublisher(id: Int!): Boolean
     sendSMS(text: String!, number: String!): String
+    startCampaign(name: String!, congId: Int!, startDate: String!): Int
+    endCampaign(campaignId: Int, endDate: String!): Boolean
   }
 `;
 
@@ -242,6 +248,7 @@ export const typeDefs = [
   PhoneInput,
   Group,
   GroupInput,
+  Campaign,
 ];
 
 export const formatError = (err) => {

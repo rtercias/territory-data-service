@@ -121,7 +121,6 @@ export const queryResolvers = {
       } else if (root && root.congregationid && root.id) {
         let terrStatus;
         terrStatus = await terrAsync.getTerritoryStatus(root.id);
-
         if (terrStatus) {
           // no checkout records found: AVAILABLE
           if (!isArray(terrStatus) || terrStatus.length == 0) {
@@ -321,9 +320,9 @@ export const mutationResolvers = {
       );
     }
   },
-  checkinAll: async (root, { congId, username, tz_offset, timezone, campaign }) => {
+  checkinAll: async (root, { congId, username, tz_offset, timezone }) => {
     try {
-      await terrAsync.checkinAll(congId, username, tz_offset, timezone, campaign);
+      await terrAsync.checkinAll(congId, username, tz_offset, timezone);
       pusher.trigger('foreign-field', 'check-in-all', congId);
     } catch (error) {
       throw new ApolloError(
@@ -335,20 +334,19 @@ export const mutationResolvers = {
           username,
           tz_offset,
           timezone,
-          campaign,
         }},
       );
     }
   },
-  copyCheckouts: async (root, { congId, username, campaign }) => {
+  copyCheckouts: async (root, { congId, username }) => {
     try {
-      await terrAsync.createCampaignCheckouts(congId, username, campaign);
+      await terrAsync.createCampaignCheckouts(congId, username);
       pusher.trigger('foreign-field', 'copy-checkouts', congId);
     } catch (error) {
       throw new ApolloError(
         'Unable to copy checkouts',
         'MUTATION_RESOLVER_ERROR',
-        { error, path: 'copyCheckouts', arguments: { root, congId, username, campaign }},
+        { error, path: 'copyCheckouts', arguments: { root, congId, username }},
       );
     }
   },

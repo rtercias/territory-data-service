@@ -7,8 +7,6 @@ import { pool } from '../server';
 import axios from 'axios';
 import addressAsync from './addresses';
 import activityLog from './activityLog';
-import { getCurrentCampaign } from './campaigns';
-
 class TerritoryAsync {
   async getTerritory (id) {
     const result = await (pool.query(`SELECT * FROM territories WHERE id=${id}`));
@@ -29,14 +27,21 @@ class TerritoryAsync {
   }
 
   async getTerritoryStatus (territoryId) {
+    // NOTE: direct queries to territorycheckouts require the derived "campaign" logic.
+    // When possible, use territorycheckouts_pivot since it's already included there.
+    //
+    // This particular usage is currently required because of performance issues with the pivot view
+    // when called multiple times
     return await pool.query(
       `
         SELECT ck.*, ck.id AS checkout_id, ck.territoryid AS territory_id,
-          p.username, p.firstname, p.lastname, p.status AS publisher_status
+          p.username, p.firstname, p.lastname, p.status AS publisher_status,
+          IF(ck.timestamp >= c.start_date AND ck.timestamp <= IFNULL(c.end_date, NOW()), 1, 0)
+            AS campaign
         FROM territorycheckouts ck
         JOIN territories t ON ck.territoryid = t.id
-        JOIN congregations c ON t.congregationid = c.id AND ck.campaign = c.campaign
         JOIN publishers p ON ck.publisherid = p.id
+        LEFT JOIN campaigns c ON t.congregationid = c.congregation_id
         WHERE ck.territoryid=${territoryId}
         ORDER BY ck.timestamp DESC
         LIMIT 2
@@ -44,19 +49,16 @@ class TerritoryAsync {
     );
   }
 
-  async getTerritoryCurrentStatus(territoryId, username) {
+  async getTerritoryCurrentStatus(territoryId) {
     // get cong
     const resultCong = await pool.query(`
       SELECT c.* FROM territories t JOIN congregations c ON t.congregationid = c.id
       WHERE t.id=${territoryId}`);
     const cong = resultCong[0];
-    const currentCampaign = await getCurrentCampaign(cong.id, pool);
-    const campaignFilter = currentCampaign ? `AND campaign_id = ${currentCampaign.id}` : '';
 
     // TODO: change back to prod pivot
     const sql = `SELECT * FROM territorycheckouts_pivot_campaign p
       WHERE territory_id=${territoryId} AND p.in is null
-        ${campaignFilter}
       ORDER BY timestamp DESC `;
 
     return await pool.query(sql);
@@ -76,7 +78,6 @@ class TerritoryAsync {
         WHERE ck.congregationid=${congId}
         AND ck.username='${username}'
         AND ck.in IS NULL
-        AND COALESCE(ck.campaign, 0)=${cong.campaign || 0}
         ${limit ? `LIMIT ${offset},${limit}` : ''}
       `
     );
@@ -182,25 +183,14 @@ class TerritoryAsync {
   }
 
   async saveTerritoryActivity(status, territoryId, publisherId, user, checkoutId) {
-    // get cong
-    const resultCong = await pool.query(`
-      SELECT c.* FROM territories t JOIN congregations c ON t.congregationid = c.id
-      WHERE t.id=${territoryId}`);
-    const cong = resultCong[0];
-
-    const currentCampaign = await getCurrentCampaign(cong, pool);
-
-    let results;
     const checkout = {
       territoryid: escape(territoryId),
       publisherid: escape(publisherId),
       status,
       create_user: escape(user),
-      campaign: escape(cong.campaign),
       parent_checkout_id: escape(checkoutId),
-      campaign_id: currentCampaign ? escape(currentCampaign.id) : null,
     };
-    results = await pool.query('INSERT INTO territorycheckouts SET ?', checkout);
+    const results = await pool.query('INSERT INTO territorycheckouts SET ?', checkout);
     return results.insertId;
   }
 
@@ -313,7 +303,7 @@ class TerritoryAsync {
     return result.length ? result[0] : null;
   }
 
-  async checkinAll(congId, username, tz_offset, timezone, _campaign) {
+  async checkinAll(congId, username, tz_offset, timezone) {
     if (!congId) throw new Error('congregation id is required');
     if (!username) throw new Error('username is required');
     if (!tz_offset) throw new Error('tz_offset is required');
@@ -322,12 +312,6 @@ class TerritoryAsync {
     // get user
     const resultUser = await pool.query(`SELECT * FROM publishers WHERE username='${username}'`);
     const user = resultUser[0];
-
-    // get cong
-    const resultCong = await pool.query(`SELECT * FROM congregations WHERE id=${congId}`);
-    const cong = resultCong[0];
-
-    const campaign = _campaign === null || _campaign === undefined ? cong.campaign : _campaign;
 
     // get all checked out territories
     // TODO: change back to prod pivot
@@ -342,8 +326,8 @@ class TerritoryAsync {
       const promises = [];
       for (const ck of checkouts) {
         // check in
-        const sql = `INSERT INTO territorycheckouts (territoryid, publisherid, status, create_user, campaign, parent_checkout_id)
-          VALUES (${ck.territory_id}, ${ck.publisher_id}, 'IN', '${username}', ${ck.campaign}, ${ck.checkout_id})`;
+        const sql = `INSERT INTO territorycheckouts (territoryid, publisherid, status, create_user, parent_checkout_id)
+          VALUES (${ck.territory_id}, ${ck.publisher_id}, 'IN', '${username}', ${ck.checkout_id})`;
 
         promises.push(conn ? await conn.query(sql) : await pool.query(sql));
 
@@ -362,26 +346,20 @@ class TerritoryAsync {
     }
   }
 
-  async createCampaignCheckouts(congId, username, _campaign) {
+  async createCampaignCheckouts(congId, username) {
     if (!congId) throw new Error('congregation id is required');
     if (!username) throw new Error('username is required');
-
-    // get cong
-    const resultCong = await pool.query(`SELECT * FROM congregations WHERE id=${congId}`);
-    const cong = resultCong[0];
-
-    const campaign = _campaign === null || _campaign === undefined ? cong.campaign : _campaign;
 
     // get all checked out territories
     // TODO: change back to prod pivot
     const sqlCheckOuts = `SELECT tc.* FROM territorycheckouts_pivot_campaign tc
-      WHERE tc.congregationid = ${congId} AND tc.in IS NULL AND COALESCE(tc.campaign, 0)=${campaign || 0}`;
+      WHERE tc.congregationid = ${congId} AND tc.in IS NULL`;
     const checkouts = await pool.query(sqlCheckOuts);
 
     for (const ck of checkouts) {
       // replicate all checked out territories with current campaign flag
-      const sql = `INSERT INTO territorycheckouts (territoryid, publisherid, status, timestamp, create_user, campaign)
-        VALUES(${ck.territory_id}, ${ck.publisher_id}, 'OUT', NOW(), '${username}', ${campaign})`;
+      const sql = `INSERT INTO territorycheckouts (territoryid, publisherid, status, timestamp, create_user)
+        VALUES(${ck.territory_id}, ${ck.publisher_id}, 'OUT', NOW(), '${username}')`;
       const result = await pool.query(sql);
       const logs = await activityLog.read(ck.checkout_id);
     }

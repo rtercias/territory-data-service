@@ -30,7 +30,6 @@ class CongregationAsync {
       description,
       create_user,
       language,
-      campaign,
       admin_email,
       options,
       circuit
@@ -39,7 +38,6 @@ class CongregationAsync {
       ${ escape(get(cong, 'description')) || '' },
       ${ escape(cong.create_user) },
       ${ escape(get(cong, 'language')) || '' },
-      ${ escape(get(cong, 'campaign')) || '' },
       ${ escape(get(cong, 'admin_email')) || '' },
       ${ escape(get(cong, 'options')) || '' },
       ${ escape(get(cong, 'circuit')) || '' }
@@ -61,7 +59,6 @@ class CongregationAsync {
       name = ${escape(get(cong, 'name')) || ''},
       description = ${escape(get(cong, 'description')) || ''},
       language = ${escape(get(cong, 'language')) || ''},
-      campaign = ${escape(get(cong, 'campaign')) || 0},
       admin_email = ${escape(get(cong, 'admin_email')) || ''},
       options = ${escape(get(cong, 'options')) || ''},
       circuit = ${escape(get(cong, 'circuit')) || ''},
