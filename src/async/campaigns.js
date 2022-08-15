@@ -13,43 +13,41 @@ export async function getCurrentCampaign(congId) {
   return currentCampaign || null;
 }
 
-export async function startCampaign(name, congId, startDate, publisherId) {
+export async function getHistoricalCampaigns(congId) {
+  const result = await pool.query(`
+    SELECT c.* FROM campaigns c
+    WHERE c.congregation_id = ${congId}
+    ORDER BY c.start_date DESC
+  `);
+  return result;
+}
+
+export async function startCampaign(name, congId, publisherId) {
   if (!name) {
     throw new Error('name is required');
   }
   if (!congId) {
     throw new Error('congId is required');
   }
-  if (!startDate) {
-    throw new Error('startDate is required');
-  }
   if (!publisherId) {
     throw new Error('publisherId is required');
   }
 
   const campaign = {
-    name: escape(name),
+    name: name,
     congregation_id: congId,
     publisher_id: publisherId,
-    start_date: escape(startDate),
   };
-  const results = await pool.query('INSERT INTO campaigns SET ?', campaign);
+
+  const results = await pool.query('INSERT INTO campaigns SET ?, start_date = NOW()', campaign);
   return results.insertId;
 }
 
-export async function endCampaign(campaignId, endDate) {
+export async function endCampaign(campaignId) {
   if (!campaignId) {
     throw new Error('campaignId is required');
   }
 
-  if (!endDate) {
-    throw new Error('endDate is required');
-  }
-
-  const campaign = {
-    end_date: endDate,
-  };
-
-  const results = await pool.query(`UPDATE campaigns SET ? WHERE id = ${campaignId}`, campaign);
-  return results;
+  const results = await pool.query(`UPDATE campaigns SET end_date = NOW() WHERE id = ${campaignId}`);
+  return !!results;
 }

@@ -33,19 +33,9 @@ class TerritoryAsync {
     // This particular usage is currently required because of performance issues with the pivot view
     // when called multiple times
     return await pool.query(
-      `
-        SELECT ck.*, ck.id AS checkout_id, ck.territoryid AS territory_id,
-          p.username, p.firstname, p.lastname, p.status AS publisher_status,
-          IF(ck.timestamp >= c.start_date AND ck.timestamp <= IFNULL(c.end_date, NOW()), 1, 0)
-            AS campaign
-        FROM territorycheckouts ck
-        JOIN territories t ON ck.territoryid = t.id
-        JOIN publishers p ON ck.publisherid = p.id
-        LEFT JOIN campaigns c ON t.congregationid = c.congregation_id
-        WHERE ck.territoryid=${territoryId}
-        ORDER BY ck.timestamp DESC
-        LIMIT 2
-      `
+      `SELECT * FROM territorycheckouts_pivot_campaign WHERE territory_id = ${territoryId}
+      ORDER BY timestamp DESC
+      LIMIT 1`
     );
   }
 

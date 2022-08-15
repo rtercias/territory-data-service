@@ -10,5 +10,6 @@ export const Status = gql`
     territoryid: Int
     territory: Territory
     campaign: Boolean
+    campaign_id: Int
   }
 `;

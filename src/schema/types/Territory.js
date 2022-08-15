@@ -3,11 +3,12 @@ import terrAsync from './../../async/territories';
 import congAsync from './../../async/congregations';
 import publisherAsync from './../../async/publishers';
 import { isArray, orderBy, some, get } from 'lodash';
-import { differenceInCalendarDays } from 'date-fns';
+import { differenceInCalendarDays, isBefore, isAfter } from 'date-fns';
 import { ActivityLog } from './ActivityLog';
 import { Phone } from './Phone';
 import { pusher } from '../../server';
 import activityLog from '../../async/activityLog';
+import { getCurrentCampaign } from '../../async/campaigns';
 
 const DEFAULT_DAY_LIMIT = 30;
 
@@ -100,6 +101,7 @@ export const queryResolvers = {
       const cong = await congAsync.getCongregationById(root.congregationid);
       const congOptions = cong && JSON.parse(cong.options);
       const dayLimit = get(congOptions, 'territories.cycle') || DEFAULT_DAY_LIMIT;
+      const currentCampaign = await getCurrentCampaign(cong.id);
 
       if (root && root.username) {
         if (root.in === null) {
@@ -108,7 +110,9 @@ export const queryResolvers = {
             status: 'Checked Out',
           };
 
-        } else if (differenceInCalendarDays(new Date(), root.in) <= dayLimit) {
+        } else if (differenceInCalendarDays(new Date(), root.in) <= dayLimit &&
+        isAfter(root.timestamp, new Date(currentCampaign.start_date)) &&
+        isBefore(root.timestamp, new Date(currentCampaign.end_date))) {
           return {
             date: root.in,
             status: 'Recently Worked',
@@ -129,30 +133,34 @@ export const queryResolvers = {
             };
           }
 
-          // if there is no check IN terrStatus, or the last terrStatus is OUT, then territory is still checked out
-          if (!some(terrStatus, ['status', 'IN']) || terrStatus[0].status === 'OUT') {
+          // if there is no check IN terrStatus, then territory is still checked out
+          if (!terrStatus[0].in) {
             const a = terrStatus[0];
             return {
               checkout_id: a.checkout_id,
               status: 'Checked Out',
               date: a.timestamp,
-              publisherid: a.publisherid,
-              territoryid: a.territoryid,
+              publisherid: a.publisher_id,
+              territoryid: a.territory_id,
               campaign: a.campaign,
+              campaign_id: a.campaign_id,
             };
             
-          } else if (terrStatus[0].status === 'IN') {
+          } else if (terrStatus[0].in) {
             // if the last terrStatus is IN
             // and the most recent timestamp is 70 days or less, then the territory is recently worked.
-            if (differenceInCalendarDays(new Date(), terrStatus[0].timestamp) <= dayLimit) {
+            if (differenceInCalendarDays(new Date(), terrStatus[0].timestamp) <= dayLimit &&
+            isAfter(terrStatus[0].timestamp, new Date(currentCampaign.start_date)) &&
+            isBefore(terrStatus[0].timestamp, new Date(currentCampaign.end_date))) {
               const a = terrStatus[0];
               return {
                 checkout_id: a.checkout_id,
                 status: 'Recently Worked',
                 date: a.timestamp,
-                publisherid: a.publisherid,
-                territoryid: a.territoryid,
+                publisherid: a.publisher_id,
+                territoryid: a.territory_id,
                 campaign: a.campaign,
+                campaign_id: a.campaign_id,
               };
             } else {
               // ... otherwise the territory is available.
@@ -161,9 +169,10 @@ export const queryResolvers = {
                 checkout_id: a.checkout_id,
                 status: 'Available',
                 date: a.timestamp,
-                publisherid: a.publisherid,
-                territoryid: a.territoryid,
+                publisherid: a.publisher_id,
+                territoryid: a.territory_id,
                 campaign: a.campaign,
+                campaign_id: a.campaign_id,
               };
             }
           }
