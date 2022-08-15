@@ -27,11 +27,7 @@ class TerritoryAsync {
   }
 
   async getTerritoryStatus (territoryId) {
-    // NOTE: direct queries to territorycheckouts require the derived "campaign" logic.
-    // When possible, use territorycheckouts_pivot since it's already included there.
-    //
-    // This particular usage is currently required because of performance issues with the pivot view
-    // when called multiple times
+    // TODO: change back to prod pivot
     return await pool.query(
       `SELECT * FROM territorycheckouts_pivot_campaign WHERE territory_id = ${territoryId}
       ORDER BY timestamp DESC
