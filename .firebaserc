@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "staging": "foreign-field-staging",
+    "default": "foreign-field"
+  },
+  "targets": {}
+}
