@@ -86,7 +86,6 @@ export const queryResolvers = {
           root.username,
           args.limit,
           args.offset,
-          withStatus,
         );
       }
 

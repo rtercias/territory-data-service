@@ -60,16 +60,13 @@ class TerritoryAsync {
     return await pool.query(sql);
   }
 
-  async getTerritoriesByUser (congId, username, limit, offset=0, withStatus) {
-    const statusSelect = withStatus ? 'ck.*,' : '';
-    const statusJoin = withStatus ? 'JOIN territorycheckouts_current ck ON ck.territory_id = t.id' : '';
+  async getTerritoriesByUser (congId, username, limit, offset=0) {
 
     return await pool.query(
       `
-        SELECT ${statusSelect}, t.*
-        FROM territories t
-        ${statusJoin}
-        WHERE ck.congregationid=${congId}
+        SELECT ck.*,t.* FROM territories t
+        JOIN territorycheckouts_current ck ON ck.territory_id = t.id
+        WHERE t.congregationid=${congId}
         AND ck.username='${username}'
         AND ck.in IS NULL
         ${limit ? `LIMIT ${offset},${limit}` : ''}
