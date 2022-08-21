@@ -40,7 +40,7 @@ class TerritoryAsync {
 
   async getTerritoryStatus (territoryId) {
     return await pool.query(
-      `SELECT * FROM territorycheckouts_pivot_current WHERE territory_id = ${territoryId}
+      `SELECT * FROM territorycheckouts_current WHERE territory_id = ${territoryId}
       ORDER BY timestamp DESC
       LIMIT 1`
     );
@@ -309,7 +309,7 @@ class TerritoryAsync {
     const user = resultUser[0];
 
     // get all checked out territories
-    const sqlCheckOuts = `SELECT tc.* FROM territorycheckouts_pivot_current tc
+    const sqlCheckOuts = `SELECT tc.* FROM territorycheckouts_current tc
       WHERE tc.congregationid = ${congId} AND tc.in IS NULL`;
     const checkouts = await pool.query(sqlCheckOuts);
 
@@ -345,7 +345,7 @@ class TerritoryAsync {
     if (!username) throw new Error('username is required');
 
     // get all checked out territories
-    const sqlCheckOuts = `SELECT tc.* FROM territorycheckouts_pivot_current tc
+    const sqlCheckOuts = `SELECT tc.* FROM territorycheckouts_current tc
       WHERE tc.congregationid = ${congId} AND tc.in IS NULL`;
     const checkouts = await pool.query(sqlCheckOuts);
 
