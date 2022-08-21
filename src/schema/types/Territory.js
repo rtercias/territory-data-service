@@ -2,15 +2,14 @@ import { ApolloError, gql } from 'apollo-server-express';
 import terrAsync from './../../async/territories';
 import congAsync from './../../async/congregations';
 import publisherAsync from './../../async/publishers';
-import { isArray, orderBy, some, get } from 'lodash';
+import { get } from 'lodash';
 import { differenceInCalendarDays, isBefore, isAfter } from 'date-fns';
-import { ActivityLog } from './ActivityLog';
-import { Phone } from './Phone';
 import { pusher } from '../../server';
 import activityLog from '../../async/activityLog';
 import { getCurrentCampaign } from '../../async/campaigns';
 
 const DEFAULT_DAY_LIMIT = 30;
+let cong, congOptions, dayLimit, currentCampaign;
 
 export const Territory = gql`
   type Territory {
@@ -98,19 +97,23 @@ export const queryResolvers = {
 
   status: async(root, args) => {
     try {
-      const cong = await congAsync.getCongregationById(root.congregationid);
-      const congOptions = cong && JSON.parse(cong.options);
-      const dayLimit = get(congOptions, 'territories.cycle') || DEFAULT_DAY_LIMIT;
-      const currentCampaign = await getCurrentCampaign(cong.id);
-
+      cong = cong || await congAsync.getCongregationById(root.congregationid);
+      congOptions = congOptions || (cong && JSON.parse(cong.options));
+      dayLimit = dayLimit || get(congOptions, 'territories.cycle') || DEFAULT_DAY_LIMIT;
+      currentCampaign = currentCampaign || (cong && await getCurrentCampaign(cong.id));
       // for a user's territory, checkout status info is already in the root data.
       // No need to fetch territory status from db
       if (root && root.username) {
         // no check-in date... territory is Checked Out
         if (root.in === null) {
           return {
-            date: root.out, 
             status: 'Checked Out',
+            checkout_id: root.checkout_id,
+            date: root.timestamp || root.out,
+            publisherid: root.publisher_id,
+            territoryid: root.territory_id,
+            campaign: root.campaign,
+            campaign_id: root.campaign_id,
           };
         
         // there's a check-in date... 
@@ -128,10 +131,21 @@ export const queryResolvers = {
             return {
               date: root.in,
               status: 'Recently Worked', // this gets translated to 'Done' on the client
+              checkout_id: root.checkout_id,
+              publisherid: root.publisher_id,
+              territoryid: root.territory_id,
+              campaign: root.campaign,
+              campaign_id: root.campaign_id,
             };
           } else {
             return {
+              date: root.timestamp,
               status: 'Available',
+              checkout_id: root.checkout_id,
+              publisherid: root.publisher_id,
+              territoryid: root.territory_id,
+              campaign: root.campaign,
+              campaign_id: root.campaign_id,
             };
           }
         
@@ -143,105 +157,23 @@ export const queryResolvers = {
             return {
               date: root.in,
               status: 'Recently Worked',
+              checkout_id: root.checkout_id,
+              publisherid: root.publisher_id,
+              territoryid: root.territory_id,
+              campaign: root.campaign,
+              campaign_id: root.campaign_id,
             };
-          // if if has been greater than the limit, the territory is Available for check out
+          // if it has been greater than the limit, the territory is Available for check out
           } else {
             return {
+              date: root.timestamp,
               status: 'Available',
+              checkout_id: root.checkout_id,
+              publisherid: root.publisher_id,
+              territoryid: root.territory_id,
+              campaign: root.campaign,
+              campaign_id: root.campaign_id,
             };
-          }
-        }
-
-      // For any other territory, checkout status must be fetched
-      } else if (root && root.congregationid && root.id) {
-        let terrStatus;
-        terrStatus = await terrAsync.getTerritoryStatus(root.id);
-        if (terrStatus) {
-          // no checkout records found: AVAILABLE
-          if (!isArray(terrStatus) || terrStatus.length == 0) {
-            return {
-              status: 'Available',
-            };
-          }
-
-          // if there is no check IN terrStatus, then territory is still checked out
-          if (!terrStatus[0].in) {
-            const a = terrStatus[0];
-            return {
-              checkout_id: a.checkout_id,
-              status: 'Checked Out',
-              date: a.timestamp,
-              publisherid: a.publisher_id,
-              territoryid: a.territory_id,
-              campaign: a.campaign,
-              campaign_id: a.campaign_id,
-            };
-            
-          // there's a check-in date... 
-          } else {
-            // is there a campaign going on?
-            if (currentCampaign) {
-              const campaignStartDate = new Date(currentCampaign.start_date);
-              const campaignEndDate = currentCampaign.end_date ?
-                new Date(currentCampaign.end_date) :
-                new Date();
-              
-              // does the checkout timestamp fall within the start and end date of the campaign?
-              // if so, this is a Recently Worked (or Done) territory
-              if (isAfter(terrStatus[0].timestamp, campaignStartDate)
-              && isBefore(terrStatus[0].timestamp, campaignEndDate)) {
-                const a = terrStatus[0];
-                return {
-                  checkout_id: a.checkout_id,
-                  status: 'Recently Worked', // this gets translate to 'Done' on the client
-                  date: a.timestamp,
-                  publisherid: a.publisher_id,
-                  territoryid: a.territory_id,
-                  campaign: a.campaign,
-                  campaign_id: a.campaign_id,
-                };
-              } else {
-                const a = terrStatus[0];
-                return {
-                  checkout_id: a.checkout_id,
-                  status: 'Available',
-                  date: a.timestamp,
-                  publisherid: a.publisher_id,
-                  territoryid: a.territory_id,
-                  campaign: a.campaign,
-                  campaign_id: a.campaign_id,
-                };
-              }
-            // there's no campaign
-            } else {
-              // has it been X number of days since the territory was checked in?
-              // if it has been less than or equal to the limit, this is a Recently Worked territory
-              if (differenceInCalendarDays(new Date(), terrStatus[0].timestamp) <= dayLimit) {
-                const a = terrStatus[0];
-                return {
-                  checkout_id: a.checkout_id,
-                  status: 'Recently Worked',
-                  date: a.timestamp,
-                  publisherid: a.publisher_id,
-                  territoryid: a.territory_id,
-                  campaign: a.campaign,
-                  campaign_id: a.campaign_id,
-                };
-
-              // if if has been greater than the limit, the territory is Available for check out
-              } else {
-                const a = terrStatus[0];
-                return {
-                  checkout_id: a.checkout_id,
-                  status: 'Available',
-                  date: a.timestamp,
-                  publisherid: a.publisher_id,
-                  territoryid: a.territory_id,
-                  campaign: a.campaign,
-                  campaign_id: a.campaign_id,
-                };
-              }
-            }
           }
         }
       }

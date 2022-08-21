@@ -15,8 +15,9 @@ class TerritoryAsync {
 
   async getTerritories (congId, limit, offset = 0) {
     return await pool.query(`
-      SELECT * FROM territories
-      WHERE congregationid=${congId}
+      SELECT t.*, ck.* FROM territories t
+      LEFT JOIN territorycheckouts_current ck ON t.id = ck.territory_id
+      WHERE t.congregationid=${congId}
       ${limit ? `LIMIT ${offset},${limit}` : ''}
     `);
   }
@@ -51,15 +52,11 @@ class TerritoryAsync {
   }
 
   async getTerritoriesByUser (congId, username, limit, offset=0) {
-    // get cong
-    const resultCong = await pool.query(`SELECT * FROM congregations WHERE id=${congId}`);
-    const cong = resultCong[0];
-
     // TODO: change back to prod pivot
     return await pool.query(
       `
         SELECT ck.*, t.*
-        FROM territorycheckouts_pivot_campaign ck
+        FROM territorycheckouts_pivot_current ck
         JOIN territories t ON ck.territory_id = t.id
         WHERE ck.congregationid=${congId}
         AND ck.username='${username}'
@@ -83,9 +80,11 @@ class TerritoryAsync {
   }
 
   async getTerritoriesByGroup (groupId, limit, offset = 0) {
-    return await pool.query(`SELECT * FROM territories
-      WHERE group_id=${groupId}
-      ORDER BY description, name
+    return await pool.query(`SELECT t.*, ck.*
+      FROM territories t
+      LEFT JOIN territorycheckouts_current ck ON t.id = ck.territory_id
+      WHERE t.group_id=${groupId}
+      ORDER BY t.description, t.name
       ${limit ? `LIMIT ${offset},${limit}` : ''}
     `);
   }
