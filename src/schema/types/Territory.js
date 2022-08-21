@@ -70,21 +70,28 @@ export const queryResolvers = {
 
   territories: async (root, args) => {
     try {
+      const { withStatus } = args;
       if (((root && root.congregationid) || args.congId) && args.keyword) {
         const congId = (root ? root.congregationid : null) || args.congId;
-        return await terrAsync.searchTerritories(congId, args.keyword);
+        return await terrAsync.searchTerritories(congId, args.keyword, withStatus);
       }
 
       if (args && args.group_id) {
-        return await terrAsync.getTerritoriesByGroup(args.group_id, args.limit, args.offset);
+        return await terrAsync.getTerritoriesByGroup(args.group_id, args.limit, args.offset, withStatus);
       }
       
       if (root && root.congregationid && root.username) {
-        return await terrAsync.getTerritoriesByUser(root.congregationid, root.username, args.limit, args.offset);
+        return await terrAsync.getTerritoriesByUser(
+          root.congregationid,
+          root.username,
+          args.limit,
+          args.offset,
+          withStatus,
+        );
       }
 
       if ((args && args.congId) || (root && root.id)) {
-        return await terrAsync.getTerritories(args.congId || root.id, args.limit, args.offset);
+        return await terrAsync.getTerritories(args.congId || root.id, args.limit, args.offset, withStatus);
       }
     } catch (error) {
       throw new ApolloError(
@@ -92,11 +99,17 @@ export const queryResolvers = {
         'QUERY_RESOLVER_ERROR',
         { error, path: 'Territory/territories', arguments: { root, args }},
       );
-    }      
+    }
   },
 
   status: async(root, args) => {
     try {
+      if (!root.checkout_id) {
+        return {
+          status: 'Available',
+        };
+      }
+
       cong = cong || await congAsync.getCongregationById(root.congregationid);
       congOptions = congOptions || (cong && JSON.parse(cong.options));
       dayLimit = dayLimit || get(congOptions, 'territories.cycle') || DEFAULT_DAY_LIMIT;
@@ -109,7 +122,7 @@ export const queryResolvers = {
           return {
             status: 'Checked Out',
             checkout_id: root.checkout_id,
-            date: root.timestamp || root.out,
+            date: root.out,
             publisherid: root.publisher_id,
             territoryid: root.territory_id,
             campaign: root.campaign,
@@ -139,7 +152,7 @@ export const queryResolvers = {
             };
           } else {
             return {
-              date: root.timestamp,
+              date: root.in,
               status: 'Available',
               checkout_id: root.checkout_id,
               publisherid: root.publisher_id,
@@ -166,7 +179,7 @@ export const queryResolvers = {
           // if it has been greater than the limit, the territory is Available for check out
           } else {
             return {
-              date: root.timestamp,
+              date: root.in,
               status: 'Available',
               checkout_id: root.checkout_id,
               publisherid: root.publisher_id,

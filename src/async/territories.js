@@ -13,24 +13,34 @@ class TerritoryAsync {
     return result[0];
   }
 
-  async getTerritories (congId, limit, offset = 0) {
+  async getTerritories (congId, limit, offset = 0, withStatus) {
+    const statusSelect = withStatus ? 'ck.*,' : '';
+    const statusJoin = withStatus ? 'JOIN territorycheckouts_current ck ON ck.territory_id = t.id' : '';
+
     return await pool.query(`
-      SELECT t.*, ck.* FROM territories t
-      LEFT JOIN territorycheckouts_current ck ON t.id = ck.territory_id
+      SELECT ${statusSelect}
+      t.* FROM territories t
+      ${statusJoin}
       WHERE t.congregationid=${congId}
       ${limit ? `LIMIT ${offset},${limit}` : ''}
     `);
   }
 
-  async searchTerritories (congId, keyword) {
-    return await pool.query(`SELECT * FROM territories
-      WHERE congregationid=${congId} AND (name LIKE '%${keyword}%' OR description LIKE '%${keyword}%')`);
+  async searchTerritories (congId, keyword, withStatus) {
+    const statusSelect = withStatus ? 'ck.*,' : '';
+    const statusJoin = withStatus ? 'JOIN territorycheckouts_current ck ON ck.territory_id = t.id' : '';
+    return await pool.query(`
+      SELECT
+        ${statusSelect}
+        t.* FROM territories t
+      ${statusJoin}
+      WHERE t.congregationid=${congId}
+      AND (t.name LIKE '%${keyword}%' OR t.description LIKE '%${keyword}%')`);
   }
 
   async getTerritoryStatus (territoryId) {
-    // TODO: change back to prod pivot
     return await pool.query(
-      `SELECT * FROM territorycheckouts_pivot_campaign WHERE territory_id = ${territoryId}
+      `SELECT * FROM territorycheckouts_pivot_current WHERE territory_id = ${territoryId}
       ORDER BY timestamp DESC
       LIMIT 1`
     );
@@ -43,21 +53,22 @@ class TerritoryAsync {
       WHERE t.id=${territoryId}`);
     const cong = resultCong[0];
 
-    // TODO: change back to prod pivot
-    const sql = `SELECT * FROM territorycheckouts_pivot_campaign p
+    const sql = `SELECT * FROM territorycheckouts_current p
       WHERE territory_id=${territoryId} AND p.in is null
       ORDER BY timestamp DESC `;
 
     return await pool.query(sql);
   }
 
-  async getTerritoriesByUser (congId, username, limit, offset=0) {
-    // TODO: change back to prod pivot
+  async getTerritoriesByUser (congId, username, limit, offset=0, withStatus) {
+    const statusSelect = withStatus ? 'ck.*,' : '';
+    const statusJoin = withStatus ? 'JOIN territorycheckouts_current ck ON ck.territory_id = t.id' : '';
+
     return await pool.query(
       `
-        SELECT ck.*, t.*
-        FROM territorycheckouts_pivot_current ck
-        JOIN territories t ON ck.territory_id = t.id
+        SELECT ${statusSelect}, t.*
+        FROM territories t
+        ${statusJoin}
         WHERE ck.congregationid=${congId}
         AND ck.username='${username}'
         AND ck.in IS NULL
@@ -79,10 +90,13 @@ class TerritoryAsync {
     );
   }
 
-  async getTerritoriesByGroup (groupId, limit, offset = 0) {
-    return await pool.query(`SELECT t.*, ck.*
-      FROM territories t
-      LEFT JOIN territorycheckouts_current ck ON t.id = ck.territory_id
+  async getTerritoriesByGroup (groupId, limit, offset = 0, withStatus) {
+    const statusSelect = withStatus ? 'ck.*,' : '';
+    const statusJoin = withStatus ? 'JOIN territorycheckouts_current ck ON ck.territory_id = t.id' : '';
+
+    return await pool.query(`SELECT ${statusSelect}
+      t.* FROM territories t
+      ${statusJoin}
       WHERE t.group_id=${groupId}
       ORDER BY t.description, t.name
       ${limit ? `LIMIT ${offset},${limit}` : ''}
@@ -90,8 +104,7 @@ class TerritoryAsync {
   }
 
   async territoryCheckoutStatus (checkout_id) {
-    // TODO: change back to prod pivot
-    const sql = `SELECT * FROM territorycheckouts_pivot_campaign p WHERE p.checkout_id = ${checkout_id}`;
+    const sql = `SELECT * FROM territorycheckouts_current p WHERE p.checkout_id = ${checkout_id}`;
     const result = await pool.query(sql);
     return result[0];
   }
@@ -299,8 +312,7 @@ class TerritoryAsync {
     const user = resultUser[0];
 
     // get all checked out territories
-    // TODO: change back to prod pivot
-    const sqlCheckOuts = `SELECT tc.* FROM territorycheckouts_pivot_campaign tc
+    const sqlCheckOuts = `SELECT tc.* FROM territorycheckouts_pivot_current tc
       WHERE tc.congregationid = ${congId} AND tc.in IS NULL`;
     const checkouts = await pool.query(sqlCheckOuts);
 
@@ -336,8 +348,7 @@ class TerritoryAsync {
     if (!username) throw new Error('username is required');
 
     // get all checked out territories
-    // TODO: change back to prod pivot
-    const sqlCheckOuts = `SELECT tc.* FROM territorycheckouts_pivot_campaign tc
+    const sqlCheckOuts = `SELECT tc.* FROM territorycheckouts_pivot_current tc
       WHERE tc.congregationid = ${congId} AND tc.in IS NULL`;
     const checkouts = await pool.query(sqlCheckOuts);
 

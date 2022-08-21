@@ -72,7 +72,7 @@ const RootQuery = gql`
     campaign: Campaign
     historicalCampaigns: [Campaign]
     territory(id: Int): Territory
-    territories(congId: Int, keyword: String, group_id: Int, limit: Int, offset: Int): [Territory]
+    territories(congId: Int, keyword: String, group_id: Int, limit: Int, offset: Int, withStatus: Boolean): [Territory]
     status(territoryId: Int): Status
     address(id: Int, status: String): Address
     addresses(congId: Int, terrId: Int, keyword: String, status: String): [Address]
