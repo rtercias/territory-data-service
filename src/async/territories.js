@@ -9,7 +9,11 @@ import addressAsync from './addresses';
 import activityLog from './activityLog';
 class TerritoryAsync {
   async getTerritory (id) {
-    const result = await (pool.query(`SELECT * FROM territories WHERE id=${id}`));
+    const result = await (pool.query(`
+      SELECT ck.*, t.* FROM territories t
+      LEFT JOIN territorycheckouts_current ck ON ck.territory_id = t.id
+      WHERE t.id=${id}
+    `));
     return result[0];
   }
 
