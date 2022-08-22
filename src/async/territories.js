@@ -323,7 +323,7 @@ class TerritoryAsync {
         const sql = `INSERT INTO territorycheckouts (territoryid, publisherid, status, create_user, parent_checkout_id)
           VALUES (${ck.territory_id}, ${ck.publisher_id}, 'IN', '${username}', ${ck.checkout_id})`;
 
-        promises.push(conn ? await conn.query(sql) : await pool.query(sql));
+        promises.push(await conn.query(sql));
 
         // reset NH statuses
         promises.push(activityLog.resetTerritoryActivity(ck.checkout_id, user.id, tz_offset, timezone, conn));
