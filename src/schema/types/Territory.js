@@ -113,80 +113,64 @@ export const queryResolvers = {
       congOptions = congOptions || (cong && JSON.parse(cong.options));
       dayLimit = dayLimit || get(congOptions, 'territories.cycle') || DEFAULT_DAY_LIMIT;
       currentCampaign = currentCampaign || (cong && await getCurrentCampaign(cong.id));
-      // for a user's territory, checkout status info is already in the root data.
-      // No need to fetch territory status from db
-      if (root && root.username) {
-        // no check-in date... territory is Checked Out
-        if (root.in === null) {
-          return {
-            status: 'Checked Out',
-            checkout_id: root.checkout_id,
-            date: root.out,
-            publisherid: root.publisher_id,
-            territoryid: root.territory_id,
-            campaign: root.campaign,
-            campaign_id: root.campaign_id,
-          };
+      
+      // no check-in date... territory is "Checked Out"
+      if (root.in === null) {
+        return {
+          status: 'Checked Out',
+          checkout_id: root.checkout_id,
+          date: root.out,
+          publisherid: root.publisher_id,
+          territoryid: root.territory_id,
+          campaign: root.campaign,
+          campaign_id: root.campaign_id,
+        };
+      
+      // there's a check-in date... 
+      } else {
+        let isCheckoutInCampaign = false, isWithinDayLimit = false;
         
-        // there's a check-in date... 
-        // is there a campaign going on?
-        } else if (currentCampaign) {
+        // if in campaign mode...
+        if (currentCampaign) {
           const campaignStartDate = new Date(currentCampaign.start_date);
           const campaignEndDate = currentCampaign.end_date ?
             new Date(currentCampaign.end_date) :
             new Date();
 
           // does the checkout timestamp fall within the start and end date of the campaign?
-          // if so, this is a Recently Worked (or Done) territory
-          if (isAfter(root.timestamp, campaignStartDate)
-          && isBefore(root.timestamp, campaignEndDate)) {
-            return {
-              date: root.in,
-              status: 'Recently Worked', // this gets translated to 'Done' on the client
-              checkout_id: root.checkout_id,
-              publisherid: root.publisher_id,
-              territoryid: root.territory_id,
-              campaign: root.campaign,
-              campaign_id: root.campaign_id,
-            };
-          } else {
-            return {
-              date: root.in,
-              status: 'Available',
-              checkout_id: root.checkout_id,
-              publisherid: root.publisher_id,
-              territoryid: root.territory_id,
-              campaign: root.campaign,
-              campaign_id: root.campaign_id,
-            };
-          }
-        
-        // there's no campaign
+          isCheckoutInCampaign = isAfter(root.timestamp, campaignStartDate)
+            && isBefore(root.timestamp, campaignEndDate);
+
+        // if not in campaign mode...
         } else {
           // has it been X number of days since the territory was checked in?
           // if it has been less than or equal to the limit, this is a Recently Worked territory
-          if (differenceInCalendarDays(new Date(), root.in) <= dayLimit) {
-            return {
-              date: root.in,
-              status: 'Recently Worked',
-              checkout_id: root.checkout_id,
-              publisherid: root.publisher_id,
-              territoryid: root.territory_id,
-              campaign: root.campaign,
-              campaign_id: root.campaign_id,
-            };
-          // if it has been greater than the limit, the territory is Available for check out
-          } else {
-            return {
-              date: root.in,
-              status: 'Available',
-              checkout_id: root.checkout_id,
-              publisherid: root.publisher_id,
-              territoryid: root.territory_id,
-              campaign: root.campaign,
-              campaign_id: root.campaign_id,
-            };
-          }
+          isWithinDayLimit = differenceInCalendarDays(new Date(), root.in) <= dayLimit;
+        }
+
+        // if either above scenario is true, this is a "Recently Worked" territory
+        if (isCheckoutInCampaign || isWithinDayLimit) {
+          return {
+            date: root.in,
+            status: 'Recently Worked', // this gets translated to 'Done' on the client
+            checkout_id: root.checkout_id,
+            publisherid: root.publisher_id,
+            territoryid: root.territory_id,
+            campaign: root.campaign,
+            campaign_id: root.campaign_id,
+          };
+        
+        // otherwise, the territory is "Available" to be worked
+        } else {
+          return {
+            date: root.in,
+            status: 'Available',
+            checkout_id: root.checkout_id,
+            publisherid: root.publisher_id,
+            territoryid: root.territory_id,
+            campaign: root.campaign,
+            campaign_id: root.campaign_id,
+          };
         }
       }
     } catch (error) {
