@@ -145,7 +145,7 @@ export const queryResolvers = {
         } else {
           // has it been X number of days since the territory was checked in?
           // if it has been less than or equal to the limit, this is a Recently Worked territory
-          isWithinDayLimit = differenceInCalendarDays(new Date(), new Date(root.in)) <= dayLimit;
+          isWithinDayLimit = differenceInCalendarDays(new Date(), new Date(root.in)) <= Number(dayLimit);
         }
 
         // if either above scenario is true, this is a "Recently Worked" territory
