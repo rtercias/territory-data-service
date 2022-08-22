@@ -72,7 +72,7 @@ class ActivityLogAsync {
     await pool.query(`DELETE FROM activitylog WHERE id=${id}`);
   }
 
-  async resetTerritoryActivity (checkout_id, userid, tz_offset, timezone) {
+  async resetTerritoryActivity (checkout_id, userid, tz_offset, timezone, conn) {
     const sql = `INSERT INTO activitylog (
         checkout_id,
         address_id,
@@ -90,6 +90,10 @@ class ActivityLogAsync {
         ${userid}
       FROM address_last_activity a
       WHERE a.checkout_id = ${checkout_id} AND a.value != 'START'`;
+
+    if (conn) {
+      return await conn.query(sql);
+    }
 
     await pool.query(sql);
     return true;

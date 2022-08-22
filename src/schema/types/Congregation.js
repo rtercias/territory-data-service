@@ -2,6 +2,8 @@ import { ApolloError, gql } from 'apollo-server-express';
 import { pusher } from '../../server';
 import congAsync from '../../async/congregations';
 
+// NOTE: congregation's campaign field is DEPRECATED.
+// Use the derived object currentCampaign instead
 export const Congregation = gql`
   type Congregation {
     id: Int
@@ -15,6 +17,8 @@ export const Congregation = gql`
     admin_email: String
     options: String
     circuit: String
+    currentCampaign: Campaign
+    historicalCampaigns: [Campaign]
   }
 `;
 
@@ -97,7 +101,7 @@ export const mutationResolvers = {
       throw new ApolloError(
         'Unable to delete congregation',
         'MUTATION_RESOLVER_ERROR',
-        { error, path: 'Congregation/deleteCongregation', arguments: { root, id }},
+        { error, path: 'Congregation/deleteCongregation', arguments: { root, id } },
       );
     }
   },

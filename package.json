@@ -16,9 +16,9 @@
     "shell": "firebase functions:shell",
     "start": "yarn serve",
     "predeploy": "yarn build",
-    "predeploy-test": "yarn build",
-    "deploy": "firebase deploy --only functions",
-    "deploy-test": "firebase deploy --only functions -P foreign-field-test",
+    "predeploy-staging": "yarn build",
+    "deploy": "firebase deploy --only functions -P default",
+    "deploy-staging": "firebase deploy --only functions -P staging",
     "logs": "firebase functions:log"
   },
   "repository": {

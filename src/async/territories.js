@@ -7,71 +7,68 @@ import { pool } from '../server';
 import axios from 'axios';
 import addressAsync from './addresses';
 import activityLog from './activityLog';
-
 class TerritoryAsync {
   async getTerritory (id) {
     const result = await (pool.query(`SELECT * FROM territories WHERE id=${id}`));
     return result[0];
   }
 
-  async getTerritories (congId, limit, offset = 0) {
+  async getTerritories (congId, limit, offset = 0, withStatus) {
+    const statusSelect = withStatus ? 'ck.*,' : '';
+    const statusJoin = withStatus ? 'JOIN territorycheckouts_current ck ON ck.territory_id = t.id' : '';
+
     return await pool.query(`
-      SELECT * FROM territories
-      WHERE congregationid=${congId}
+      SELECT ${statusSelect}
+      t.* FROM territories t
+      ${statusJoin}
+      WHERE t.congregationid=${congId}
       ${limit ? `LIMIT ${offset},${limit}` : ''}
     `);
   }
 
-  async searchTerritories (congId, keyword) {
-    return await pool.query(`SELECT * FROM territories
-      WHERE congregationid=${congId} AND (name LIKE '%${keyword}%' OR description LIKE '%${keyword}%')`);
+  async searchTerritories (congId, keyword, withStatus) {
+    const statusSelect = withStatus ? 'ck.*,' : '';
+    const statusJoin = withStatus ? 'JOIN territorycheckouts_current ck ON ck.territory_id = t.id' : '';
+    return await pool.query(`
+      SELECT
+        ${statusSelect}
+        t.* FROM territories t
+      ${statusJoin}
+      WHERE t.congregationid=${congId}
+      AND (t.name LIKE '%${keyword}%' OR t.description LIKE '%${keyword}%')`);
   }
 
   async getTerritoryStatus (territoryId) {
     return await pool.query(
-      `
-        SELECT ck.*, ck.id AS checkout_id, ck.territoryid AS territory_id,
-          p.username, p.firstname, p.lastname, p.status AS publisher_status
-        FROM territorycheckouts ck
-        JOIN territories t ON ck.territoryid = t.id
-        JOIN congregations c ON t.congregationid = c.id AND ck.campaign = c.campaign
-        JOIN publishers p ON ck.publisherid = p.id
-        WHERE ck.territoryid=${territoryId}
-        ORDER BY ck.timestamp DESC
-        LIMIT 2
-      `
+      `SELECT * FROM territorycheckouts_current WHERE territory_id = ${territoryId}
+      ORDER BY timestamp DESC
+      LIMIT 1`
     );
   }
 
-  async getTerritoryCurrentStatus(territoryId, username) {
+  async getTerritoryCurrentStatus(territoryId) {
     // get cong
     const resultCong = await pool.query(`
       SELECT c.* FROM territories t JOIN congregations c ON t.congregationid = c.id
       WHERE t.id=${territoryId}`);
     const cong = resultCong[0];
 
-    const sql = `SELECT * FROM territorycheckouts_pivot p
+    const sql = `SELECT * FROM territorycheckouts_current p
       WHERE territory_id=${territoryId} AND p.in is null
-        AND campaign=${cong.campaign}
       ORDER BY timestamp DESC `;
 
     return await pool.query(sql);
   }
 
   async getTerritoriesByUser (congId, username, limit, offset=0) {
-    // get cong
-    const resultCong = await pool.query(`SELECT * FROM congregations WHERE id=${congId}`);
-    const cong = resultCong[0];
 
     return await pool.query(
       `
-        SELECT ck.*, t.*
-        FROM territorycheckouts_pivot ck
-        JOIN territories t ON ck.territory_id = t.id
-        WHERE ck.congregationid=${congId}
+        SELECT ck.*,t.* FROM territories t
+        JOIN territorycheckouts_current ck ON ck.territory_id = t.id
+        WHERE t.congregationid=${congId}
         AND ck.username='${username}'
         AND ck.in IS NULL
-        AND COALESCE(ck.campaign, 0)=${cong.campaign || 0}
         ${limit ? `LIMIT ${offset},${limit}` : ''}
       `
     );
@@ -90,16 +87,21 @@ class TerritoryAsync {
     );
   }
 
-  async getTerritoriesByGroup (groupId, limit, offset = 0) {
-    return await pool.query(`SELECT * FROM territories
-      WHERE group_id=${groupId}
-      ORDER BY description, name
+  async getTerritoriesByGroup (groupId, limit, offset = 0, withStatus) {
+    const statusSelect = withStatus ? 'ck.*,' : '';
+    const statusJoin = withStatus ? 'JOIN territorycheckouts_current ck ON ck.territory_id = t.id' : '';
+
+    return await pool.query(`SELECT ${statusSelect}
+      t.* FROM territories t
+      ${statusJoin}
+      WHERE t.group_id=${groupId}
+      ORDER BY t.description, t.name
       ${limit ? `LIMIT ${offset},${limit}` : ''}
     `);
   }
 
   async territoryCheckoutStatus (checkout_id) {
-    const sql = `SELECT * FROM territorycheckouts_pivot p WHERE p.checkout_id = ${checkout_id}`;
+    const sql = `SELECT * FROM territorycheckouts_current p WHERE p.checkout_id = ${checkout_id}`;
     const result = await pool.query(sql);
     return result[0];
   }
@@ -176,22 +178,14 @@ class TerritoryAsync {
   }
 
   async saveTerritoryActivity(status, territoryId, publisherId, user, checkoutId) {
-    // get cong
-    const resultCong = await pool.query(`
-      SELECT c.* FROM territories t JOIN congregations c ON t.congregationid = c.id
-      WHERE t.id=${territoryId}`);
-    const cong = resultCong[0];
-    let results;
-
     const checkout = {
       territoryid: escape(territoryId),
       publisherid: escape(publisherId),
       status,
       create_user: escape(user),
-      campaign: escape(cong.campaign),
       parent_checkout_id: escape(checkoutId),
     };
-    results = await pool.query('INSERT INTO territorycheckouts SET ?', checkout);
+    const results = await pool.query('INSERT INTO territorycheckouts SET ?', checkout);
     return results.insertId;
   }
 
@@ -304,7 +298,7 @@ class TerritoryAsync {
     return result.length ? result[0] : null;
   }
 
-  async checkinAll(congId, username, tz_offset, timezone, _campaign) {
+  async checkinAll(congId, username, tz_offset, timezone) {
     if (!congId) throw new Error('congregation id is required');
     if (!username) throw new Error('username is required');
     if (!tz_offset) throw new Error('tz_offset is required');
@@ -314,47 +308,51 @@ class TerritoryAsync {
     const resultUser = await pool.query(`SELECT * FROM publishers WHERE username='${username}'`);
     const user = resultUser[0];
 
-    // get cong
-    const resultCong = await pool.query(`SELECT * FROM congregations WHERE id=${congId}`);
-    const cong = resultCong[0];
+    // get all checked out territories
+    const sqlCheckOuts = `SELECT tc.* FROM territorycheckouts_current tc
+      WHERE tc.congregationid = ${congId} AND tc.in IS NULL`;
+    const checkouts = await pool.query(sqlCheckOuts);
 
-    const campaign = _campaign === null || _campaign === undefined ? cong.campaign : _campaign;
+    const conn = await pool.getConnection();
+    await conn.beginTransaction();
+
+    try {
+      const promises = [];
+      for (const ck of checkouts) {
+        // check in
+        const sql = `INSERT INTO territorycheckouts (territoryid, publisherid, status, create_user, parent_checkout_id)
+          VALUES (${ck.territory_id}, ${ck.publisher_id}, 'IN', '${username}', ${ck.checkout_id})`;
+
+        promises.push(await conn.query(sql));
+
+        // reset NH statuses
+        promises.push(activityLog.resetTerritoryActivity(ck.checkout_id, user.id, tz_offset, timezone, conn));
+      }
+
+      await Promise.all(promises);
+      await conn.commit();
+      await conn.release();
+
+    } catch (e) {
+      await conn.rollback();
+      await conn.release();
+      throw new Error(e);
+    }
+  }
+
+  async createCampaignCheckouts(congId, username) {
+    if (!congId) throw new Error('congregation id is required');
+    if (!username) throw new Error('username is required');
 
     // get all checked out territories
-    const sqlCheckOuts = `SELECT tc.* FROM territorycheckouts_pivot tc
+    const sqlCheckOuts = `SELECT tc.* FROM territorycheckouts_current tc
       WHERE tc.congregationid = ${congId} AND tc.in IS NULL`;
     const checkouts = await pool.query(sqlCheckOuts);
 
     for (const ck of checkouts) {
-      // check in
-      const sql = `INSERT INTO territorycheckouts (territoryid, publisherid, status, create_user, campaign, parent_checkout_id)
-        VALUES (${ck.territory_id}, ${ck.publisher_id}, 'IN', '${username}', ${ck.campaign}, ${ck.checkout_id})`;
-      await pool.query(sql);
-
-      // reset NH statuses
-      await activityLog.resetTerritoryActivity(ck.checkout_id, user.id, tz_offset, timezone);
-    }
-  }
-
-  async createCampaignCheckouts(congId, username, _campaign) {
-    if (!congId) throw new Error('congregation id is required');
-    if (!username) throw new Error('username is required');
-
-    // get cong
-    const resultCong = await pool.query(`SELECT * FROM congregations WHERE id=${congId}`);
-    const cong = resultCong[0];
-
-    const campaign = _campaign === null || _campaign === undefined ? cong.campaign : _campaign;
-
-    // get all checked out territories
-    const sqlCheckOuts = `SELECT tc.* FROM territorycheckouts_pivot tc
-      WHERE tc.congregationid = ${congId} AND tc.in IS NULL AND COALESCE(tc.campaign, 0)=${campaign || 0}`;
-    const checkouts = await pool.query(sqlCheckOuts);
-
-    for (const ck of checkouts) {
       // replicate all checked out territories with current campaign flag
-      const sql = `INSERT INTO territorycheckouts (territoryid, publisherid, status, timestamp, create_user, campaign)
-        VALUES(${ck.territory_id}, ${ck.publisher_id}, 'OUT', NOW(), '${username}', ${campaign})`;
+      const sql = `INSERT INTO territorycheckouts (territoryid, publisherid, status, timestamp, create_user)
+        VALUES(${ck.territory_id}, ${ck.publisher_id}, 'OUT', NOW(), '${username}')`;
       const result = await pool.query(sql);
       const logs = await activityLog.read(ck.checkout_id);
     }

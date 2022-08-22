@@ -2,14 +2,14 @@ import { ApolloError, gql } from 'apollo-server-express';
 import terrAsync from './../../async/territories';
 import congAsync from './../../async/congregations';
 import publisherAsync from './../../async/publishers';
-import { isArray, orderBy, some, get } from 'lodash';
-import { differenceInCalendarDays } from 'date-fns';
-import { ActivityLog } from './ActivityLog';
-import { Phone } from './Phone';
+import { get } from 'lodash';
+import { differenceInCalendarDays, isBefore, isAfter } from 'date-fns';
 import { pusher } from '../../server';
 import activityLog from '../../async/activityLog';
+import { getCurrentCampaign } from '../../async/campaigns';
 
 const DEFAULT_DAY_LIMIT = 30;
+let cong, congOptions, dayLimit, currentCampaign;
 
 export const Territory = gql`
   type Territory {
@@ -70,21 +70,27 @@ export const queryResolvers = {
 
   territories: async (root, args) => {
     try {
+      const { withStatus } = args;
       if (((root && root.congregationid) || args.congId) && args.keyword) {
         const congId = (root ? root.congregationid : null) || args.congId;
-        return await terrAsync.searchTerritories(congId, args.keyword);
+        return await terrAsync.searchTerritories(congId, args.keyword, withStatus);
       }
 
       if (args && args.group_id) {
-        return await terrAsync.getTerritoriesByGroup(args.group_id, args.limit, args.offset);
+        return await terrAsync.getTerritoriesByGroup(args.group_id, args.limit, args.offset, withStatus);
       }
       
       if (root && root.congregationid && root.username) {
-        return await terrAsync.getTerritoriesByUser(root.congregationid, root.username, args.limit, args.offset);
+        return await terrAsync.getTerritoriesByUser(
+          root.congregationid,
+          root.username,
+          args.limit,
+          args.offset,
+        );
       }
 
       if ((args && args.congId) || (root && root.id)) {
-        return await terrAsync.getTerritories(args.congId || root.id, args.limit, args.offset);
+        return await terrAsync.getTerritories(args.congId || root.id, args.limit, args.offset, withStatus);
       }
     } catch (error) {
       throw new ApolloError(
@@ -92,82 +98,79 @@ export const queryResolvers = {
         'QUERY_RESOLVER_ERROR',
         { error, path: 'Territory/territories', arguments: { root, args }},
       );
-    }      
+    }
   },
 
   status: async(root, args) => {
     try {
-      const cong = await congAsync.getCongregationById(root.congregationid);
-      const congOptions = cong && JSON.parse(cong.options);
-      const dayLimit = get(congOptions, 'territories.cycle') || DEFAULT_DAY_LIMIT;
+      if (!root.checkout_id) {
+        return {
+          status: 'Available',
+        };
+      }
 
-      if (root && root.username) {
-        if (root.in === null) {
-          return {
-            date: root.out, 
-            status: 'Checked Out',
-          };
+      cong = cong || await congAsync.getCongregationById(root.congregationid);
+      congOptions = congOptions || (cong && JSON.parse(cong.options));
+      dayLimit = dayLimit || get(congOptions, 'territories.cycle') || DEFAULT_DAY_LIMIT;
+      currentCampaign = currentCampaign || (cong && await getCurrentCampaign(cong.id));
+      
+      // no check-in date... territory is "Checked Out"
+      if (root.in === null) {
+        return {
+          status: 'Checked Out',
+          checkout_id: root.checkout_id,
+          date: root.out,
+          publisherid: root.publisher_id,
+          territoryid: root.territory_id,
+          campaign: root.campaign,
+          campaign_id: root.campaign_id,
+        };
+      
+      // there's a check-in date... 
+      } else {
+        let isCheckoutInCampaign = false, isWithinDayLimit = false;
+        
+        // if in campaign mode...
+        if (currentCampaign) {
+          const campaignStartDate = new Date(currentCampaign.start_date);
+          const campaignEndDate = currentCampaign.end_date ?
+            new Date(currentCampaign.end_date) :
+            new Date();
 
-        } else if (differenceInCalendarDays(new Date(), root.in) <= dayLimit) {
+          // does the checkout timestamp fall within the start and end date of the campaign?
+          isCheckoutInCampaign = isAfter(root.timestamp, campaignStartDate)
+            && isBefore(root.timestamp, campaignEndDate);
+
+        // if not in campaign mode...
+        } else {
+          // has it been X number of days since the territory was checked in?
+          // if it has been less than or equal to the limit, this is a Recently Worked territory
+          isWithinDayLimit = differenceInCalendarDays(new Date(), root.in) <= dayLimit;
+        }
+
+        // if either above scenario is true, this is a "Recently Worked" territory
+        if (isCheckoutInCampaign || isWithinDayLimit) {
           return {
             date: root.in,
-            status: 'Recently Worked',
+            status: 'Recently Worked', // this gets translated to 'Done' on the client
+            checkout_id: root.checkout_id,
+            publisherid: root.publisher_id,
+            territoryid: root.territory_id,
+            campaign: root.campaign,
+            campaign_id: root.campaign_id,
           };
+        
+        // otherwise, the territory is "Available" to be worked
         } else {
           return {
+            date: root.in,
             status: 'Available',
-          }
-        }
-      } else if (root && root.congregationid && root.id) {
-        let terrStatus;
-        terrStatus = await terrAsync.getTerritoryStatus(root.id);
-
-        if (terrStatus) {
-          // no checkout records found: AVAILABLE
-          if (!isArray(terrStatus) || terrStatus.length == 0) {
-            return {
-              status: 'Available',
-            };
-          }
-
-          // if there is no check IN terrStatus, or the last terrStatus is OUT, then territory is still checked out
-          if (!some(terrStatus, ['status', 'IN']) || terrStatus[0].status === 'OUT') {
-            const a = terrStatus[0];
-            return {
-              checkout_id: a.checkout_id,
-              status: 'Checked Out',
-              date: a.timestamp,
-              publisherid: a.publisherid,
-              territoryid: a.territoryid,
-              campaign: a.campaign,
-            };
-            
-          } else if (terrStatus[0].status === 'IN') {
-            // if the last terrStatus is IN
-            // and the most recent timestamp is 70 days or less, then the territory is recently worked.
-            if (differenceInCalendarDays(new Date(), terrStatus[0].timestamp) <= dayLimit) {
-              const a = terrStatus[0];
-              return {
-                checkout_id: a.checkout_id,
-                status: 'Recently Worked',
-                date: a.timestamp,
-                publisherid: a.publisherid,
-                territoryid: a.territoryid,
-                campaign: a.campaign,
-              };
-            } else {
-              // ... otherwise the territory is available.
-              const a = terrStatus[0];
-              return {
-                checkout_id: a.checkout_id,
-                status: 'Available',
-                date: a.timestamp,
-                publisherid: a.publisherid,
-                territoryid: a.territoryid,
-                campaign: a.campaign,
-              };
-            }
-          }
+            checkout_id: root.checkout_id,
+            publisherid: root.publisher_id,
+            territoryid: root.territory_id,
+            campaign: root.campaign,
+            campaign_id: root.campaign_id,
+          };
         }
       }
     } catch (error) {
@@ -321,9 +324,9 @@ export const mutationResolvers = {
       );
     }
   },
-  checkinAll: async (root, { congId, username, tz_offset, timezone, campaign }) => {
+  checkinAll: async (root, { congId, username, tz_offset, timezone }) => {
     try {
-      await terrAsync.checkinAll(congId, username, tz_offset, timezone, campaign);
+      await terrAsync.checkinAll(congId, username, tz_offset, timezone);
       pusher.trigger('foreign-field', 'check-in-all', congId);
     } catch (error) {
       throw new ApolloError(
@@ -335,20 +338,19 @@ export const mutationResolvers = {
           username,
           tz_offset,
           timezone,
-          campaign,
         }},
       );
     }
   },
-  copyCheckouts: async (root, { congId, username, campaign }) => {
+  copyCheckouts: async (root, { congId, username }) => {
     try {
-      await terrAsync.createCampaignCheckouts(congId, username, campaign);
+      await terrAsync.createCampaignCheckouts(congId, username);
       pusher.trigger('foreign-field', 'copy-checkouts', congId);
     } catch (error) {
       throw new ApolloError(
         'Unable to copy checkouts',
         'MUTATION_RESOLVER_ERROR',
-        { error, path: 'copyCheckouts', arguments: { root, congId, username, campaign }},
+        { error, path: 'copyCheckouts', arguments: { root, congId, username }},
       );
     }
   },

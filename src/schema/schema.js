@@ -53,6 +53,11 @@ import {
   queryResolvers as phoneQueryResolvers,
   mutationResolvers as phoneMutationResolvers,
 } from './types/Phone';
+import {
+  Campaign,
+  queryResolvers as campaignQueryResolvers,
+  mutationResolvers as campaignMutationResolvers,
+} from './types/Campaign';
 import { sendSMSMessage } from '../utils/Twilio';
 
 const RootQuery = gql`
@@ -64,8 +69,10 @@ const RootQuery = gql`
     updater: Publisher
     congregation(id: Int!): Congregation
     congregations(keyword: String): [Congregation]
+    campaign: Campaign
+    historicalCampaigns: [Campaign]
     territory(id: Int): Territory
-    territories(congId: Int, keyword: String, group_id: Int, limit: Int, offset: Int): [Territory]
+    territories(congId: Int, keyword: String, group_id: Int, limit: Int, offset: Int, withStatus: Boolean): [Territory]
     status(territoryId: Int): Status
     address(id: Int, status: String): Address
     addresses(congId: Int, terrId: Int, keyword: String, status: String): [Address]
@@ -126,6 +133,8 @@ const Mutation = gql`
     updatePublisher(publisher: PublisherInput!): Publisher
     deletePublisher(id: Int!): Boolean
     sendSMS(text: String!, number: String!): String
+    startCampaign(name: String!, congId: Int!, publisherId: Int): Campaign
+    endCampaign(campaignId: Int!): Boolean
   }
 `;
 
@@ -153,6 +162,7 @@ export const resolvers = {
     changeLogResolvers,
     phoneQueryResolvers,
     groupQueryResolvers,
+    campaignQueryResolvers,
   ),
 
   Mutation: merge (
@@ -168,6 +178,7 @@ export const resolvers = {
     phoneMutationResolvers,
     congregationMutationResolvers,
     groupMutationResolvers,
+    campaignMutationResolvers,
   ),
 
   Publisher: {
@@ -179,6 +190,8 @@ export const resolvers = {
     territories: territoryQueryResolvers.territories,
     publishers: publisherQueryResolvers.publishers,
     groups: groupQueryResolvers.groups,
+    currentCampaign: campaignQueryResolvers.campaign,
+    historicalCampaigns: campaignQueryResolvers.historicalCampaigns,
   },
 
   Territory: {
@@ -242,6 +255,7 @@ export const typeDefs = [
   PhoneInput,
   Group,
   GroupInput,
+  Campaign,
 ];
 
 export const formatError = (err) => {
