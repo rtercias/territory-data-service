@@ -135,7 +135,7 @@ const Mutation = gql`
     sendSMS(text: String!, number: String!): String
     startCampaign(name: String!, congId: Int!, publisherId: Int): Campaign
     endCampaign(campaignId: Int!): Boolean
-    updateCampaign(campaignId: Int!,name: String!,start_date: String!, end_date: String!): Boolean
+    updateCampaign(campaignId: Int!,name: String!,startDate: String!, endDate: String!): Boolean
   }
 `;
 
