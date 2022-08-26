@@ -8,19 +8,19 @@ import {
   queryResolvers as addressQueryResolvers,
   mutationResolvers as addressMutationResolvers,
 } from './types/Address';
-import { 
+import {
   Congregation,
   CongregationInput,
   queryResolvers as congregationQueryResolvers,
   mutationResolvers as congregationMutationResolvers,
 } from './types/Congregation';
-import { 
+import {
   Group,
   GroupInput,
   queryResolvers as groupQueryResolvers,
   mutationResolvers as groupMutationResolvers,
 } from './types/Group';
-import { 
+import {
   Territory,
   TerritoryInput,
   queryResolvers as territoryQueryResolvers,
@@ -34,7 +34,7 @@ import {
 } from './types/Publisher';
 import { Status } from './types/Status';
 import {
-  ActivityLog, 
+  ActivityLog,
   ActivityLogInput,
   resolvers as activityLogResolvers,
   mutationResolvers as activityLogMutationResolvers,
@@ -135,6 +135,7 @@ const Mutation = gql`
     sendSMS(text: String!, number: String!): String
     startCampaign(name: String!, congId: Int!, publisherId: Int): Campaign
     endCampaign(campaignId: Int!): Boolean
+    updateCampaign(campaignId: Int!,name: String!,start_date: String!, end_date: String!): Boolean
   }
 `;
 
@@ -146,13 +147,13 @@ const SchemaDefinition = gql`
 `;
 
 export const resolvers = {
-  RootQuery: merge (
+  RootQuery: merge(
     {
       token: async (root, { username }) => {
         if (!username) throw new Error('username is required');
         return await generateUserToken(username);
       },
-    }, 
+    },
     publisherQueryResolvers,
     congregationQueryResolvers,
     territoryQueryResolvers,
@@ -165,7 +166,7 @@ export const resolvers = {
     campaignQueryResolvers,
   ),
 
-  Mutation: merge (
+  Mutation: merge(
     {
       sendSMS: async (root, { text, number }) => {
         return await sendSMSMessage(text, number);

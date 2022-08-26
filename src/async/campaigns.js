@@ -43,6 +43,33 @@ export async function startCampaign(name, congId, publisherId) {
   return results.insertId;
 }
 
+export async function updateCampaign(campaignId, name, start_date, end_date) {
+
+  const campaignToUpdate = await pool.query(`Select name from campaigns WHERE id = ${campaignId}`);
+  if (!campaignToUpdate[0]) {
+    throw new Error(`campaign with id = ${campaignId} not found`);
+  }
+
+  if (!campaignId) {
+    throw new Error('campaignId is required');
+  }
+
+  if (!name) {
+    throw new Error('name is required');
+  }
+
+  const endDateSet = '';
+  if (end_date) {
+    if (new Date(end_date) <= new Date(start_date)) {
+      throw new Error('end date cannot be less or equal to start date');
+    }
+    endDateSet = `, end_date = ${end_date} `;
+  }
+
+  const results = await pool.query(`UPDATE campaigns SET name=${name}, start_date = ${start_date} ${endDateSet} WHERE id = ${campaignId}`);
+  return !!results;
+}
+
 export async function endCampaign(campaignId) {
   if (!campaignId) {
     throw new Error('campaignId is required');
