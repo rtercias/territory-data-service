@@ -56,14 +56,14 @@ export const mutationResolvers = {
       );
     }
   },
-  updateCampaign: async (root, { campaignId, name, start_date, end_date }) => {
+  updateCampaign: async (root, { campaignId, name, startDate, endDate }) => {
     try {
-      return await updateCampaign(campaignId, name, start_date, end_date);
+      return await updateCampaign(campaignId, name, startDate, endDate);
     } catch (error) {
       throw new ApolloError(
         'Unable to update campaign',
         'MUTATION_RESOLVER_ERROR',
-        { error, path: 'Campaign/updateCampaign', arguments: { root, campaignId, name, start_date, end_dates } },
+        { error, path: 'Campaign/updateCampaign', arguments: { root, campaignId, name, startDate, endDate } },
       );
     }
   },
