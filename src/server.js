@@ -44,6 +44,8 @@ const accountSid = config().api.twilio_account_sid;
 const authToken = config().api.twilio_auth_token;
 export const twilioClient = twilio(accountSid, authToken);
 
+console.log('Database:',`${config().api.territory_server}/${config().api.database}`);
+
 export function gqlServer() {
   const app = express();
 

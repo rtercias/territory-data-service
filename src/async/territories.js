@@ -7,27 +7,49 @@ import { pool } from '../server';
 import axios from 'axios';
 import addressAsync from './addresses';
 import activityLog from './activityLog';
+import { checkoutPivotFields,
+  checkoutPivotJoin,
+  checkoutPivotWhere,
+  campaignSubquery,
+} from './checkout_pivot';
 class TerritoryAsync {
   async getTerritory (id) {
-    const result = await (pool.query(`
-      SELECT ck.*, t.* FROM territories t
-      LEFT JOIN territorycheckouts_current ck ON ck.territory_id = t.id
-      WHERE t.id=${id}
-    `));
+    const result = await this.getTerritoriesWithStatus({ territoryId: id });
     return result[0];
   }
 
   async getTerritories (congId, limit, offset = 0, withStatus) {
-    const statusSelect = withStatus ? 'ck.*,' : '';
-    const statusJoin = withStatus ? 'JOIN territorycheckouts_current ck ON ck.territory_id = t.id' : '';
+    if (withStatus) {
+      return await this.getTerritoriesWithStatus({ congId });
+    }
 
+    // legacy code for backwards compatibility
     return await pool.query(`
-      SELECT ${statusSelect}
-      t.* FROM territories t
-      ${statusJoin}
+      SELECT t.* FROM territories t
       WHERE t.congregationid=${congId}
       ${limit ? `LIMIT ${offset},${limit}` : ''}
     `);
+  }
+
+  async getTerritoriesWithStatus ({ territoryId, congId }) {
+    if (!territoryId && !congId) {
+      throw new Error('territory id is required');
+    }
+  
+    const terrWhere = territoryId ? `AND t.id = ${territoryId}` : '';
+    const congWhere = congId ? `AND t.congregationid = ${congId}` : '';
+  
+    const sql = `SELECT t.*,
+        ${checkoutPivotFields},
+        ${campaignSubquery} AS campaign_id
+      FROM territories t 
+        ${checkoutPivotJoin}
+      WHERE ${checkoutPivotWhere}
+        ${congWhere}
+        ${terrWhere}
+    `;
+
+    return await pool.query(sql);
   }
 
   async searchTerritories (congId, keyword, withStatus) {
