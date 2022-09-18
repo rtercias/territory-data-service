@@ -4,6 +4,7 @@ import {
   getHistoricalCampaigns,
   startCampaign,
   endCampaign,
+  updateCampaign,
 } from '../../async/campaigns';
 
 export const Campaign = gql`
@@ -25,7 +26,7 @@ export const queryResolvers = {
       throw new ApolloError(
         'Unable to get current campaign',
         'QUERY_RESOLVER_ERROR',
-        { error, path: 'Campaign/currentCampaign', arguments: { root }},
+        { error, path: 'Campaign/currentCampaign', arguments: { root } },
       );
     }
   },
@@ -36,14 +37,14 @@ export const queryResolvers = {
       throw new ApolloError(
         'Unable to get historical campaigns',
         'QUERY_RESOLVER_ERROR',
-        { error, path: 'Campaign/historicalCampaigns', arguments: { root }},
+        { error, path: 'Campaign/historicalCampaigns', arguments: { root } },
       );
     }
   },
 };
 
 export const mutationResolvers = {
-  startCampaign: async( root, { name, congId, publisherId }) => {
+  startCampaign: async (root, { name, congId, publisherId }) => {
     try {
       await startCampaign(name, congId, publisherId);
       return await getCurrentCampaign(congId);
@@ -55,7 +56,18 @@ export const mutationResolvers = {
       );
     }
   },
-  endCampaign: async( root, { campaignId }) => {
+  updateCampaign: async (root, { campaignId, name, startDate, endDate }) => {
+    try {
+      return await updateCampaign(campaignId, name, startDate, endDate);
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to update campaign',
+        'MUTATION_RESOLVER_ERROR',
+        { error, path: 'Campaign/updateCampaign', arguments: { root, campaignId, name, startDate, endDate } },
+      );
+    }
+  },
+  endCampaign: async (root, { campaignId }) => {
     try {
       return await endCampaign(campaignId);
     } catch (error) {
