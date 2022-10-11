@@ -7,7 +7,18 @@ export const checkoutPivotFields = `
   ckin.timestamp AS timestamp_in, ckin.publisherid AS publisher_id_in`;
 
 export const checkoutPivotJoin = `
-  LEFT JOIN territorycheckouts ckout ON t.id = ckout.territoryid
+  LEFT JOIN (
+    SELECT id, territoryid, publisherid, timestamp
+      FROM territorycheckouts ckout2
+      WHERE
+        id = (
+          SELECT cklast.id
+          FROM territorycheckouts cklast
+          WHERE cklast.territoryid = ckout2.territoryid AND cklast.status = 'OUT'
+          ORDER BY cklast.id DESC
+          LIMIT 1
+        )
+  ) ckout ON t.id = ckout.territoryid
   LEFT JOIN (
     SELECT territoryid, parent_checkout_id, timestamp, publisherid, 
       DATE_FORMAT(timestamp, '%m/%d/%Y') AS 'in'
