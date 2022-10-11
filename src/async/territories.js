@@ -35,17 +35,18 @@ class TerritoryAsync {
     if (!territoryId && !congId) {
       throw new Error('territory id is required');
     }
-  
-    const terrWhere = territoryId ? `AND t.id = ${territoryId}` : '';
-    const congWhere = congId ? `AND t.congregationid = ${congId}` : '';
-  
+
+    const terrWhere = territoryId ? `t.id = ${territoryId}` : '';
+    const congWhere = congId ? `t.congregationid = ${congId}` : '';
+
     const sql = `SELECT t.*,
         ${checkoutPivotFields},
         ${campaignSubquery} AS campaign_id
       FROM territories t 
         ${checkoutPivotJoin}
-      WHERE ${checkoutPivotWhere}
+      WHERE
         ${congWhere}
+        ${congWhere && terrWhere ? 'AND' : ''}
         ${terrWhere}
     `;
 
