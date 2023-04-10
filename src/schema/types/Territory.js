@@ -368,4 +368,18 @@ export const mutationResolvers = {
       );
     }
   },
+  unassignCheckout: async(root, { checkoutId, territoryId }) => {
+    try {
+      await terrAsync.unassignCheckout(checkoutId);
+      const terr = terrAsync.getTerritory(territoryId);
+      pusher.trigger('foreign-field', 'unassign-territory', { checkoutId, terr });
+      return terr;
+    } catch (error) {
+      throw new ApolloError(
+        'Unable to unassign checkout',
+        'MUTATION_RESOLVER_ERROR',
+        { error, path: 'unassignCheckout', arguments: { root, checkoutId, territoryId }},
+      );
+    }
+  },
 };

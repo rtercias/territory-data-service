@@ -103,6 +103,7 @@ const Mutation = gql`
     checkinAll(congId: Int!, username: String!, tz_offset: String!, timezone: String!, campaign: Boolean): Boolean
     copyCheckouts(congId: Int!, username: String!, campaign: Boolean): Boolean
     reassignCheckout(checkoutId: Int!, publisherId: Int!, user: String!): Boolean
+    unassignCheckout(checkoutId: Int!, territoryId: Int!): Territory
     addAddress(address: AddressInput!): Address
     updateAddress(address: AddressInput!): Address
     deleteAddress(id: Int!): Boolean
