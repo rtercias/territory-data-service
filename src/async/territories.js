@@ -229,6 +229,12 @@ class TerritoryAsync {
     return get(checkout, 'territory_id');
   }
 
+  async unassignCheckout(checkoutId) {
+    if (!checkoutId) throw new Error('checkout id is required');
+    const sql = `DELETE FROM territorycheckouts WHERE id = ${checkoutId}`;
+    await pool.query(sql);
+  }
+
   async optimize(territoryId, start, end) {
     try {
       const addresses = orderBy(await addressAsync.getAddressesByTerritory(territoryId), 'sort');
