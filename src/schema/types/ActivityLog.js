@@ -78,7 +78,7 @@ export const mutationResolvers = {
     try {
       // check if territory is still checked out
       const status = await territoriesAsync.territoryCheckoutStatus(activityLog.checkout_id);
-      if (status.in) throw new Error('Territory is no longer checked out.');
+      if (status && status.in) throw new Error('Territory is no longer checked out.');
       
       const id = await activityLogAsync.create(activityLog);
       const newLog = await activityLogAsync.readOne(id);
