@@ -408,7 +408,8 @@ class TerritoryAsync {
     const sql = `SELECT p.territory_id as id, count(*) as phoneCount FROM addresses a 
       JOIN addresses p ON a.id = p.parent_id
       WHERE p.congregationid = ${congId} AND p.type = 'Phone'
-      AND p.status = 'Active' GROUP BY p.territory_id`;
+      AND p.status = 'Active' AND a.status = 'Active'
+      GROUP BY p.territory_id`;
 
     return await pool.query(sql);
   }
