@@ -321,12 +321,15 @@ class TerritoryAsync {
   async lastActivity(territoryId) {
     if (!territoryId) throw new Error('territory id is required');
 
-    const sql = `SELECT log.*, ck.territoryid AS territory_id
-      FROM activitylog log 
-      JOIN territorycheckouts ck ON log.checkout_id = ck.id
+    const sql = `SELECT ck.territoryid AS territory_id,
+      ck.id AS checkout_id, log.id, log.address_id, log.value,
+      log.timestamp, log.tz_offset, log.publisher_id, log.notes
+      FROM territorycheckouts ck
+      LEFT JOIN activitylog log ON ck.id = log.checkout_id
       WHERE ck.territoryid = ${territoryId}
-      ORDER BY log.timestamp DESC
+      ORDER BY ck.timestamp DESC, log.timestamp DESC
       LIMIT 1`;
+
     const result = await pool.query(sql);
     return result.length ? result[0] : null;
   }
