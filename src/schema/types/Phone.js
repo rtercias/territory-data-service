@@ -17,7 +17,7 @@ export const Phone = gql`
     status: String!
     phone: String
     notes: String
-    activityLogs: [ActivityLog]
+    activityLogs(checkout_id: Int): [ActivityLog]
     sort: Int
     create_user: Int
     creator: Publisher
