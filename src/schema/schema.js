@@ -203,6 +203,7 @@ export const resolvers = {
     lastActivities: territoryQueryResolvers.lastActivities,
     phones: phoneQueryResolvers.phones,
     group: groupQueryResolvers.group,
+    activityLogs: activityLogResolvers.activityLogs,
   },
 
   Address: {

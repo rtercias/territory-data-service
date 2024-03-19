@@ -7,7 +7,8 @@ import { pool } from '../server';
 import axios from 'axios';
 import addressAsync from './addresses';
 import activityLog from './activityLog';
-import { checkoutPivotFields,
+import {
+  checkoutPivotFields,
   checkoutPivotJoin,
   checkoutPivotWhere,
   campaignSubquery,
@@ -87,18 +88,86 @@ class TerritoryAsync {
     return await pool.query(sql);
   }
 
-  async getTerritoriesByUser (congId, username, limit, offset=0) {
-
-    return await pool.query(
-      `
-        SELECT ck.*,t.* FROM territories t
-        JOIN territorycheckouts_current ck ON ck.territory_id = t.id
-        WHERE t.congregationid=${congId}
-        AND ck.username='${username}'
-        AND ck.in IS NULL
-        ${limit ? `LIMIT ${offset},${limit}` : ''}
-      `
-    );
+  async getTerritoriesByUser (congId, username, limit, offset = 0) {
+    return await pool.query(`
+      SELECT
+        *
+      FROM (
+        SELECT
+          ck_o.id AS checkout_id,
+          t.id,
+          t.name,
+          t.description,
+          t.type,
+          t.group_id,
+          (
+            SELECT
+              CONCAT(firstname, ' ', lastname)
+            FROM
+              publishers
+            WHERE
+              username = '${username}'
+          ) AS publisher_name,
+          DATE_FORMAT(ck_o.timestamp, '%m/%d/%Y') AS 'out',
+          DATE_FORMAT((
+            SELECT
+              MAX(ck_i.timestamp)
+            FROM
+              territorycheckouts ck_i
+                WHERE
+                  ck_i.status = 'IN'
+                    AND ck_i.territoryid = ck_o.territoryid
+                    AND ck_i.timestamp >= ck_o.timestamp
+                    AND ck_i.publisherid = (
+                      SELECT
+                        id
+                      FROM
+                        publishers
+                      WHERE
+                        username = '${username}'
+                    )
+          ), '%m/%d/%Y') AS 'in',
+          ck_o.timestamp,
+          (
+            SELECT
+              congregationid
+            FROM
+              publishers
+            WHERE
+              username = '${username}'
+          ) as congregationid,
+          ck_o.publisherid as publisher_id,
+          (
+            SELECT
+              username
+            FROM
+              publishers
+            WHERE
+              username = '${username}'
+          ) as username,
+          ck_o.parent_checkout_id,
+          ck_o.campaign_id,
+          ck_o.campaign
+        FROM
+          territorycheckouts ck_o
+        INNER JOIN territories t ON ck_o.territoryid = t.id
+        WHERE
+          congregationid=${congId}
+          AND ck_o.status = 'OUT'
+          AND ck_o.publisherid = (
+            SELECT
+              id
+            FROM
+              publishers
+            WHERE
+              username = '${username}'
+          )
+      ) AS territorycheckouts_enchanced
+      WHERE
+        territorycheckouts_enchanced.in IS NULL
+      ORDER BY 'out' DESC
+      ${limit ? `LIMIT ${offset},${limit}` : ''};
+    `);
   }
 
   async getMostRecentCheckin (territoryId, username) {
@@ -248,7 +317,7 @@ class TerritoryAsync {
       }
 
       const data = this.createOptimizationData(addresses, start, end);
-      
+
       const options = {
         headers: {
           'Authorization': config().api.open_route_token,
@@ -306,7 +375,7 @@ class TerritoryAsync {
 
     for (const addr of addresses) {
       const index = jobSteps.findIndex(s => s.job === addr.id);
-      
+
       if (index === -1) {
         addr.sort = nextIndex;
         nextIndex++;
