@@ -30,6 +30,7 @@ export const Territory = gql`
     tags: String
     addressCount: Int
     phoneCount: Int
+    activityLogs(checkout_id: Int, territory_id: Int): [ActivityLog]
   }
 `;
 

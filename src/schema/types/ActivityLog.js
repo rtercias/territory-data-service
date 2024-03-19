@@ -47,8 +47,9 @@ export const resolvers = {
 
   activityLogs: async (root, args) => {
     try {
-      const checkout_id = args.checkout_id;
-      const address_id = root.id;
+      const territory_id = args.territory_id;
+      const checkout_id = args.checkout_id || root.checkout_id;
+      const address_id = territory_id ? null : root.id;
       return await activityLogAsync.read(checkout_id, address_id);
     } catch (error) {
       throw new ApolloError(

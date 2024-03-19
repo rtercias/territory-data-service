@@ -27,7 +27,21 @@ class ActivityLogAsync {
     if (checkout_id && address_id) {
       result = await pool.query(`SELECT * FROM activitylog WHERE checkout_id=${checkout_id} AND address_id=${address_id}`);
     } else if (checkout_id) {
-      result = await pool.query(`SELECT * FROM activitylog WHERE checkout_id=${checkout_id}`);
+      result = await pool.query(`
+        SELECT
+          log.id,
+          log.checkout_id,
+          log.address_id,
+          log.value,
+          log.timestamp,
+          log.tz_offset,
+          log.timezone,
+          log.publisher_id,
+          log.notes
+        FROM activitylog log 
+          JOIN addresses a ON log.address_id = a.id
+        WHERE log.checkout_id=${checkout_id}
+      `);
     } else if (address_id) {
       result = await pool.query(`SELECT * FROM activitylog WHERE address_id=${address_id}`);
     }
