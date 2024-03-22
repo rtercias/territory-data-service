@@ -40,55 +40,17 @@ class TerritoryAsync {
     const terrWhere = territoryId ? `t.id = ${territoryId}` : '';
     const congWhere = congId ? `t.congregationid = ${congId}` : '';
 
-    const sql = `
-      SELECT
-        id,
-        checkout_id,
-        territory_id,
-        name,
-        description,
-        tc_e.type,
-        group_id,
-        group_name,
-        tc_e.out,
-        tc_e.in,
-        timestamp,
-        congregationid,
-        publisher_id,
-        parent_checkout_id,
-        campaign_id,
-        campaign
-      FROM (
-        SELECT ck_o.id AS checkout_id, t.id, t.name, t.description, t.type, t.group_id AS group_id,
-          t.description AS group_name, DATE_FORMAT(ck_o.timestamp, '%m/%d/%Y') AS 'out',
-          ck_o.timestamp AS 'timestamp', t.congregationid, ck_o.publisherid AS publisher_id,
-          ck_o.territoryid AS territory_id, ck_o.parent_checkout_id, ck_o.campaign_id,
-          ck_o.campaign,
-          DATE_FORMAT((
-            SELECT
-              MAX(ck_i.timestamp)
-            FROM
-              territorycheckouts ck_i
-            WHERE
-              ck_i.status = 'IN'
-              AND ck_i.territoryid = ck_o.territoryid
-              AND ck_i.timestamp >= ck_o.timestamp),
-          '%m/%d/%Y') AS 'in'
-        FROM
-          territorycheckouts ck_o
-        INNER JOIN territories t ON ck_o.territoryid = t.id
-        WHERE
-          ${congWhere}
-          ${congWhere && terrWhere ? 'AND' : ''}
-          ${terrWhere}
-      ) as tc_e
-      INNER JOIN (
-        SELECT max(tc.timestamp) as max_timestamp, tc.territoryid
-        FROM territorycheckouts tc
-        GROUP BY tc.territoryid
-      ) as tc_e_max
-      ON tc_e_max.max_timestamp = tc_e.timestamp and tc_e_max.territoryid = tc_e.territory_id;
+    const sql = `SELECT t.*,
+        ${checkoutPivotFields},
+        ${campaignSubquery} AS campaign_id
+      FROM territories t 
+        ${checkoutPivotJoin}
+      WHERE
+        ${congWhere}
+        ${congWhere && terrWhere ? 'AND' : ''}
+        ${terrWhere}
     `;
+
     return await pool.query(sql);
   }
 
@@ -221,54 +183,17 @@ class TerritoryAsync {
     );
   }
 
-  async getTerritoriesByGroup (groupId, limit, offset = 0) {
-    return await pool.query(`
-      SELECT
-        id,
-        checkout_id,
-        territory_id,
-        name,
-        description,
-        tc_e.type,
-        group_id,
-        group_name,
-        tc_e.out,
-        tc_e.in,
-        timestamp,
-        congregationid,
-        publisher_id,
-        parent_checkout_id,
-        campaign_id,
-        campaign
-      FROM (
-        SELECT ck_o.id AS checkout_id, t.id, t.name, t.description, t.type, t.group_id AS group_id,
-          t.description AS group_name, DATE_FORMAT(ck_o.timestamp, '%m/%d/%Y') AS 'out',
-          ck_o.timestamp AS 'timestamp', t.congregationid, ck_o.publisherid AS publisher_id,
-          ck_o.territoryid AS territory_id, ck_o.parent_checkout_id, ck_o.campaign_id,
-          ck_o.campaign,
-          DATE_FORMAT((
-            SELECT
-              MAX(ck_i.timestamp)
-            FROM
-              territorycheckouts ck_i
-            WHERE
-              ck_i.status = 'IN'
-              AND ck_i.territoryid = ck_o.territoryid
-              AND ck_i.timestamp >= ck_o.timestamp),
-          '%m/%d/%Y') AS 'in'
-        FROM
-          territorycheckouts ck_o
-        INNER JOIN territories t ON ck_o.territoryid = t.id
-        WHERE
-          t.group_id = ${groupId}
-      ) as tc_e
-      INNER JOIN (
-        SELECT max(tc.timestamp) as max_timestamp, tc.territoryid
-        FROM territorycheckouts tc
-        GROUP BY tc.territoryid
-      ) as tc_e_max
-      ON tc_e_max.max_timestamp = tc_e.timestamp and tc_e_max.territoryid = tc_e.territory_id;
-    `)
+  async getTerritoriesByGroup (groupId, limit, offset = 0, withStatus) {
+    const statusSelect = withStatus ? 'ck.*,' : '';
+    const statusJoin = withStatus ? 'JOIN territorycheckouts_current ck ON ck.territory_id = t.id' : '';
+
+    return await pool.query(`SELECT ${statusSelect}
+      t.* FROM territories t
+      ${statusJoin}
+      WHERE t.group_id=${groupId}
+      ORDER BY t.description, t.name
+      ${limit ? `LIMIT ${offset},${limit}` : ''}
+    `);
   }
 
   async territoryCheckoutStatus (checkout_id) {
