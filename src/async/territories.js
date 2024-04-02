@@ -32,12 +32,13 @@ class TerritoryAsync {
     `);
   }
 
-  async getTerritoriesWithStatus ({ territoryId, congId }) {
-    if (!territoryId && !congId) {
-      throw new Error('territory id is required');
+  async getTerritoriesWithStatus ({ territoryId, congId, groupId, limit, offset = 0 }) {
+    if (!territoryId && !congId && !groupId) {
+      throw new Error('congId, groupId or territoryId is required');
     }
 
     const terrWhere = territoryId ? `t.id = ${territoryId}` : '';
+    const groupWhere = groupId ? `t.group_id = ${groupId}` : '';
     const congWhere = congId ? `t.congregationid = ${congId}` : '';
 
     const sql = `SELECT t.*,
@@ -47,8 +48,11 @@ class TerritoryAsync {
         ${checkoutPivotJoin}
       WHERE
         ${congWhere}
-        ${congWhere && terrWhere ? 'AND' : ''}
+        ${congWhere && (groupWhere) ? 'AND' : ''}
+        ${groupWhere}
+        ${groupWhere && terrWhere ? 'AND'  : ''}
         ${terrWhere}
+      ${limit ? `LIMIT ${offset},${limit}` : ''};
     `;
 
     return await pool.query(sql);
@@ -116,6 +120,7 @@ class TerritoryAsync {
               territorycheckouts ck_i
                 WHERE
                   ck_i.status = 'IN'
+                    AND ck_i.parent_checkout_id = ck_o.id
                     AND ck_i.territoryid = ck_o.territoryid
                     AND ck_i.timestamp >= ck_o.timestamp
                     AND ck_i.publisherid = (
@@ -165,7 +170,6 @@ class TerritoryAsync {
       ) AS territorycheckouts_enchanced
       WHERE
         territorycheckouts_enchanced.in IS NULL
-      ORDER BY 'out' DESC
       ${limit ? `LIMIT ${offset},${limit}` : ''};
     `);
   }

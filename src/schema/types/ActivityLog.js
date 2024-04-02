@@ -16,6 +16,7 @@ export const ActivityLog = gql`
     timezone: String
     publisher_id: Int
     notes: String
+    parent_checkout_id: Int
   }
 `;
 
