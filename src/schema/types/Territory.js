@@ -78,7 +78,11 @@ export const queryResolvers = {
       }
 
       if (args && args.group_id) {
-        return await terrAsync.getTerritoriesByGroup(args.group_id, args.limit, args.offset, withStatus);
+        return await terrAsync.getTerritoriesWithStatus({
+          groupId: args.group_id,
+          limit: args.limit,
+          offset: args.offset,
+        });
       }
       
       if (root && root.congregationid && root.username) {
@@ -91,7 +95,11 @@ export const queryResolvers = {
       }
 
       if ((args && args.congId) || (root && root.id)) {
-        return await terrAsync.getTerritories(args.congId || root.id, args.limit, args.offset, withStatus);
+        return await terrAsync.getTerritoriesWithStatus({
+          congId: args.congId || root.id,
+          limit: args.limit,
+          offset: args.offset,
+        });
       }
     } catch (error) {
       throw new ApolloError(
