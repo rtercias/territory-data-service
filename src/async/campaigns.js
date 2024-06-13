@@ -43,6 +43,27 @@ export async function startCampaign(name, congId, publisherId) {
   return results.insertId;
 }
 
+export async function updateCampaign(campaignId, name, startDate, endDate) {
+  if (!campaignId) {
+    throw new Error('campaignId is required');
+  }
+
+  if (!name) {
+    throw new Error('name is required');
+  }
+
+  const endDateSet = '';
+  if (endDate) {
+    if (new Date(endDate) <= new Date(startDate)) {
+      throw new Error('end date cannot be less or equal to start date');
+    }
+    endDateSet = `, end_date = ${endDate} `;
+  }
+
+  const results = await pool.query(`UPDATE campaigns SET name=${name}, start_date = ${startDate} ${endDateSet} WHERE id = ${campaignId}`);
+  return !!results;
+}
+
 export async function endCampaign(campaignId) {
   if (!campaignId) {
     throw new Error('campaignId is required');
